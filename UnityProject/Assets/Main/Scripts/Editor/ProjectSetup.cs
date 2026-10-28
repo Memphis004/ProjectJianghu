@@ -63,6 +63,18 @@ namespace ProjectJianghu.Game.Editor
         public const string FontsFolder = "Assets/Main/Fonts";
         public const string ScenesFolder = "Assets/Main/Scenes";
 
+        /// <summary>The player's name, as the window title, the browser tab and the build report show it.</summary>
+        public const string ProductName = "Wuxia: Jianghu Rising";
+
+        /// <summary>The company the player belongs to; Unity uses it as the platform's identity prefix.</summary>
+        public const string CompanyName = "Wuxia";
+
+        /// <summary>
+        /// The bundle identifier. One value for every target, because there is one game: a
+        /// platform-specific id is a store decision this template does not make.
+        /// </summary>
+        public const string ApplicationIdentifier = "com.wuxia.jianghurising";
+
         public const string UrpAssetPath = SettingsFolder + "/ProjectJianghuURP.asset";
         public const string UrpRendererPath = SettingsFolder + "/ProjectJianghuURP_Renderer.asset";
         public const string ThemePath = UiFolder + "/UnityDefaultRuntimeTheme.tss";
@@ -184,8 +196,15 @@ namespace ProjectJianghu.Game.Editor
 
         private static void ConfigurePlayerSettings()
         {
-            PlayerSettings.companyName = "ProjectJianghu";
-            PlayerSettings.productName = "ProjectJianghu";
+            PlayerSettings.companyName = CompanyName;
+            PlayerSettings.productName = ProductName;
+
+            // The identifier is stored per build target, so it is written for the one the
+            // player ships to and for Standalone (the desktop build a developer runs locally);
+            // a target left at Unity's `com.DefaultCompany.<product>` is a different app to a
+            // store and to the platform's own data folder.
+            PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.WebGL, ApplicationIdentifier);
+            PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Standalone, ApplicationIdentifier);
 
             // URP is authored for linear colour; the WebGL2 target supports it.
             PlayerSettings.colorSpace = ColorSpace.Linear;

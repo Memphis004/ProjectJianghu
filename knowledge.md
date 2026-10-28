@@ -42,7 +42,7 @@ deterministic primitives (`IRandomSource`/`Xoshiro128`/`RandomStreams`,
 `Result`/`Error`), the run skeleton (`RunSession`, `SceneFlow`, `ReplayLog`) and a
 serialization probe. Unity ships six scenes (Boot, Title, Hub, Encounter, Result, ThaiTextSpike), a
 7-probe smoke suite, the page bridge and the Web build pipeline. `dotnet` carries **124** xUnit cases; Unity
-carries **30** EditMode and **6** PlayMode cases; Playwright has **4** tests in
+carries **32** EditMode and **6** PlayMode cases; Playwright has **4** tests in
 three specs (`smoke`, `title`, `loop`).
 
 **Engine lock:** Unity **`6000.3.9f1`** (revision `7a9955a4f2fa`), Unity Personal

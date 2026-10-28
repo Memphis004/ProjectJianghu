@@ -75,7 +75,7 @@ Cold (first run after a reboot, or after a clean output tree) the data steps and
 `sim: determinism` pay JIT and first-read costs and Fast lands nearer two minutes;
 budget **1–3 minutes** rather than the warm number.
 
-Measured with the Editor open, the same day: `unity: EditMode` **30/30** and
+Measured with the Editor open, the same day: `unity: EditMode` **32/32** and
 `unity: PlayMode` **6/6**, with the web half NOT RUN because an Editor holding the
 project lock cannot build (`docs/template/t2-report.md` §5).
 
@@ -99,7 +99,7 @@ tests.
 | `RunSkeletonTests.cs` | `RunSession` + `SceneFlow`: atomic commands, typed refusals, replay, the run's state hash |
 | `Shared/*.cs` | `EventRing<T>` and `PrevCurBuffer<T>` — bounds, cursors, zero allocation |
 
-### Unity EditMode — `ProjectJianghu.Game.Tests.EditMode` (30 tests) → **Fast**
+### Unity EditMode — `ProjectJianghu.Game.Tests.EditMode` (32 tests) → **Fast**
 
 | Class | What it covers |
 | --- | --- |
@@ -107,6 +107,7 @@ tests.
 | `LoopScreenTests` | the placeholder screens' presenters and their localized strings through the shipped tables |
 | `WebGlBridgeTests` | the page-global names have one home per side (C# constants vs `tests/web/globals.mjs` vs the `.jslib`) |
 | `WebSizeProfilesTests` | the size profiles and the configuration they record |
+| `ShellAssetIntegrityTests` | every scene in the build list and every prefab under `Assets/Main`: no missing script, and no unassigned reference on a shell component |
 
 ### Unity PlayMode — `ProjectJianghu.Game.Tests.PlayMode` (6 tests) → **Full**
 
