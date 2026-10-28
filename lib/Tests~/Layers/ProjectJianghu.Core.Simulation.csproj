@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Compiles exactly lib/Runtime/Simulation/**; may reference Shared and Domain
+       - never UnityEngine, R3 or VContainer. -->
+
+  <PropertyGroup>
+    <AssemblyName>ProjectJianghu.Core.Simulation</AssemblyName>
+    <RootNamespace>ProjectJianghu.Core.Simulation</RootNamespace>
+    <!-- Empty by design in the template: a game adds its simulation here. -->
+    <AllowEmptyLayer>true</AllowEmptyLayer>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(LibRuntimeDir)Simulation/**/*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="ProjectJianghu.Core.Shared.csproj" />
+    <ProjectReference Include="ProjectJianghu.Core.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

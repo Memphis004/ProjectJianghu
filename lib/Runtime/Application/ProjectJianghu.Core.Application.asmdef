@@ -1,0 +1,17 @@
+{
+  "name": "ProjectJianghu.Core.Application",
+  "rootNamespace": "ProjectJianghu.Core.Application",
+  "references": [
+    "ProjectJianghu.Core.Shared",
+    "ProjectJianghu.Core.Domain"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": false,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": true
+}

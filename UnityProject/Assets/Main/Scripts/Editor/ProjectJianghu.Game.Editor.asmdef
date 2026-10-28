@@ -1,0 +1,46 @@
+{
+    "name": "ProjectJianghu.Game.Editor",
+    "rootNamespace": "ProjectJianghu.Game.Editor",
+    "references": [
+        "ProjectJianghu.Game.Infrastructure",
+        "ProjectJianghu.Game.Presentation",
+        "ProjectJianghu.Game.Battle",
+        "ProjectJianghu.Game.Camp",
+        "ProjectJianghu.Game.ResultScene",
+        "ProjectJianghu.Core.Shared",
+        "ProjectJianghu.Core.Domain",
+        "ProjectJianghu.Core.Application",
+        "ProjectJianghu.Core.Infrastructure",
+        "ProjectJianghu.Core.Contracts",
+        "ProjectJianghu.Core.Generated.Luban",
+        "ProjectJianghu.Core.Generated.Proto",
+        "Luban.Runtime",
+        "VContainer",
+        "R3.Unity",
+        "UniTask",
+        "UnityEngine.UI",
+        "Unity.TextMeshPro",
+        "Unity.TextMeshPro.Editor",
+        "Unity.RenderPipelines.Core.Runtime",
+        "Unity.RenderPipelines.Core.Editor",
+        "Unity.RenderPipelines.Universal.Runtime",
+        "Unity.RenderPipelines.Universal.Editor",
+        "Unity.InputSystem"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "R3.dll",
+        "MessagePack.dll",
+        "MessagePack.Annotations.dll",
+        "Google.Protobuf.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Compiles exactly lib/Runtime/Shared/**, as declared by
+       lib/Runtime/Shared/ProjectJianghu.Core.Shared.asmdef (no references). -->
+
+  <PropertyGroup>
+    <AssemblyName>ProjectJianghu.Core.Shared</AssemblyName>
+    <RootNamespace>ProjectJianghu.Core.Shared</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(LibRuntimeDir)Shared/**/*.cs" />
+  </ItemGroup>
+
+</Project>

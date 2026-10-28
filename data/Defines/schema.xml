@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Template static data schema.
+
+  Verified against the INSTALLED Luban 5.1.0 CLI, not guessed:
+    * `<module name="">` holds enums + beans; the table registry lives in
+      __tables__.csv with `type: "table"` (Luban 5.x supports per-file schema
+      types: XmlSchemaLoader for .xml, ExcelSchemaLoader for .csv).
+    * Enum:   <enum name="E"><var name="A" value="1"/></enum>
+    * Bean:   <bean name="B"><var name="f" type="..."/></bean>
+    * Types:  int | float | bool | string | EnumName
+              list#sep=|,Type      (CSV cell holds elements separated by '|')
+              Base#ref=TbX         (referential integrity; needs the strict flag)
+              int#(range=[a,b])    (Luban value validator)
+    * The generated namespace comes from target.topModule ("ProjectJianghu.Config").
+
+  The template keeps three tables: `tbconstant` (tuned numbers), `tblocalization`
+  (the only source of player-facing text, AGENTS rule 5) and `tbsample` (a
+  worked example of the two ways data points at other data). A game adds its own
+  beans here and its own CSV under data/tables/ — and deletes `tbsample` once it
+  has a table of its own.
+
+  Balance NUMBERS live in the CSV tables under data/tables/, never here.
+-->
+<module name="">
+
+  <!-- ===================================================================== -->
+  <!-- Enums (stable identifiers; ints on the wire)                          -->
+  <!-- ===================================================================== -->
+
+  <enum name="Language">
+    <var name="Th" value="1"/>
+    <var name="En" value="2"/>
+  </enum>
+
+  <!-- ===================================================================== -->
+  <!-- Beans                                                                 -->
+  <!-- ===================================================================== -->
+
+  <!-- Localization: the ONLY source of player-facing text (AGENTS rule 5). -->
+  <bean name="Localization">
+    <var name="key" type="string"/>
+    <var name="th" type="string"/>
+    <var name="en" type="string"/>
+  </bean>
+
+  <!-- The singleton row (`mode: one`) of tuned numbers every build needs.
+       Add your game's own fields here and in data/tables/constant.csv. -->
+  <bean name="Constant">
+    <var name="max_hp" type="int#(range=[1,1000000])"/>
+    <var name="max_mp" type="int#(range=[0,1000000])"/>
+    <var name="move_speed" type="float"/>
+    <var name="pickup_radius" type="float"/>
+  </bean>
+
+  <!-- A worked example, and the only table a game is expected to delete.
+
+       It demonstrates the two ways one table points at another, because the
+       difference decides who reports a broken pointer:
+
+         name_key  string#ref=TbLocalization  a REQUIRED reference. The strict
+                   validator rejects a dangling cell during tools/gen.ps1, before
+                   any .bytes exist (fixture: `missing-ref`).
+                   (An XML comment may not contain a double dash, which is why
+                   the flag is named in prose here and spelled out in
+                   tools/gen.ps1.)
+         note_key  plain string              an OPTIONAL reference. Luban cannot
+                   express "if set, it must exist" - an empty cell is a legal
+                   ref - so the rule lives in Data.Validator and fires over the
+                   generated tables (fixture: `missing-note-key`).
+
+       A game copies whichever of the two its own columns need. -->
+  <bean name="Sample">
+    <var name="id" type="string"/>
+    <var name="name_key" type="string#ref=TbLocalization"/>
+    <var name="value" type="int#(range=[0,1000000])"/>
+    <var name="note_key" type="string"/>
+  </bean>
+
+</module>

@@ -1,0 +1,43 @@
+{
+    "name": "ProjectJianghu.Game.Tests.PlayMode",
+    "rootNamespace": "ProjectJianghu.Game.Tests.PlayMode",
+    "references": [
+        "ProjectJianghu.Game.Infrastructure",
+        "ProjectJianghu.Game.Presentation",
+        "ProjectJianghu.Game.ResultScene",
+        "Unity.InputSystem",
+        "Unity.InputSystem.TestFramework",
+        "ProjectJianghu.Core.Simulation",
+        "ProjectJianghu.Core.Shared",
+        "ProjectJianghu.Core.Domain",
+        "ProjectJianghu.Core.Application",
+        "ProjectJianghu.Core.Infrastructure",
+        "ProjectJianghu.Core.Contracts",
+        "ProjectJianghu.Core.Generated.Luban",
+        "ProjectJianghu.Core.Generated.Proto",
+        "Luban.Runtime",
+        "VContainer",
+        "R3.Unity",
+        "UniTask",
+        "UnityEngine.UI",
+        "Unity.TextMeshPro",
+        "UnityEngine.TestRunner"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll",
+        "R3.dll",
+        "MessagePack.dll",
+        "MessagePack.Annotations.dll",
+        "Google.Protobuf.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

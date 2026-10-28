@@ -1,0 +1,50 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    xUnit tests for the Core rule engine. Runs with `dotnet test`, outside Unity.
+    References every layer so the architecture guard tests can load the built
+    assemblies and inspect what they reference.
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <AssemblyName>ProjectJianghu.Core.Tests</AssemblyName>
+    <RootNamespace>ProjectJianghu.Core.Tests</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <!-- This project owns its own sources (lib/Tests~/Core.Tests/). -->
+    <EnableDefaultCompileItems>true</EnableDefaultCompileItems>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+    <!-- Line coverage, so "coverage of the bag rules" is a measurement and not a claim.
+         Running `dotnet test` with the XPlat Code Coverage collector writes a Cobertura
+         report; the Stage 05 acceptance criterion reads it (docs/stages/05-report.md).
+         Test-only. -->
+    <PackageReference Include="coverlet.collector" Version="6.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Layers\ProjectJianghu.Core.Shared.csproj" />
+    <ProjectReference Include="..\Layers\ProjectJianghu.Core.Domain.csproj" />
+    <ProjectReference Include="..\Layers\ProjectJianghu.Core.Application.csproj" />
+    <ProjectReference Include="..\Layers\ProjectJianghu.Core.Simulation.csproj" />
+    <ProjectReference Include="..\Layers\ProjectJianghu.Core.Infrastructure.csproj" />
+    <ProjectReference Include="..\Layers\ProjectJianghu.Core.Contracts.csproj" />
+
+    <!-- Generated code + its runtime, so the guard tests can load the built
+         assemblies and prove Domain/Application/Simulation never reference them. -->
+    <ProjectReference Include="..\Layers\Luban.Runtime.csproj" />
+    <ProjectReference Include="..\Layers\ProjectJianghu.Core.Generated.Luban.csproj" />
+    <ProjectReference Include="..\Layers\ProjectJianghu.Core.Generated.Proto.csproj" />
+
+    <!-- The data validator is an Exe, and its rule set is referenced as a
+         library here on purpose: tools/validate-data.ps1 and these tests then
+         run ONE implementation of every rule, so a rule can never pass in CI
+         and fail in the pipeline (or the reverse). -->
+    <ProjectReference Include="..\Data.Validator\ProjectJianghu.Data.Validator.csproj" />
+  </ItemGroup>
+
+</Project>

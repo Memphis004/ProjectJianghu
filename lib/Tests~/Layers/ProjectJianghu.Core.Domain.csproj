@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Compiles exactly lib/Runtime/Domain/** and may reference Shared only.
+       A wrong-direction reference is a compile error here (and in Unity). -->
+
+  <PropertyGroup>
+    <AssemblyName>ProjectJianghu.Core.Domain</AssemblyName>
+    <RootNamespace>ProjectJianghu.Core.Domain</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(LibRuntimeDir)Domain/**/*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="ProjectJianghu.Core.Shared.csproj" />
+  </ItemGroup>
+
+</Project>

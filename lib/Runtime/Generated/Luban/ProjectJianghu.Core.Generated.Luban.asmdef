@@ -1,0 +1,16 @@
+{
+  "name": "ProjectJianghu.Core.Generated.Luban",
+  "rootNamespace": "ProjectJianghu.Config",
+  "references": [
+    "Luban.Runtime"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": false,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": true
+}

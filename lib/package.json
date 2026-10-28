@@ -1,0 +1,17 @@
+{
+  "name": "com.projectjianghu.core",
+  "version": "0.1.0",
+  "displayName": "ProjectJianghu Core",
+  "description": "ProjectJianghu rule engine: Shared, Domain, Application, Simulation, Infrastructure and Contracts layers. Engine-free; testable with `dotnet test` (see lib/Tests~).",
+  "unity": "6000.3",
+  "author": {
+    "name": "ProjectJianghu",
+    "url": "https://github.com/Holdur/ProjectJianghu"
+  },
+  "keywords": [
+    "projectjianghu",
+    "core",
+    "domain"
+  ],
+  "dependencies": {}
+}

@@ -1,0 +1,17 @@
+{
+  "name": "ProjectJianghu.Core.Contracts",
+  "rootNamespace": "ProjectJianghu.Core.Contracts",
+  "references": [],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": true,
+  "precompiledReferences": [
+    "MessagePack.dll",
+    "MessagePack.Annotations.dll"
+  ],
+  "autoReferenced": false,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": true
+}

@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Compiles exactly lib/Runtime/Infrastructure/**: the implementations of the
+       Application/Shared ports. Engine-free, as the architecture requires. -->
+
+  <PropertyGroup>
+    <AssemblyName>ProjectJianghu.Core.Infrastructure</AssemblyName>
+    <RootNamespace>ProjectJianghu.Core.Infrastructure</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(LibRuntimeDir)Infrastructure/**/*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="ProjectJianghu.Core.Shared.csproj" />
+    <ProjectReference Include="ProjectJianghu.Core.Domain.csproj" />
+    <ProjectReference Include="ProjectJianghu.Core.Application.csproj" />
+    <!-- The save DTOs. The GDD says Contracts is reached "through an adapter in
+         Infrastructure", which is what MessagePackBackpackSnapshotCodec is (Stage 05). -->
+    <ProjectReference Include="ProjectJianghu.Core.Contracts.csproj" />
+    <!-- The config adapter is the ONLY consumer of generated rows (ADR 0006). -->
+    <ProjectReference Include="ProjectJianghu.Core.Generated.Luban.csproj" />
+    <!-- The generated Tables ctor takes a Func<string, ByteBuf>, so the adapter
+         needs the vendored reader types too. -->
+    <ProjectReference Include="Luban.Runtime.csproj" />
+  </ItemGroup>
+
+</Project>

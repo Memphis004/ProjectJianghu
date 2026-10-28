@@ -1,0 +1,36 @@
+{
+    "name": "ProjectJianghu.Game.ResultScene",
+    "rootNamespace": "ProjectJianghu.Game.ResultScene",
+    "references": [
+        "ProjectJianghu.Game.Infrastructure",
+        "ProjectJianghu.Game.Presentation",
+        "ProjectJianghu.Core.Shared",
+        "ProjectJianghu.Core.Domain",
+        "ProjectJianghu.Core.Application",
+        "ProjectJianghu.Core.Infrastructure",
+        "ProjectJianghu.Core.Contracts",
+        "ProjectJianghu.Core.Generated.Luban",
+        "ProjectJianghu.Core.Generated.Proto",
+        "Luban.Runtime",
+        "VContainer",
+        "R3.Unity",
+        "UniTask",
+        "UnityEngine.UI",
+        "Unity.TextMeshPro",
+        "Unity.InputSystem"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "R3.dll",
+        "MessagePack.dll",
+        "MessagePack.Annotations.dll",
+        "Google.Protobuf.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

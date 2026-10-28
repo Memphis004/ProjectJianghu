@@ -1,0 +1,57 @@
+# Stage log — the template's own steps
+
+A three-line entry per step: what was done, what it measured, what comes next. The
+full report for each step is in [`../docs/template/`](../docs/template/); a game built
+from the template keeps the same shape under [`../docs/stages/`](../docs/stages/),
+starting at 01 and using [`../docs/stages/_TEMPLATE.md`](../docs/stages/_TEMPLATE.md).
+
+| Step | Landed | What it added | Report |
+| --- | --- | --- | --- |
+| T0 | 2026-10-18 | classified every file under `lib/`, `UnityProject/Assets/`, `data/`, `proto/`, `tools/`, `tests/web/`, `docs/`, `llmwiki/` as KEEP / GENERALIZE / DROP / MOVE / REGEN, with the cut order and the open user decisions | [`inventory.md`](../docs/template/inventory.md) |
+| T1 | 2026-10-18 | engine-free half of the cut (game rules, ECS engine and the game's save gone; `Application/Run` skeleton + `SceneFlow`; config down to two tables; Sim reduced to one streams mode), then the Unity shell (game screens, scenes, editors and their suites removed; Hub ⇄ Encounter placeholders added; every scene rebuilt through the Editor API), then the tools/web/docs follow-through | [`t1-report.md`](../docs/template/t1-report.md) |
+| T2 | 2026-10-18 | data pipeline: `sample` table added so both reference kinds (`#ref` at generate time, optional key at validation time) are exercised; `proto/app.proto` down to `CheckpointProbe` + `SaveHeader`; validator +4 rules and fixtures 2 → 6; `llmwiki/systems/data-schema.md` rewritten, the old one kept as an example | [`t2-report.md`](../docs/template/t2-report.md) |
+| T4 | 2026-10-18 | `tools/rename.ps1` (six spellings across content, file names and folder names; `.meta` kept with its file; `-DryRun`, idempotent, `-PatchFile`), rehearsed end to end on a throwaway copy — 201 files/833 replacements, 46 names, `verify-generated` PASS 9, EditMode 30/30, PlayMode 6/6, WebGL + 4 Playwright tests, first import 2 min 4 s; `docs/template/ORIGIN.md` added as the one file the rename leaves alone | [`rename-rehearsal.md`](../docs/template/rename-rehearsal.md) · [`t4-report.md`](../docs/template/t4-report.md) |
+| T3 | 2026-10-18 | docs and knowledge: AGENTS layer list and ADR numbering (template 0001–0099, game 0100+), `knowledge.md` restarted around T0–T5 with a table of every `tools/` command, architecture + test-suite docs rewritten for the template, the game's ADRs/systems/gotchas moved to `docs/template/examples/`, thirteen general gotchas added, `docs/gdd` and the game's stage reports deleted, `docs/template/README.md` and `tools/check-links.mjs` added | [`t3-report.md`](../docs/template/t3-report.md) |
+| T5 | 2026-10-18 | verification pass: every gate in order with the Editor closed (doctor → gen → verify-generated → validate-data → check-fixtures → check-links → Full → Release build → Development build → Playwright) and the Unity half with it open (EditMode 30/30, PlayMode 6/6); `docs/template/baseline.md` records the Release payload 60.50 MiB raw / 18.04 MiB gzip / 12.45 MiB Brotli, the Development comparison, 2,877 ms to the Title screen, the per-suite test counts and the tool versions; `docs/template/CHANGELOG.md` starts at `template-v1` from `survive-template-base` `c58373e`; three defects fixed (doctor required the deleted `docs/gdd`; a live doc linked git-ignored `artifacts/`, and `check-links` now requires tracked targets; `rename.ps1` rewrote a worktree's `.git` file) | [`t5-report.md`](../docs/template/t5-report.md) · [`baseline.md`](../docs/template/baseline.md) |
+
+## Notes carried forward
+
+These are the lessons that survived the cut and are not owned by any one step. Each
+is written up where it can be found again:
+
+- **A test run can report the previous assembly's results.** A compile error in the
+  test assembly makes `run_tests` answer `success: true` with the old pass count.
+  Check that the test you added is in the payload, or that `compilationFailed` is
+  false. [`gotchas/stale-test-assembly.md`](gotchas/stale-test-assembly.md).
+- **A green Editor run is not evidence about the player.** Two defects (stripped DI
+  constructors, emptied font tables) were invisible to Mono-based tests and only a
+  real WebGL build exposed them — `tests/web/` is the gate for anything IL2CPP-, AOT-
+  or asset-serialization-sensitive. [`gotchas/il2cpp-di-and-reflection.md`](gotchas/il2cpp-di-and-reflection.md),
+  [`gotchas/tmp-font-assets-in-builds.md`](gotchas/tmp-font-assets-in-builds.md).
+- **One Full run cannot cover everything.** Unity tests need the Editor open; the
+  WebGL build needs it closed. The gate is two runs, each with its own
+  `test-summary.md`. [`../docs/testing/test-suites.md`](../docs/testing/test-suites.md) §4.
+- **Determinism is scoped.** Same runtime, same machine only — never across browsers
+  or CPUs. [`gotchas/determinism-scope.md`](gotchas/determinism-scope.md).
+- **A measurement names its configuration.** A size or timing claim is only valid
+  under the build settings recorded in `build-report.json`; a GUI build click silently
+  changes them. [`gotchas/gui-build-rewrites-settings.md`](gotchas/gui-build-rewrites-settings.md).
+- **`data/` is not live until `gen.ps1` runs.** The player and the tests read
+  generated bytes, and `verify-generated` is what proves they match.
+  [`gotchas/data-edit-needs-gen.md`](gotchas/data-edit-needs-gen.md).
+- **A scene reference is scene data.** It compiles whether or not it is assigned; only
+  a PlayMode test that reads the loaded scene can tell.
+  [`gotchas/scene-reference-not-compiled.md`](gotchas/scene-reference-not-compiled.md).
+- **The game's bulk PlayMode run failed on ambient Input System log-asserts** while
+  every class passed alone (game era, 20/40 with no failed assertion of ours). The
+  template's assembly is small and green; if that changes, run the class on its own
+  before believing a regression.
+  [`../docs/testing/test-suites.md`](../docs/testing/test-suites.md) §7.
+- **"This folder is generated" is a claim about files, not a folder.** The rename tool
+  skipped `lib/Runtime/Generated/` because `gen.ps1` owns it — but `gen.ps1` owns the
+  `*.cs` there, and the two `.asmdef` files are hand-written, so the assembly kept the
+  old name while every reference to it changed. Found by the T4 rehearsal, in a
+  throwaway copy. [`gotchas/rename-generator-folder-hand-written.md`](gotchas/rename-generator-folder-hand-written.md).
+- **The game's stage reports and ADRs are gone from the live tree**, by design: the
+  reasoning that still matters is in `docs/template/examples/`, and the history is in
+  the game repo (tag `survive-stage-10`). A template document must not link there.

@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Headless harness: the Stage 01 fixed-tick / stream fingerprint, the Stage 07 bot
+    simulation (a kiting bot playing complete runs) and the Stage 07 load benchmark.
+    No Unity, no rendering: the bot drives the run and the battle through their own
+    ports, exactly as the game does.
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>ProjectJianghu.Sim</AssemblyName>
+    <RootNamespace>ProjectJianghu.Sim</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <EnableDefaultCompileItems>true</EnableDefaultCompileItems>
+    <!-- A console host may print; nothing here is a library. -->
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Layers\ProjectJianghu.Core.Shared.csproj" />
+    <ProjectReference Include="..\Layers\ProjectJianghu.Core.Domain.csproj" />
+    <ProjectReference Include="..\Layers\ProjectJianghu.Core.Application.csproj" />
+    <ProjectReference Include="..\Layers\ProjectJianghu.Core.Simulation.csproj" />
+    <ProjectReference Include="..\Layers\ProjectJianghu.Core.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

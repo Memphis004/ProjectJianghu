@@ -1,0 +1,21 @@
+{
+    "name": "ProjectJianghu.Game.Infrastructure",
+    "rootNamespace": "ProjectJianghu.Game.Infrastructure",
+    "references": [
+        "ProjectJianghu.Core.Shared",
+        "ProjectJianghu.Core.Domain",
+        "ProjectJianghu.Core.Application",
+        "ProjectJianghu.Core.Infrastructure",
+        "ProjectJianghu.Core.Generated.Luban",
+        "Luban.Runtime"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
