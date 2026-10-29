@@ -1,0 +1,3 @@
+##,id,power_rank,ai_profile_id,background_id,weapon_id,armor_id,accessory_ids,skill_ids,attributes,name_key,desc_key
+,fighter.rival_01,3,ai.melee,background.road_boxer,gear.iron_sword,,gear.jade_pendant,skill.falling_rain_slash|skill.cloud_step,Fist|20|Toughness|18|Sinew|15,fighter.rival_01.name,
+,fighter.rival_02,4,ai.gone,,gear.iron_sword,,,,Fist|24|Toughness|20|Sinew|18|NeiliPower|16,fighter.rival_02.name,

@@ -18,7 +18,7 @@ docs.
 
 | System | Note | Status |
 | --- | --- | --- |
-| Static data pipeline (Luban 5.1, protoc, the three tables, the validator) | [`systems/data-schema.md`](systems/data-schema.md) | done |
+| Static data pipeline (Luban 5.1, protoc, the fourteen tables, the validator) | [`systems/data-schema.md`](systems/data-schema.md) | done |
 | The loop and the three scopes (App / Run / Scene), `SceneLoader`, the published screens | [`systems/loop-and-scopes.md`](systems/loop-and-scopes.md) | done |
 | Unity shell (scenes, DI, the 7-probe smoke suite, page globals, the Web build) | [`systems/unity-shell.md`](systems/unity-shell.md) | done |
 | Core primitives (RNG, clock, ticker, `Result`, `EventRing<T>`, `PrevCurBuffer<T>`) | [`../docs/architecture/overview.md`](../docs/architecture/overview.md), [ADR 0004](../docs/adr/0004-dotnet-layer-enforcement.md), [ADR 0024](../docs/adr/0024-shared-generic-buffers.md) | done |

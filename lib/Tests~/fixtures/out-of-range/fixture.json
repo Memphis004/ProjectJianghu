@@ -1,6 +1,6 @@
 {
   "name": "out-of-range",
   "stage": "luban",
-  "why": "constant.max_hp is 0 and the schema requires range [1,1000000]",
+  "why": "constant.atb_full is 0 and the schema requires range [1,1000000]",
   "expectedCodes": []
 }

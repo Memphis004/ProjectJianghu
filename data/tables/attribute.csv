@@ -1,0 +1,4 @@
+##,id,attribute,category,display_only,sort_order,name_key,desc_key
+,attribute.toughness,Toughness,Body,false,10,attr.toughness.name,attr.toughness.desc
+,attribute.sinew,Sinew,Body,false,20,attr.sinew.name,
+,attribute.neili_power,NeiliPower,Neili,false,30,attr.neili_power.name,

@@ -12,42 +12,48 @@ using Luban;
 
 namespace ProjectJianghu.Config
 {
-public sealed partial class Sample : Luban.BeanBase
+public sealed partial class RewardPoolDef : Luban.BeanBase
 {
-    public Sample(ByteBuf _buf) 
+    public RewardPoolDef(ByteBuf _buf) 
     {
         Id = _buf.ReadString();
-        NameKey = _buf.ReadString();
-        NameKey_Ref = null;
-        Value = _buf.ReadInt();
+        RoundMin = _buf.ReadInt();
+        RoundMax = _buf.ReadInt();
+        Weight = _buf.ReadInt();
+        GearId = _buf.ReadString();
+        SkillId = _buf.ReadString();
         NoteKey = _buf.ReadString();
     }
 
-    public static Sample DeserializeSample(ByteBuf _buf)
+    public static RewardPoolDef DeserializeRewardPoolDef(ByteBuf _buf)
     {
-        return new Sample(_buf);
+        return new RewardPoolDef(_buf);
     }
 
     public readonly string Id;
-    public readonly string NameKey;
-    public Localization NameKey_Ref;
-    public readonly int Value;
+    public readonly int RoundMin;
+    public readonly int RoundMax;
+    public readonly int Weight;
+    public readonly string GearId;
+    public readonly string SkillId;
     public readonly string NoteKey;
    
-    public const int __ID__ = -1825807926;
+    public const int __ID__ = 457901050;
     public override int GetTypeId() => __ID__;
 
     public  void ResolveRef(Tables tables)
     {
-        NameKey_Ref = tables.TbLocalization.GetOrDefault(NameKey);
     }
 
     public override string ToString()
     {
         return "{ "
         + "id:" + Id + ","
-        + "nameKey:" + NameKey + ","
-        + "value:" + Value + ","
+        + "roundMin:" + RoundMin + ","
+        + "roundMax:" + RoundMax + ","
+        + "weight:" + Weight + ","
+        + "gearId:" + GearId + ","
+        + "skillId:" + SkillId + ","
         + "noteKey:" + NoteKey + ","
         + "}";
     }

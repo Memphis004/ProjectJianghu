@@ -40,7 +40,7 @@ DoD: check-links ผ่าน, test.ps1 -Suite Fast ผ่าน, commit "stage-
 
 -----------
 
-## Stage 01
+## Stage 01: Data Pipeline Re-baseline
 
 ทำ Stage 01 เท่านั้น: ปรับ Luban/protoc ให้เป็นของเกมใหม่
 งาน:

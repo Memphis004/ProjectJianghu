@@ -18,6 +18,10 @@ translator can change them without a code change.
 
 ## 1. ค่าสถานะ — the five categories (`EAttrCategory`)
 
+> ค่าตัวเลขของทุก enum เป็น **stable identifier** (อยู่ใน replay และ save) และแบ่งบล็อกไว้:
+> Martial 1–9, Neili 10–19, Body 20–29, Mind 30–39, Meridian 40–49, LifeSkill 50–69
+> ([ADR 0103](../docs/adr/0103-data-schema-encoding-and-stable-identifiers.md))
+
 | ไทย | Code name | หมายเหตุ |
 | --- | --- | --- |
 | วรยุทธ์ | `Martial` | ความชำนาญอาวุธ; prototype ใช้ 4 จาก 7 ค่า |
@@ -137,15 +141,16 @@ translator can change them without a code change.
 | การเติบโต | `StatGrowth` | API กลาง (`ApplyMastery`) เตรียมให้ sandbox |
 | ช่องวิชา | `SkillSlot` | 0–3 ภายนอก (`MaxSkillSlots = 4`) |
 | ชุดสวมใส่ | `Loadout` | แบบ A: 4+1+1 วิชา, อาวุธ 1, ชุด 1, เครื่องประดับ 2 |
-| ประเภทอาวุธ | `EWeaponType` | `Fist`, `Sword`, `Saber`, `HiddenWeapon` |
+| ประเภทอาวุธ | `EWeaponType` | `None` (=0, ไม่ต้องถืออาวุธ), `Fist`, `Sword`, `Saber`, `HiddenWeapon` |
 | ถุงมือ | `Gauntlet` | gear ที่ `WeaponType = Fist` (มือเปล่าก็ใช้วิชาหมัดได้) |
 | อาวุธ | `Weapon` / `GearSlot.Weapon` | กำหนดวิชาที่ใช้ได้ + พลังพื้นฐาน |
 | ชุดเกราะ | `Armor` / `GearSlot.Armor` | ป้องกันและ HP |
 | เครื่องประดับ | `Accessory` / `GearSlot.Accessory` | 2 ช่อง ค่าสถานะย่อย |
 | คัมภีร์วิชา | skill manual | รางวัลชนิดหนึ่ง: ปลดล็อกวิชาใหม่ |
-| โบนัสจากแหล่ง | `AttrMod` | `{ SourceId, Attribute, Value }` สำหรับ tooltip "+3 จาก …" |
+| โบนัสจากแหล่ง | `AttrMod` | `{ Attribute, Value }`; **แถวที่ถือมันคือ source** tooltip จึงอ่าน "+3 จาก <ชื่อแถวนั้น>" |
 | กองโบนัส | `ModifierStack` | รวมฐาน/วิชา/gear/ยาเม็ด โดยเก็บแหล่งไว้ |
 | พจน์สูตร | `StatTerm` | `{ Attribute, Coefficient, Min, Max }` หนึ่งพจน์ใน `stat_formula` |
+| โบนัสตามขั้นวิชา | `SkillLevelBonus` | `{ Level, Attribute, Value }` หนึ่งขั้นที่ให้ค่าสถานะ (ใน `skill.level_bonus`) |
 
 **ข้อห้าม:** ชื่อวิชา ข้อความ และ UI ของเกมอ้างอิงห้ามนำมาใช้ (AGENTS #12) วิชาทุกวิชาใน
 `data/` ต้องเป็นชื่อที่ทีมเขียนขึ้นเอง
@@ -179,7 +184,7 @@ translator can change them without a code change.
 | ด้านหลัง | backstab | โบนัสคริ (`ArenaEventFlags.Critical`/`Backstab`) |
 | ภายใน | inner | ดาเมจสายพลังภายใน (`DamageKind.Inner`) |
 | รูปพื้นที่ | `AreaShape` | `Single`, `Line`, `Cross`, `Diamond`, `Square`, `Cone` |
-| การเลือกเป้า | `SkillTargeting` | `Enemy`, `Ground`, `Self` |
+| การเลือกเป้า | `SkillTargeting` / `ESkillTarget` | `Enemy`, `Ground`, `Self` — คอลัมน์ `target` ของ `skill` |
 | เหตุผลที่คำสั่งถูกปฏิเสธ | `CommandResult` | `RejectedNotReady`, `RejectedOutOfRange`, … (ข้อความมาจาก localization) |
 | เหตุจบแมตช์ | `ArenaEndReason` | `AllEnemiesDefeated`, `TimeoutHpRatio`, `TimeoutDraw`, `Surrendered`, … |
 | ผลแมตช์ | `ArenaOutcome` | `Victory`, `Defeat`, `Draw`, `Aborted` (มองจากฝั่งผู้เล่น) |
@@ -187,6 +192,15 @@ translator can change them without a code change.
 | วิชาใหญ่ | ultimate | `SkillFlags.Ultimate` → cut-in ชื่อวิชา |
 
 ---
+
+### 4.1 AI (`EAiArchetype`)
+
+| ไทย | Code name | พฤติกรรม |
+| --- | --- | --- |
+| ประชิดตัว | `Melee` | วิ่งเข้าหาแล้วอยู่ระยะประชิด |
+| ยิงแล้วถอย | `Kiter` | เล่นระยะไกล ถอยเมื่อ HP ต่ำ |
+| ถึกพลังภายใน | `InnerTank` | รับดาเมจด้วยลมปราณ |
+| สายกระโดดหลบ | `Evader` | กระโดดหลบวงเตือน |
 
 ## 5. สถานะผิดปกติ (`EStatus`)
 

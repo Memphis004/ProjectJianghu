@@ -25,6 +25,15 @@ namespace ProjectJianghu.Core.Tests
         private static readonly (Type Domain, Type Generated)[] Pairs =
         {
             (typeof(Language), typeof(ProjectJianghu.Config.Language)),
+            (typeof(EAttrCategory), typeof(ProjectJianghu.Config.EAttrCategory)),
+            (typeof(EAttribute), typeof(ProjectJianghu.Config.EAttribute)),
+            (typeof(EWeaponType), typeof(ProjectJianghu.Config.EWeaponType)),
+            (typeof(ESkillKind), typeof(ProjectJianghu.Config.ESkillKind)),
+            (typeof(ESkillTarget), typeof(ProjectJianghu.Config.ESkillTarget)),
+            (typeof(EAreaShape), typeof(ProjectJianghu.Config.EAreaShape)),
+            (typeof(EStatus), typeof(ProjectJianghu.Config.EStatus)),
+            (typeof(EGearSlot), typeof(ProjectJianghu.Config.EGearSlot)),
+            (typeof(EAiArchetype), typeof(ProjectJianghu.Config.EAiArchetype)),
         };
 
         [Fact]
@@ -63,8 +72,9 @@ namespace ProjectJianghu.Core.Tests
         public void Every_domain_enum_under_test_still_exists()
         {
             // Guards the table above: a renamed enum must be updated here rather
-            // than silently dropped from the parity check.
-            Assert.Single(Pairs);
+            // than silently dropped from the parity check. Ten enums are declared in
+            // data/Defines/schema.xml, and every one of them is mirrored in ConfigEnums.cs.
+            Assert.Equal(10, Pairs.Length);
             Assert.All(Pairs, pair =>
             {
                 Assert.True(pair.Domain.IsEnum, pair.Domain.FullName);

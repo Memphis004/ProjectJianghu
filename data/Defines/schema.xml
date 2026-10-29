@@ -1,26 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Template static data schema.
+  Wuxia: Jianghu Rising static data schema (Stage 01).
 
   Verified against the INSTALLED Luban 5.1.0 CLI, not guessed:
     * `<module name="">` holds enums + beans; the table registry lives in
-      __tables__.csv with `type: "table"` (Luban 5.x supports per-file schema
-      types: XmlSchemaLoader for .xml, ExcelSchemaLoader for .csv).
+      __tables__.csv with `type: "table"`.
     * Enum:   <enum name="E"><var name="A" value="1"/></enum>
     * Bean:   <bean name="B"><var name="f" type="..."/></bean>
     * Types:  int | float | bool | string | EnumName
-              list#sep=|,Type      (CSV cell holds elements separated by '|')
+              list#sep=|,Type      (a CSV cell holds elements separated by '|')
               Base#ref=TbX         (referential integrity; needs the strict flag)
               int#(range=[a,b])    (Luban value validator)
-    * The generated namespace comes from target.topModule ("ProjectJianghu.Config").
 
-  The template keeps three tables: `tbconstant` (tuned numbers), `tblocalization`
-  (the only source of player-facing text, AGENTS rule 5) and `tbsample` (a
-  worked example of the two ways data points at other data). A game adds its own
-  beans here and its own CSV under data/tables/ — and deletes `tbsample` once it
-  has a table of its own.
+  Values live in the CSVs under data/tables/ and data/localization/, never here.
+  Numeric enum values are STABLE identifiers: they appear in replays and saves, so
+  a value is never renumbered. New members take the next free number in their
+  block (the blocks are kept apart on purpose: Martial 1..9, Neili 10..19,
+  Body 20..29, Mind 30..39, Meridian 40..49, LifeSkill 50..69).
 
-  Balance NUMBERS live in the CSV tables under data/tables/, never here.
+  An XML comment may not contain a double dash, which is why the list separator
+  and the ref flags above are spelled out in prose rather than shown.
+
+  Three encoding facts that cost time to discover (llmwiki/systems/data-schema.md):
+    1. A bean inside a list is written as a FLAT token stream in one quoted CSV
+       cell: `Toughness|600|0|99999999|Sinew|200|0|99999999` is two StatTerms,
+       because the list separator also separates the bean's own fields. A field
+       added to that bean therefore changes every cell that carries it.
+    2. An empty token is skipped, so a field inside a bean list cannot be left
+       blank: `A|5||B|7` shifts every following value. Optional text lives on a
+       top level column (an empty CSV cell is fine there), never in a bean list.
+    3. A ref inside a list IS checked by the strict flag, exactly like a top level one.
 -->
 <module name="">
 
@@ -33,48 +42,317 @@
     <var name="En" value="2"/>
   </enum>
 
+  <!-- The five combat categories on the radar chart, plus the display-only
+       life skills (glossary section 1). -->
+  <enum name="EAttrCategory">
+    <var name="Martial" value="1"/>
+    <var name="Neili" value="2"/>
+    <var name="Body" value="3"/>
+    <var name="Mind" value="4"/>
+    <var name="Meridian" value="5"/>
+    <var name="LifeSkill" value="6"/>
+  </enum>
+
+  <!-- Every attribute a character has. The prototype only USES four martial
+       skills (Fist, Sword, Saber, HiddenWeapon) and treats the life skills as
+       display only, but the value exists so the character sheet can show it and
+       a sandbox stage can give it a formula without renumbering anything. -->
+  <enum name="EAttribute">
+    <var name="Fist" value="1"/>
+    <var name="Sword" value="2"/>
+    <var name="Saber" value="3"/>
+    <var name="HiddenWeapon" value="4"/>
+    <var name="Finger" value="5"/>
+    <var name="Spear" value="6"/>
+    <var name="Staff" value="7"/>
+
+    <var name="NeiliPool" value="10"/>
+    <var name="NeiliFlow" value="11"/>
+    <var name="NeiliPower" value="12"/>
+    <var name="Lightness" value="13"/>
+
+    <var name="WaistPower" value="20"/>
+    <var name="LowerBody" value="21"/>
+    <var name="Toughness" value="22"/>
+    <var name="Sinew" value="23"/>
+
+    <var name="Resolve" value="30"/>
+    <var name="Focus" value="31"/>
+    <var name="Composure" value="32"/>
+    <var name="Decisiveness" value="33"/>
+    <var name="Wit" value="34"/>
+
+    <var name="DuPulse" value="40"/>
+    <var name="RenPulse" value="41"/>
+
+    <var name="Intellect" value="50"/>
+    <var name="Lore" value="51"/>
+    <var name="Virtue" value="52"/>
+    <var name="Charm" value="53"/>
+    <var name="Fortune" value="54"/>
+    <var name="KillingIntent" value="55"/>
+    <var name="Medicine" value="56"/>
+    <var name="Toxicology" value="57"/>
+    <var name="Cooking" value="58"/>
+    <var name="Wine" value="59"/>
+    <var name="Music" value="60"/>
+    <var name="Brush" value="61"/>
+  </enum>
+
+  <!-- None is 0 so an empty cell is legal: an inner or movement skill carries no
+       weapon, and so does a non weapon gear row. -->
+  <enum name="EWeaponType">
+    <var name="None" value="0"/>
+    <var name="Fist" value="1"/>
+    <var name="Sword" value="2"/>
+    <var name="Saber" value="3"/>
+    <var name="HiddenWeapon" value="4"/>
+  </enum>
+
+  <enum name="ESkillKind">
+    <var name="External" value="1"/>
+    <var name="Inner" value="2"/>
+    <var name="Movement" value="3"/>
+  </enum>
+
+  <!-- Who the caster points at. ArenaCommand always carries a target tile, so
+       Ground means "this tile, maybe empty" and Self means "the caster's tile". -->
+  <enum name="ESkillTarget">
+    <var name="Enemy" value="1"/>
+    <var name="Ground" value="2"/>
+    <var name="Self" value="3"/>
+  </enum>
+
+  <enum name="EAreaShape">
+    <var name="Single" value="1"/>
+    <var name="Line" value="2"/>
+    <var name="Cross" value="3"/>
+    <var name="Diamond" value="4"/>
+    <var name="Square" value="5"/>
+    <var name="Cone" value="6"/>
+  </enum>
+
+  <enum name="EStatus">
+    <var name="AcupointSeal" value="1"/>
+    <var name="InternalInjury" value="2"/>
+    <var name="Poison" value="3"/>
+    <var name="Stagger" value="4"/>
+  </enum>
+
+  <enum name="EGearSlot">
+    <var name="Weapon" value="1"/>
+    <var name="Armor" value="2"/>
+    <var name="Accessory" value="3"/>
+  </enum>
+
+  <enum name="EAiArchetype">
+    <var name="Melee" value="1"/>
+    <var name="Kiter" value="2"/>
+    <var name="InnerTank" value="3"/>
+    <var name="Evader" value="4"/>
+  </enum>
+
   <!-- ===================================================================== -->
   <!-- Beans                                                                 -->
   <!-- ===================================================================== -->
 
-  <!-- Localization: the ONLY source of player-facing text (AGENTS rule 5). -->
+  <!-- Localization: the ONLY source of player-facing text (AGENTS rule 11). -->
   <bean name="Localization">
     <var name="key" type="string"/>
     <var name="th" type="string"/>
     <var name="en" type="string"/>
   </bean>
 
-  <!-- The singleton row (`mode: one`) of tuned numbers every build needs.
-       Add your game's own fields here and in data/tables/constant.csv. -->
-  <bean name="Constant">
-    <var name="max_hp" type="int#(range=[1,1000000])"/>
-    <var name="max_mp" type="int#(range=[0,1000000])"/>
-    <var name="move_speed" type="float"/>
-    <var name="pickup_radius" type="float"/>
+  <!-- One attribute bonus, with the row that carries it as its source, so a
+       tooltip can say "+3 from gear.jade_pendant" without a second column. -->
+  <bean name="AttrMod">
+    <var name="attribute" type="EAttribute"/>
+    <var name="value" type="int"/>
   </bean>
 
-  <!-- A worked example, and the only table a game is expected to delete.
+  <!-- One term of a derived stat: coefficient times the attribute's value,
+       clamped to [min, max] before it is added. Integer on purpose: a value
+       that must be hashed never carries a float (AGENTS rule 5). -->
+  <bean name="StatTerm">
+    <var name="attribute" type="EAttribute"/>
+    <var name="coefficient" type="int"/>
+    <var name="min" type="int"/>
+    <var name="max" type="int"/>
+  </bean>
 
-       It demonstrates the two ways one table points at another, because the
-       difference decides who reports a broken pointer:
+  <!-- An attribute bonus a skill grants once it reaches a level. Levels 5 and 10
+       are the ones a skill is expected to put a special there; the special
+       itself is a text key on the skill's `skill_level` row, because a bean list
+       cannot carry an empty cell. -->
+  <bean name="SkillLevelBonus">
+    <var name="level" type="int#(range=[1,10])"/>
+    <var name="attribute" type="EAttribute"/>
+    <var name="value" type="int"/>
+  </bean>
 
-         name_key  string#ref=TbLocalization  a REQUIRED reference. The strict
-                   validator rejects a dangling cell during tools/gen.ps1, before
-                   any .bytes exist (fixture: `missing-ref`).
-                   (An XML comment may not contain a double dash, which is why
-                   the flag is named in prose here and spelled out in
-                   tools/gen.ps1.)
-         note_key  plain string              an OPTIONAL reference. Luban cannot
-                   express "if set, it must exist" - an empty cell is a legal
-                   ref - so the rule lives in Data.Validator and fires over the
-                   generated tables (fixture: `missing-note-key`).
+  <!-- ===================================================================== -->
+  <!-- Tables (the shape of one row each)                                    -->
+  <!-- ===================================================================== -->
 
-       A game copies whichever of the two its own columns need. -->
-  <bean name="Sample">
+  <!-- Display metadata for an attribute. The row is what a UI iterates; the
+       enum is what code switches on. `display_only` marks the life skills that
+       change no combat formula yet. -->
+  <bean name="AttributeDef">
     <var name="id" type="string"/>
+    <var name="attribute" type="EAttribute"/>
+    <var name="category" type="EAttrCategory"/>
+    <var name="display_only" type="bool"/>
+    <var name="sort_order" type="int"/>
     <var name="name_key" type="string#ref=TbLocalization"/>
-    <var name="value" type="int#(range=[0,1000000])"/>
+    <var name="desc_key" type="string"/>
+  </bean>
+
+  <!-- One derived combat stat: value = clamp(base + sum(term), clamp_min, clamp_max).
+       This table is the ONLY place a stat formula lives (AGENTS rule 6). -->
+  <bean name="StatFormulaDef">
+    <var name="id" type="string"/>
+    <var name="base_value" type="int"/>
+    <var name="terms" type="list#sep=|,StatTerm"/>
+    <var name="clamp_min" type="int"/>
+    <var name="clamp_max" type="int"/>
+    <var name="name_key" type="string#ref=TbLocalization"/>
+  </bean>
+
+  <!-- An external, inner or movement skill. atb_cost is in ATB units
+       (constant.atb_full is a full bar); ticks are 30 Hz. -->
+  <bean name="SkillDef">
+    <var name="id" type="string"/>
+    <var name="kind" type="ESkillKind"/>
+    <var name="weapon_type" type="EWeaponType"/>
+    <var name="target" type="ESkillTarget"/>
+    <var name="area_shape" type="EAreaShape"/>
+    <var name="range_min" type="int#(range=[0,32])"/>
+    <var name="range_max" type="int#(range=[0,32])"/>
+    <var name="power" type="int"/>
+    <var name="ratio_x100" type="int"/>
+    <var name="atb_cost" type="int#(range=[0,10000])"/>
+    <var name="wind_up_ticks" type="int#(range=[0,300])"/>
+    <var name="recovery_ticks" type="int#(range=[0,300])"/>
+    <var name="status_id" type="string"/>
+    <var name="status_chance_x100" type="int#(range=[0,10000])"/>
+    <var name="knockback_tiles" type="int#(range=[0,8])"/>
+    <var name="level_bonus" type="list#sep=|,SkillLevelBonus"/>
+    <var name="name_key" type="string#ref=TbLocalization"/>
+    <var name="desc_key" type="string"/>
+  </bean>
+
+  <!-- The global mastery ladder: level N needs this much mastery XP. -->
+  <bean name="SkillLevelDef">
+    <var name="id" type="string"/>
+    <var name="level" type="int#(range=[1,10])"/>
+    <var name="mastery_xp" type="int#(range=[0,10000000])"/>
+  </bean>
+
+  <bean name="GearDef">
+    <var name="id" type="string"/>
+    <var name="slot" type="EGearSlot"/>
+    <var name="weapon_type" type="EWeaponType"/>
+    <var name="power" type="int"/>
+    <var name="mods" type="list#sep=|,AttrMod"/>
+    <var name="name_key" type="string#ref=TbLocalization"/>
+    <var name="desc_key" type="string"/>
+  </bean>
+
+  <!-- 100 means "unchanged": atb_multiplier_x100 scales how fast the bar fills,
+       neili_regen_multiplier_x100 scales the inner power regeneration. -->
+  <bean name="StatusDef">
+    <var name="id" type="string"/>
+    <var name="kind" type="EStatus"/>
+    <var name="duration_ticks" type="int#(range=[1,1800])"/>
+    <var name="tick_interval_ticks" type="int#(range=[1,1800])"/>
+    <var name="damage_per_tick" type="int"/>
+    <var name="atb_multiplier_x100" type="int#(range=[0,10000])"/>
+    <var name="neili_regen_multiplier_x100" type="int#(range=[0,10000])"/>
+    <var name="name_key" type="string#ref=TbLocalization"/>
+    <var name="desc_key" type="string"/>
+  </bean>
+
+  <!-- A tournament opponent (or a template the player's own fighter copies).
+       The optional gear and skill columns are plain strings on purpose: the
+       "if set, it must exist" rule is one Data.Validator owns (an empty cell is
+       legal, so Luban cannot express it). -->
+  <bean name="FighterDef">
+    <var name="id" type="string"/>
+    <var name="power_rank" type="int#(range=[1,9])"/>
+    <var name="ai_profile_id" type="string#ref=TbAiProfile"/>
+    <var name="background_id" type="string"/>
+    <var name="weapon_id" type="string"/>
+    <var name="armor_id" type="string"/>
+    <var name="accessory_ids" type="list#sep=|,string"/>
+    <var name="skill_ids" type="list#sep=|,string"/>
+    <var name="attributes" type="list#sep=|,AttrMod"/>
+    <var name="name_key" type="string#ref=TbLocalization"/>
+    <var name="desc_key" type="string"/>
+  </bean>
+
+  <bean name="AiProfileDef">
+    <var name="id" type="string"/>
+    <var name="archetype" type="EAiArchetype"/>
+    <var name="engage_range" type="int#(range=[0,32])"/>
+    <var name="retreat_hp_x100" type="int#(range=[0,10000])"/>
+    <var name="aggression_x100" type="int#(range=[0,10000])"/>
+    <var name="decision_delay_ticks" type="int#(range=[0,300])"/>
+    <var name="name_key" type="string#ref=TbLocalization"/>
+  </bean>
+
+  <!-- A 12x12 arena is the prototype's size, but the shape is generic: `mask` is
+       one string per row, '.' walkable and '#' blocked. Data.Validator owns the
+       size rule (rows == height, each row's length == width). -->
+  <bean name="ArenaMapDef">
+    <var name="id" type="string"/>
+    <var name="width" type="int#(range=[1,32])"/>
+    <var name="height" type="int#(range=[1,32])"/>
+    <var name="mask" type="list#sep=|,string"/>
+    <var name="name_key" type="string#ref=TbLocalization"/>
+  </bean>
+
+  <bean name="TournamentDef">
+    <var name="id" type="string"/>
+    <var name="seats" type="int#(range=[2,64])"/>
+    <var name="reward_choices" type="int#(range=[1,5])"/>
+    <var name="attribute_points" type="int#(range=[0,1000])"/>
+    <var name="name_key" type="string#ref=TbLocalization"/>
+  </bean>
+
+  <!-- One weighted reward offer: a gear piece or a skill manual, in a round band.
+       Exactly one of the two is set, which is a validator rule. -->
+  <bean name="RewardPoolDef">
+    <var name="id" type="string"/>
+    <var name="round_min" type="int#(range=[1,32])"/>
+    <var name="round_max" type="int#(range=[1,32])"/>
+    <var name="weight" type="int#(range=[0,1000])"/>
+    <var name="gear_id" type="string"/>
+    <var name="skill_id" type="string"/>
     <var name="note_key" type="string"/>
+  </bean>
+
+  <bean name="BackgroundDef">
+    <var name="id" type="string"/>
+    <var name="attribute_points" type="int#(range=[0,1000])"/>
+    <var name="attributes" type="list#sep=|,AttrMod"/>
+    <var name="start_skill_ids" type="list#sep=|,string"/>
+    <var name="start_gear_ids" type="list#sep=|,string"/>
+    <var name="name_key" type="string#ref=TbLocalization"/>
+    <var name="desc_key" type="string"/>
+  </bean>
+
+  <!-- The singleton row of tuned numbers every build needs. Ticks are 30 Hz. -->
+  <bean name="ConstantDef">
+    <var name="atb_full" type="int#(range=[1,1000000])"/>
+    <var name="match_ticks" type="int#(range=[30,108000])"/>
+    <var name="move_atb_cost" type="int#(range=[0,1000000])"/>
+    <var name="jump_atb_cost" type="int#(range=[0,1000000])"/>
+    <var name="meditate_atb_cost" type="int#(range=[0,1000000])"/>
+    <var name="jump_cooldown_ticks" type="int#(range=[0,1800])"/>
+    <var name="meditate_neili_restore" type="int#(range=[0,1000000])"/>
+    <var name="damage_mitigation_k" type="int#(range=[1,1000000])"/>
+    <var name="max_mastery_level" type="int#(range=[1,10])"/>
+    <var name="starting_attribute_points" type="int#(range=[0,1000])"/>
   </bean>
 
 </module>

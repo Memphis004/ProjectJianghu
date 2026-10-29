@@ -16,14 +16,15 @@
       * data/ -> Luban (strict, via tools/gen.ps1) owns the SCHEMA: column names,
         types, unique primary keys, `#ref` targets and `#(range=)` bounds.
       * the generated .bytes -> ProjectJianghu.Data.Validator owns the rules that
-        span tables, which is mostly everything Luban cannot check because an
-        empty cell is legitimate there. The template keeps a small set, one per
-        mechanism a game will copy: a duplicated or blank key (the table index
-        hides it from the loader), a localization row with one language missing,
-        a data row pointing at a localization key that does not exist, and a
-        tuned number that is zero or negative where the code divides by it.
-        The live list is ConfigValidator.cs - a game adds its own rules next to
-        those, each with a fixture under lib/Tests~/fixtures/.
+        span rows, which is everything Luban cannot check because an empty cell
+        is legitimate there: an optional or list reference naming a row that
+        does not exist, a StatTerm on an attribute with no attribute row, an
+        arena mask that does not match its declared size, a reward offer naming
+        both or neither source, a tuned number a division would break on, and
+        the localization rules (blank key, duplicate key, one language missing,
+        an optional text key that does not exist).
+        The live list is ConfigValidator.cs - a new rule goes there with a case
+        in ConfigRulesTests.cs and a fixture under lib/Tests~/fixtures/.
 
     Exit code 0 = clean, 1 = violations, 2 = could not run (missing toolchain).
 

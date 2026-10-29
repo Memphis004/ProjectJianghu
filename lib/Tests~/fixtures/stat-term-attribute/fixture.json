@@ -1,0 +1,8 @@
+{
+  "name": "stat-term-attribute",
+  "stage": "semantic",
+  "why": "stat.max_hp has a StatTerm on Saber, and no attribute row carries Saber, so the formula names an attribute the character sheet cannot explain",
+  "expectedCodes": [
+    "stat_formula.term_attribute_unknown"
+  ]
+}

@@ -113,10 +113,12 @@ Enforcement:
    Domain / Application / Simulation      (plain domain types, no generated code)
 ```
 
-The template ships three tables: `constant` (one singleton row of tuned numbers),
-`localization` (every player-facing string, keyed) and `sample` (a deliberately
-disposable table that exercises both reference mechanisms — a required `#ref` and an
-optional localization key). Rules and conventions:
+The game ships fourteen tables (Stage 01): `constant` (one singleton row of tuned
+numbers), `localization` (every player-facing string, keyed) and twelve keyed content
+tables — `attribute`, `stat_formula`, `skill`, `skill_level`, `gear`, `status`, `fighter`,
+`ai_profile`, `arena_map`, `tournament`, `reward_pool`, `background`. A required reference
+is a schema `#ref`; an optional one is a `Data.Validator` rule, because an empty cell is a
+legal ref. Rules and conventions:
 [`llmwiki/systems/data-schema.md`](../../llmwiki/systems/data-schema.md).
 Decisions: [ADR 0005](../adr/0005-data-pipeline-shape-and-format.md),
 [ADR 0006](../adr/0006-config-port-and-generated-code-isolation.md).
@@ -213,11 +215,11 @@ engine (EcsLite or otherwise) adds it there, behind `Application`'s ports.
 | Area | What the template ships |
 | --- | --- |
 | `Shared` | `IRandomSource` / `Xoshiro128` / `RandomStreams`, `IClock` / `SystemClock`, `FixedTicker`, `EventRing<T>`, `PrevCurBuffer<T>`, `Result` / `Error` |
-| `Domain` | the config types (`IGameConfig`, `ConstantConfig`, `LocalizationEntry`, `Language`) |
+| `Domain` | the config types (`IGameConfig`, the ten enums, `AttrMod`/`StatTerm`/`SkillLevelBonus`, one row type per table) |
 | `Application` | `RunSession` + `SceneFlow` + `ReplayLog`, `SceneId`, `LocalizationService` |
 | `Infrastructure` | `LubanGameConfig` (the `IGameConfig` adapter), `SystemClock` |
 | `Contracts` | `CheckpointProbe` and its codec — the MessagePack source-generator probe |
-| data | three tables, the schema, six broken-data fixtures |
+| data | fourteen tables, the schema, eight broken-data fixtures |
 | Unity | seven scenes, the composition root, the three scopes, the 7-probe smoke suite, the page bridge, the Web build pipeline |
 | browser | `tests/web/{smoke,title,loop}.spec.ts` against a real Development build |
 

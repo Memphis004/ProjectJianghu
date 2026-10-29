@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using ProjectJianghu.Core.Domain.Config;
@@ -9,51 +9,91 @@ using Xunit;
 namespace ProjectJianghu.Core.Tests
 {
     /// <summary>
-    /// The generated code compiles and the harness reads the real tables — plus "no stub that
+    /// The generated code compiles and the harness reads the real tables, plus "no stub that
     /// returns a constant instead of real config", which is why every assertion below is on a
     /// value that can only come from <c>lib/Tests~/data</c>.
     /// </summary>
     public sealed class ConfigLoadTests
     {
         [Fact]
-        public void Sample_tables_load_and_expose_every_row()
+        public void Every_table_loads_and_exposes_its_rows()
         {
             LubanGameConfig config = ConfigFixture.Load();
 
             Assert.NotEmpty(config.Localization);
             Assert.Equal(config.Localization.Count, config.Localization.Select(entry => entry.Key).Distinct().Count());
 
-            // Values read from data/tables/constant.csv; a stub could not produce them.
-            Assert.Equal(100, config.Constant.MaxHp);
-            Assert.Equal(50, config.Constant.MaxMp);
-            Assert.Equal(4.0f, config.Constant.MoveSpeed, 3);
-            Assert.Equal(1.5f, config.Constant.PickupRadius, 3);
+            // One authored row per table is enough for the skeleton; Stage 04 fills the content.
+            Assert.NotEmpty(config.Attributes);
+            Assert.NotEmpty(config.StatFormulas);
+            Assert.NotEmpty(config.Skills);
+            Assert.NotEmpty(config.SkillLevels);
+            Assert.NotEmpty(config.Gear);
+            Assert.NotEmpty(config.Statuses);
+            Assert.NotEmpty(config.Fighters);
+            Assert.NotEmpty(config.AiProfiles);
+            Assert.NotEmpty(config.ArenaMaps);
+            Assert.NotEmpty(config.Tournaments);
+            Assert.NotEmpty(config.RewardPools);
+            Assert.NotEmpty(config.Backgrounds);
         }
 
         [Fact]
-        public void The_sample_table_loads_with_its_reference_and_its_optional_cell()
+        public void The_constant_row_carries_the_prototype_numbers()
+        {
+            // Values read from data/tables/constant.csv; a stub could not produce them.
+            ConstantConfig constant = ConfigFixture.Load().Constant;
+
+            Assert.Equal(10000, constant.AtbFull);
+            Assert.Equal(3600, constant.MatchTicks);
+            Assert.Equal(5000, constant.JumpAtbCost);
+            Assert.Equal(1000, constant.DamageMitigationK);
+            Assert.Equal(10, constant.MaxMasteryLevel);
+        }
+
+        [Fact]
+        public void A_stat_formula_keeps_its_terms_in_data_order()
+        {
+            StatFormulaConfig formula = ConfigFixture.Load().StatFormulas.Single(row => row.Id == "stat.max_hp");
+
+            Assert.Equal(30000, formula.BaseValue);
+            Assert.Equal(2, formula.Terms.Count);
+            Assert.Equal(EAttribute.Toughness, formula.Terms[0].Attribute);
+            Assert.Equal(600, formula.Terms[0].Coefficient);
+            Assert.Equal(EAttribute.Sinew, formula.Terms[1].Attribute);
+            Assert.Equal(200, formula.Terms[1].Coefficient);
+            Assert.True(formula.ClampMax > formula.ClampMin);
+        }
+
+        [Fact]
+        public void A_skill_keeps_its_level_bonuses_and_its_optional_cells_empty()
         {
             IGameConfig config = ConfigFixture.Load();
 
-            Assert.Equal(3, config.Samples.Count);
+            SkillConfig external = config.Skills.Single(row => row.Id == "skill.falling_rain_slash");
+            Assert.Equal(ESkillKind.External, external.Kind);
+            Assert.Equal(EWeaponType.Sword, external.WeaponType);
+            Assert.Equal(ESkillTarget.Enemy, external.Target);
+            Assert.Equal(2, external.LevelBonus.Count);
+            Assert.Equal(10, external.LevelBonus[1].Level);
 
-            SampleEntry first = config.Samples[0];
-            Assert.Equal("sample.alpha", first.Id);
-            Assert.Equal("ui.sample.alpha", first.NameKey);
-            Assert.Equal(10, first.Value);
+            // An empty optional cell reads back as an empty string, never as an invented default:
+            // "this skill applies no status" and "this gear piece has no blurb" are values the data
+            // can carry.
+            Assert.Equal(string.Empty, external.StatusId);
+            Assert.Equal(string.Empty, config.Gear.Single(row => row.Id == "gear.iron_sword").DescKey);
+        }
 
-            // An empty optional cell reads back as an empty string, not as a default invented here:
-            // "this row has no note" is a value the data can carry.
-            Assert.Equal(string.Empty, first.NoteKey);
-            Assert.Equal("ui.sample.note", config.Samples[1].NoteKey);
+        [Fact]
+        public void An_arena_mask_reads_back_one_string_per_row()
+        {
+            ArenaMapConfig map = ConfigFixture.Load().ArenaMaps.Single(row => row.Id == "map.open_court");
 
-            // The reference the schema enforces is a real localization key, so a data row can be named.
-            foreach (SampleEntry row in config.Samples)
-            {
-                Assert.True(
-                    config.TryGetLocalization(row.NameKey, out _),
-                    "sample '" + row.Id + "' points at '" + row.NameKey + "', which is not a localization key");
-            }
+            Assert.Equal(12, map.Width);
+            Assert.Equal(12, map.Height);
+            Assert.Equal(map.Height, map.Mask.Count);
+            Assert.All(map.Mask, line => Assert.Equal(map.Width, line.Length));
+            Assert.Contains('#', string.Concat(map.Mask));
         }
 
         [Fact]
@@ -117,9 +157,16 @@ namespace ProjectJianghu.Core.Tests
         }
 
         [Fact]
-        public void TableNames_are_the_three_the_template_keeps()
+        public void TableNames_are_the_fourteen_the_game_ships()
         {
-            Assert.Equal(new[] { "tblocalization", "tbconstant", "tbsample" }, LubanGameConfig.TableNames);
+            Assert.Equal(
+                new[]
+                {
+                    "tblocalization", "tbconstant", "tbattribute", "tbstatformula", "tbskill",
+                    "tbskilllevel", "tbgear", "tbstatus", "tbfighter", "tbaiprofile", "tbarenamap",
+                    "tbtournament", "tbrewardpool", "tbbackground",
+                },
+                LubanGameConfig.TableNames);
         }
 
         /// <summary>A hand-built config, for the paths a real load cannot reach.</summary>
@@ -135,19 +182,35 @@ namespace ProjectJianghu.Core.Tests
 
             public string ConfigHash => ConfigFixture.DummyHash;
 
-            public ConstantConfig Constant { get; } = new ConstantConfig
-            {
-                MaxHp = 1,
-                MaxMp = 0,
-                MoveSpeed = 1f,
-                PickupRadius = 0f,
-            };
+            public ConstantConfig Constant { get; } = new ConstantConfig();
 
             public IReadOnlyList<LocalizationEntry> Localization { get; }
 
-            // Empty rather than a row: this fake exists for the load paths, and an empty sample table is
-            // already the shape Data.Validator has a rule for.
-            public IReadOnlyList<SampleEntry> Samples { get; } = Array.Empty<SampleEntry>();
+            // Empty rather than rows: this fake exists for the localization paths, and an empty
+            // table is already the shape Data.Validator has a rule for.
+            public IReadOnlyList<AttributeConfig> Attributes { get; } = Array.Empty<AttributeConfig>();
+
+            public IReadOnlyList<StatFormulaConfig> StatFormulas { get; } = Array.Empty<StatFormulaConfig>();
+
+            public IReadOnlyList<SkillConfig> Skills { get; } = Array.Empty<SkillConfig>();
+
+            public IReadOnlyList<SkillLevelConfig> SkillLevels { get; } = Array.Empty<SkillLevelConfig>();
+
+            public IReadOnlyList<GearConfig> Gear { get; } = Array.Empty<GearConfig>();
+
+            public IReadOnlyList<StatusConfig> Statuses { get; } = Array.Empty<StatusConfig>();
+
+            public IReadOnlyList<FighterConfig> Fighters { get; } = Array.Empty<FighterConfig>();
+
+            public IReadOnlyList<AiProfileConfig> AiProfiles { get; } = Array.Empty<AiProfileConfig>();
+
+            public IReadOnlyList<ArenaMapConfig> ArenaMaps { get; } = Array.Empty<ArenaMapConfig>();
+
+            public IReadOnlyList<TournamentConfig> Tournaments { get; } = Array.Empty<TournamentConfig>();
+
+            public IReadOnlyList<RewardPoolConfig> RewardPools { get; } = Array.Empty<RewardPoolConfig>();
+
+            public IReadOnlyList<BackgroundConfig> Backgrounds { get; } = Array.Empty<BackgroundConfig>();
 
             public bool TryGetLocalization(string key, out LocalizationEntry value) =>
                 _byKey.TryGetValue(key, out value!);

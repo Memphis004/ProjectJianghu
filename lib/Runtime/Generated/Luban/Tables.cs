@@ -15,13 +15,35 @@ public partial class Tables
 {
     public TbLocalization TbLocalization {get; }
     public TbConstant TbConstant {get; }
-    public TbSample TbSample {get; }
+    public TbAttribute TbAttribute {get; }
+    public TbStatFormula TbStatFormula {get; }
+    public TbSkill TbSkill {get; }
+    public TbSkillLevel TbSkillLevel {get; }
+    public TbGear TbGear {get; }
+    public TbStatus TbStatus {get; }
+    public TbFighter TbFighter {get; }
+    public TbAiProfile TbAiProfile {get; }
+    public TbArenaMap TbArenaMap {get; }
+    public TbTournament TbTournament {get; }
+    public TbRewardPool TbRewardPool {get; }
+    public TbBackground TbBackground {get; }
 
     public Tables(System.Func<string, ByteBuf> loader)
     {
         TbLocalization = new TbLocalization(loader("tblocalization"));
         TbConstant = new TbConstant(loader("tbconstant"));
-        TbSample = new TbSample(loader("tbsample"));
+        TbAttribute = new TbAttribute(loader("tbattribute"));
+        TbStatFormula = new TbStatFormula(loader("tbstatformula"));
+        TbSkill = new TbSkill(loader("tbskill"));
+        TbSkillLevel = new TbSkillLevel(loader("tbskilllevel"));
+        TbGear = new TbGear(loader("tbgear"));
+        TbStatus = new TbStatus(loader("tbstatus"));
+        TbFighter = new TbFighter(loader("tbfighter"));
+        TbAiProfile = new TbAiProfile(loader("tbaiprofile"));
+        TbArenaMap = new TbArenaMap(loader("tbarenamap"));
+        TbTournament = new TbTournament(loader("tbtournament"));
+        TbRewardPool = new TbRewardPool(loader("tbrewardpool"));
+        TbBackground = new TbBackground(loader("tbbackground"));
         ResolveRef();
     }
     
@@ -29,7 +51,18 @@ public partial class Tables
     {
         TbLocalization.ResolveRef(this);
         TbConstant.ResolveRef(this);
-        TbSample.ResolveRef(this);
+        TbAttribute.ResolveRef(this);
+        TbStatFormula.ResolveRef(this);
+        TbSkill.ResolveRef(this);
+        TbSkillLevel.ResolveRef(this);
+        TbGear.ResolveRef(this);
+        TbStatus.ResolveRef(this);
+        TbFighter.ResolveRef(this);
+        TbAiProfile.ResolveRef(this);
+        TbArenaMap.ResolveRef(this);
+        TbTournament.ResolveRef(this);
+        TbRewardPool.ResolveRef(this);
+        TbBackground.ResolveRef(this);
     }
 }
 

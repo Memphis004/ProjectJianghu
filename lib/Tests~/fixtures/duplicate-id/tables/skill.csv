@@ -1,0 +1,4 @@
+##,id,kind,weapon_type,target,area_shape,range_min,range_max,power,ratio_x100,atb_cost,wind_up_ticks,recovery_ticks,status_id,status_chance_x100,knockback_tiles,level_bonus,name_key,desc_key
+,skill.falling_rain_slash,External,Sword,Enemy,Single,1,1,1200,4500,10000,12,8,,0,0,5|Sword|5|10|Sword|10,skill.falling_rain_slash.name,skill.falling_rain_slash.desc
+,skill.cloud_step,Movement,None,Self,Single,0,0,0,0,0,0,0,,0,0,5|Lightness|4,skill.cloud_step.name,
+,skill.cloud_step,Movement,None,Self,Single,0,0,0,0,0,0,0,,0,0,5|Lightness|4,skill.cloud_step.name,

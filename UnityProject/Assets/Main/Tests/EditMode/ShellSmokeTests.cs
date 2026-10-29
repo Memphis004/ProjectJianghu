@@ -95,8 +95,9 @@ namespace ProjectJianghu.Game.Tests.EditMode
 
             Assert.That(config.ConfigHash, Is.EqualTo(ConfigBuildMetadata.ConfigHash));
             Assert.That(config.Localization.Count, Is.GreaterThan(0));
-            Assert.That(config.Constant.MaxHp, Is.GreaterThan(0));
-            Assert.That(config.Constant.MoveSpeed, Is.GreaterThan(0f));
+            Assert.That(config.Constant.AtbFull, Is.GreaterThan(0));
+            Assert.That(config.Constant.MatchTicks, Is.GreaterThan(0));
+            Assert.That(config.Skills, Is.Not.Empty);
         }
 
         [Test]

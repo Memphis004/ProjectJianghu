@@ -1,21 +1,28 @@
-// ProjectJianghu external contract (Stage 02).
+// ProjectJianghu external contract (Stage 01).
 //
-// Scope: the messages a game client and any future backend/telemetry endpoint must agree on. It is
-// deliberately tiny — the prototype's own persistence is MessagePack checkpoints (Stage 12);
-// Protobuf is used only at external boundaries (AGENTS rule 3).
+// Scope: the messages a game client and any future backend, save file or replay viewer must agree
+// on. Protobuf is used only at these boundaries; the in-process state that is hashed every tick
+// stays MessagePack (AGENTS rule 2 / glossary section 12).
 //
-// Two messages, and both have a job beyond "we have a proto":
+// Three messages have a job beyond "we have a proto":
 //
-//   CheckpointProbe  the serialization self-check. It is what the shell's `protobuf.roundtrip` probe
-//                    round-trips in the Editor and in the built player, so a Protobuf regression is
-//                    caught by a browser run rather than by a report nobody reads. A game deletes it
-//                    when it has a message of its own.
+//   CheckpointProbe  the serialization self-check. The shell's `protobuf.roundtrip` probe
+//                    round-trips it in the Editor and in the built player, so a Protobuf
+//                    regression is caught by a browser run rather than by a report nobody reads.
 //   SaveHeader       the header a save carries: which schema the payload is in, and which balance
-//                    data it was written against. Stage 12 owns the save itself; this is the part
-//                    that must be settled before a format can be frozen.
+//                    data it was written against. A reader can refuse a save it cannot understand
+//                    before parsing the payload.
+//   ArenaReplay      a match as a setup plus (tick, command) pairs. Replaying it must reproduce the
+//                    same ComputeStateHash, which is what makes the tournament, the save file and
+//                    the bug report all reconstructible.
+//
+// Stage 13 owns persistence, Stage 10 owns the bracket and Stage 02 owns the arena contract, so the
+// fields below are the SHAPE those stages fill. Enum-valued fields are int32 on purpose: the value
+// is the data table's enum number (data/Defines/schema.xml), and a new enum member must not require
+// a proto change.
 //
 // Generated output: lib/Runtime/Generated/Proto/App.cs (exactly one copy; see tools/gen.ps1). Never
-// hand-edit that file — edit this .proto and regenerate.
+// hand-edit that file: edit this .proto and regenerate.
 
 syntax = "proto3";
 
@@ -34,18 +41,190 @@ message CheckpointProbe {
   // A tick count, so a field wider than the generated defaults is exercised.
   int64 tick = 3;
 
-  // A localization key, never raw player-facing text (AGENTS rule 5), so a string field is exercised.
+  // A localization key, never raw player-facing text (AGENTS rule 11), so a string field is
+  // exercised.
   string note_key = 4;
 }
 
 // The header a save carries ahead of its payload.
-//
-// A reader can refuse a save it cannot understand before parsing the payload: the schema version says
-// whether the format is one it knows, and the config hash says whether the balance data the save was
-// written against is the one being played. Both are numbers a build already knows.
 message SaveHeader {
   uint32 schema_version = 1;
 
   // SHA-256 of the generated config tables, upper-case hex.
   string config_hash = 2;
+}
+
+// Everything a run needs to be resumed. The header is nested rather than duplicated so a reader
+// checks one shape, and an absent header (all defaults) is still a readable "schema 0" save.
+message SaveData {
+  SaveHeader header = 1;
+
+  // The run seed. Every random stream derives from it (glossary section 9), so a save plus the seed
+  // reproduces the tournament.
+  uint64 seed = 2;
+
+  // Unix seconds. Recorded for the save list UI; the rules never read a clock (AGENTS rule 5).
+  int64 saved_at_unix_seconds = 3;
+
+  CharacterState character = 4;
+  TournamentState tournament = 5;
+
+  // The match in progress, when the save was written during one. Settled matches keep their
+  // replays in TournamentState.match_replays for audit.
+  ArenaReplay current_match = 6;
+}
+
+// One character: the player's, or an NPC's materialised the same way.
+message CharacterState {
+  string id = 1;
+
+  // Player-typed text, so it is stored raw. Everything else the player reads is a localization key.
+  string display_name = 2;
+
+  string background_id = 3;
+
+  // Attribute value by EAttribute number (schema.xml). A map rather than 34 fields: the attribute
+  // list is data, and a new attribute must not be a proto change.
+  map<int32, int32> attributes = 4;
+
+  int32 unspent_attribute_points = 5;
+
+  LoadoutState loadout = 6;
+
+  int32 hp = 7;
+  int32 neili = 8;
+
+  // Mastery of every skill the character has used enough to track.
+  repeated SkillMastery mastery = 9;
+
+  // Lifetime renown, kept for a future meta progression.
+  int32 renown = 10;
+}
+
+// The A-style loadout (glossary section 3): 4 external skills, 1 inner, 1 movement, 1 weapon,
+// 1 armour, 2 accessories.
+message LoadoutState {
+  string weapon_id = 1;
+  string armor_id = 2;
+  repeated string accessory_ids = 3;
+
+  // Skill ids in slot order. Inner and movement skills are identified by their row's kind, so the
+  // slot list does not need to say which is which.
+  repeated string skill_ids = 4;
+}
+
+message SkillMastery {
+  string skill_id = 1;
+
+  // 1..10; `constant.max_mastery_level` is the ceiling.
+  int32 level = 2;
+
+  // Progress toward the next level; `skill_level.mastery_xp` is the ladder.
+  int32 xp = 3;
+}
+
+// The bracket. A round is "32 -> 16 -> 8 -> 4 -> 2", so round 1 has 16 matches.
+message TournamentState {
+  string tournament_id = 1;
+  uint64 seed = 2;
+
+  // The player's seat, 0-based. The prototype always seats the player last (31).
+  int32 player_seat = 3;
+
+  // 1-based; the number of rounds the player has reached.
+  int32 round = 4;
+
+  repeated Entrant entrants = 5;
+  repeated BracketMatch matches = 6;
+
+  // Settlement ids already applied, so ApplyMatchResult is idempotent (glossary section 7).
+  repeated string settled_match_ids = 7;
+
+  // The replay of every match the player took part in, in settlement order.
+  repeated ArenaReplay match_replays = 8;
+}
+
+message Entrant {
+  // 0-based seat in the bracket.
+  int32 seat = 1;
+
+  // A fighter row id, or the player's character id.
+  string fighter_id = 2;
+
+  bool is_player = 3;
+  bool eliminated = 4;
+
+  // The AI profile an NPC is driven by; empty for the player.
+  string ai_profile_id = 5;
+}
+
+message BracketMatch {
+  // Stable id, e.g. "r2-m3"; the settlement key.
+  string match_id = 1;
+
+  int32 round = 2;
+  int32 slot = 3;
+
+  int32 seat_a = 4;
+  int32 seat_b = 5;
+
+  // Only meaningful when settled is true: the winner's seat, or -1 for a draw.
+  int32 winner_seat = 6;
+
+  bool settled = 7;
+}
+
+// One match: the setup, then one entry per accepted command, ordered by tick.
+//
+// This is what a replay viewer and a determinism check both consume: feed the setup to any
+// IArenaSessionFactory, apply the commands in order, and ComputeStateHash must match
+// final_state_hash.
+message ArenaReplay {
+  uint32 schema_version = 1;
+
+  // The arena stream's seed for this match, derived from the run seed.
+  uint64 seed = 2;
+
+  // The arena_map row id.
+  string arena_map_id = 3;
+
+  repeated ReplayFighter fighters = 4;
+  repeated ReplayEntry entries = 5;
+
+  // The hash the replay must reproduce. 0 means "not recorded" (a replay still being captured).
+  uint64 final_state_hash = 6;
+}
+
+message ReplayFighter {
+  string fighter_id = 1;
+
+  // 0 = the player's team; the prototype uses two teams.
+  int32 team = 2;
+
+  int32 tile_x = 3;
+  int32 tile_y = 4;
+
+  // The skills this fighter can use in this match, in slot order (repeated so a replay does not
+  // depend on data changing later).
+  repeated string skill_ids = 5;
+
+  // Weapon, armour and accessories, in that order.
+  repeated string gear_ids = 6;
+}
+
+message ReplayEntry {
+  int32 tick = 1;
+  ReplayCommand command = 2;
+}
+
+// The wire form of ArenaCommand (GDD part 2): kind, actor, slot, target tile, argument. The kind
+// numbers are the contract's ArenaCommandKind values; the target is a tile because every command
+// carries one.
+message ReplayCommand {
+  int32 kind = 1;
+  int32 actor = 2;
+  int32 slot = 3;
+  int32 tile_x = 4;
+  int32 tile_y = 5;
+  int32 arg = 6;
 }

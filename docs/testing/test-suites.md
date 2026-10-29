@@ -58,12 +58,12 @@ need a connected Editor.
 | --- | --- |
 | `toolchain: .NET SDK` | 0.0 |
 | `dotnet build` | 1.5 |
-| `dotnet test (xUnit)` | 1.7 — 124 passed |
+| `dotnet test (xUnit)` | 1.8 — 138 passed |
 | `sim: determinism` | 1.3 |
 | `sim: stream separation` | 1.1 |
 | `data: generated tables validate` | 5.3 |
 | `data: generated code reproducible` | 10.5 |
-| `data: broken fixtures rejected` | 19.2 — 6 fixtures |
+| `data: broken fixtures rejected` | 27.0 — 8 fixtures |
 | `unity: EditMode` | NOT RUN (no Editor connected) |
 | `unity: PlayMode` | NOT RUN (no Editor connected) |
 | `web: WebGL build (Development)` | 71.1 |
@@ -81,7 +81,7 @@ project lock cannot build (`docs/template/t2-report.md` §5).
 
 ## 3. Every test, and the suite it belongs to
 
-### dotnet — `lib/Tests~/ProjectJianghu.Core.sln` (124 tests) → **Fast**
+### dotnet — `lib/Tests~/ProjectJianghu.Core.sln` (138 tests) → **Fast**
 
 The projects compile the *same source* as the `lib/` asmdefs
 ([ADR 0004](../adr/0004-dotnet-layer-enforcement.md)), so these are the rule-engine

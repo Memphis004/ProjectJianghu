@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using ProjectJianghu.Core.Infrastructure.Config;
 
 namespace ProjectJianghu.Sim
@@ -55,8 +55,9 @@ namespace ProjectJianghu.Sim
                         + " configHash=" + config.ConfigHash
                         + " data=" + SimEnvironment.DataDirectory(options.DataDirectory)
                         + " tables=localization " + config.Localization.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)
-                        + ", sample " + config.Samples.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)
-                        + ", maxHp " + config.Constant.MaxHp.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                        + ", skills " + config.Skills.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)
+                        + ", fighters " + config.Fighters.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)
+                        + ", atbFull " + config.Constant.AtbFull.ToString(System.Globalization.CultureInfo.InvariantCulture));
                 }
 
                 return StreamsMode.Run(options);

@@ -1,23 +1,19 @@
 ##,key,th,en
-,ui.title,เกมของฉัน,My Game
-,ui.generic.ok,ตกลง,
-,ui.generic.close,ปิด,Close
+,ui.title,ยุทธภพผงาด,Wuxia: Jianghu Rising
+,ui.generic.ok,ตกลง,OK
+,ui.generic.close,ปิด,
 ,ui.generic.continue,ไปต่อ,Continue
 ,ui.generic.error,เกิดข้อผิดพลาด กรุณาลองใหม่,Something went wrong. Please try again.
-,ui.sample.alpha,ตัวอย่าง ก,Sample A
-,ui.sample.beta,ตัวอย่าง ข,Sample B
-,ui.sample.gamma,ตัวอย่าง ค,Sample C
-,ui.sample.note,บันทึกตัวอย่างของแถวนี้,A row's optional note
 ,ui.spike.thai,พ่อหมอปราบผีกระสือ ฤๅษี ปั้นน้ำตาล ญี่ปุ่น,Ghost-Doctor vs Krasue Ruesi sugar-moulding Japan
 ,ui.spike.thai.marks,ปื๊ด ตู้ เบ๊ ญี่ปุ่น น้ำตาล ฤๅษี ฎ ฏ ฐ ฅ ฃ,Thai tone-mark and rare-glyph stress sample
 ,title.start,เริ่มเล่น,Start
 ,title.quit,ออก,Quit
-,hub.title,ที่พัก,Hub
+,hub.title,ที่พัก,Rest
 ,hub.instructions,เตรียมตัวแล้วออกเดินทาง,"Prepare, then set out."
 ,hub.encounters.format,ผ่านมาแล้ว {0} รอบ,Cleared {0} encounters
 ,hub.depart,ออกเดินทาง,Depart
 ,hub.finish,จบการเดินทาง,End the run
-,encounter.title,การเผชิญหน้า,Encounter
+,encounter.title,ลานประลอง,Arena
 ,encounter.progress.format,รอบที่ {0} จาก {1},Round {0} of {1}
 ,encounter.win,ชนะ,Win
 ,encounter.lose,แพ้,Lose
@@ -27,3 +23,27 @@
 ,result.seed.format,seed {0},seed {0}
 ,result.restart,เริ่มใหม่,New run
 ,result.title,กลับหน้าแรก,Back to title
+,attr.toughness.name,กายแกร่ง,Toughness
+,attr.toughness.desc,โครงร่างและกำลังภายในที่หล่อเลี้ยงพลังชีวิต,Bulk and the inner strength that feeds hit points
+,attr.sinew.name,เอ็นกระดูก,Sinew
+,attr.neili_power.name,พลังปราณ,Inner Power
+,stat.max_hp.name,HP สูงสุด,Max HP
+,stat.max_neili.name,ลมปราณสูงสุด,Max Inner Power
+,skill.falling_rain_slash.name,กระบี่สายฝนพรำ,Rainfall Slash
+,skill.falling_rain_slash.desc,ฟันหนึ่งครั้งในช่องประชิด ถ้าโดนด้านข้างจะแรงขึ้น,One cut on an adjacent tile; stronger from the flank
+,skill.cloud_step.name,เหยียบเมฆา,Cloud Step
+,gear.iron_sword.name,กระบี่เหล็กกล้า,Iron Sword
+,gear.jade_pendant.name,หยกห้อยเอว,Jade Pendant
+,status.poison.name,พิษ,Poison
+,status.poison.desc,เสียเลือดเป็นจังหวะจนหมดฤทธิ์,Loses health on a cadence until it expires
+,status.stagger.name,ชะงัก,Stagger
+,ai.melee.name,ประชิดตัว,Close-in
+,ai.kiter.name,ยิงแล้วถอย,Skirmisher
+,map.open_court.name,ลานโล่ง,Open Court
+,tournament.arena_open.name,ประลองยุทธ์เปิดศึก,Open Arena Tournament
+,reward.round_1_gear.note,ของที่หยิบได้จากรอบแรก,A piece offered after the first round
+,background.sword_academy.name,ศิษย์สำนักกระบี่,Sword Academy Disciple
+,background.sword_academy.desc,ฝึกกระบี่มาตั้งแต่เด็ก ใช้กระบี่ได้คล่องกว่าใคร,Sword-trained from childhood; handier with a blade than most
+,background.road_boxer.name,นักมวยเร่ร่อน,Roaming Boxer
+,fighter.rival_01.name,จอมยุทธ์หน้าใหม่,Rising Challenger
+,fighter.rival_02.name,นักเลงตะวันตก,Western Bladehand

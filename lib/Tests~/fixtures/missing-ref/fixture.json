@@ -1,6 +1,6 @@
 {
   "name": "missing-ref",
   "stage": "luban",
-  "why": "sample.beta's required name_key points at ui.sample.gone, which is not a localization key, so --strict rejects the whole generation",
+  "why": "fighter.rival_02's required ai_profile_id points at ai.gone, which is not an ai_profile row, so the strict ref check rejects the whole generation",
   "expectedCodes": []
 }

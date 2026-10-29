@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -157,9 +157,17 @@ namespace ProjectJianghu.Data.Validator
             {
                 Console.WriteLine("  configHash: " + config.ConfigHash);
                 Console.WriteLine("  rows      : localization " + config.Localization.Count
-                    + ", sample " + config.Samples.Count
-                    + ", maxHp " + config.Constant.MaxHp
-                    + ", moveSpeed " + config.Constant.MoveSpeed);
+                    + ", attributes " + config.Attributes.Count
+                    + ", statFormulas " + config.StatFormulas.Count
+                    + ", skills " + config.Skills.Count
+                    + ", gear " + config.Gear.Count
+                    + ", statuses " + config.Statuses.Count
+                    + ", fighters " + config.Fighters.Count
+                    + ", aiProfiles " + config.AiProfiles.Count
+                    + ", arenaMaps " + config.ArenaMaps.Count
+                    + ", tournaments " + config.Tournaments.Count
+                    + ", rewardPools " + config.RewardPools.Count
+                    + ", backgrounds " + config.Backgrounds.Count);
             }
 
             Console.WriteLine(new string('=', 72));

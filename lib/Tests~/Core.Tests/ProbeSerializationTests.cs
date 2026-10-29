@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Google.Protobuf;
 using ProjectJianghu.Core.Contracts.Save;
 using Xunit;
@@ -6,7 +6,12 @@ using Xunit;
 // The generated contract and the MessagePack probe deliberately share the name `CheckpointProbe`:
 // both answer "does our serialization actually work away from the desktop runtime?". The alias keeps
 // this file readable where both are in scope at once.
+using ProtoArenaReplay = ProjectJianghu.Core.Generated.Proto.ArenaReplay;
 using ProtoProbe = ProjectJianghu.Core.Generated.Proto.CheckpointProbe;
+using ProtoReplayCommand = ProjectJianghu.Core.Generated.Proto.ReplayCommand;
+using ProtoReplayEntry = ProjectJianghu.Core.Generated.Proto.ReplayEntry;
+using ProtoReplayFighter = ProjectJianghu.Core.Generated.Proto.ReplayFighter;
+using ProtoSaveData = ProjectJianghu.Core.Generated.Proto.SaveData;
 using ProtoSaveHeader = ProjectJianghu.Core.Generated.Proto.SaveHeader;
 
 namespace ProjectJianghu.Core.Tests
@@ -124,6 +129,97 @@ namespace ProjectJianghu.Core.Tests
         }
 
         [Fact]
+        public void An_arena_replay_round_trips_its_setup_and_its_command_stream()
+        {
+            // The two halves of a replay: who was on the field at tick 0, and what each side asked
+            // for, in tick order. Losing either makes the replay worthless, so both are asserted.
+            var original = new ProtoArenaReplay
+            {
+                SchemaVersion = 1,
+                Seed = 0xDEADBEEF,
+                ArenaMapId = "map.open_court",
+                FinalStateHash = 0x0123456789ABCDEF,
+            };
+
+            original.Fighters.Add(new ProtoReplayFighter { FighterId = "fighter.rival_01", Team = 1, TileX = 2, TileY = 3 });
+            original.Fighters.Add(new ProtoReplayFighter { FighterId = "player", Team = 0, TileX = 9, TileY = 9 });
+            original.Fighters[1].SkillIds.Add("skill.falling_rain_slash");
+
+            original.Entries.Add(new ProtoReplayEntry
+            {
+                Tick = 30,
+                Command = new ProtoReplayCommand { Kind = 0, Actor = 1, TileX = 8, TileY = 9 },
+            });
+            original.Entries.Add(new ProtoReplayEntry
+            {
+                Tick = 61,
+                Command = new ProtoReplayCommand { Kind = 1, Actor = 0, Slot = 2, TileX = 3, TileY = 3 },
+            });
+
+            ProtoArenaReplay restored = ProtoArenaReplay.Parser.ParseFrom(original.ToByteArray());
+
+            Assert.Equal(original, restored);
+            Assert.Equal(2, restored.Fighters.Count);
+            Assert.Equal(2, restored.Entries.Count);
+            Assert.Equal(61, restored.Entries[1].Tick);
+            Assert.Equal(2, restored.Entries[1].Command.Slot);
+            Assert.Equal(0x0123456789ABCDEFUL, restored.FinalStateHash);
+            Assert.Equal("skill.falling_rain_slash", restored.Fighters[1].SkillIds[0]);
+        }
+
+        [Fact]
+        public void Save_data_wraps_the_header_the_character_and_the_bracket()
+        {
+            var original = new ProtoSaveData
+            {
+                Header = new ProtoSaveHeader
+                {
+                    SchemaVersion = 1,
+                    ConfigHash = ProjectJianghu.Config.ConfigBuildMetadata.ConfigHash,
+                },
+                Seed = 7,
+                SavedAtUnixSeconds = 1793000000,
+            };
+
+            original.Character = new ProjectJianghu.Core.Generated.Proto.CharacterState
+            {
+                Id = "player",
+                DisplayName = "นักดาบทดสอบ",
+                BackgroundId = "background.sword_academy",
+                UnspentAttributePoints = 12,
+            };
+            original.Character.Attributes.Add(22, 18);   // Toughness, by EAttribute number
+            original.Character.Mastery.Add(new ProjectJianghu.Core.Generated.Proto.SkillMastery
+            {
+                SkillId = "skill.falling_rain_slash",
+                Level = 5,
+                Xp = 120,
+            });
+
+            original.Tournament = new ProjectJianghu.Core.Generated.Proto.TournamentState
+            {
+                TournamentId = "tournament.arena_open",
+                Seed = 7,
+                PlayerSeat = 31,
+                Round = 2,
+            };
+            original.Tournament.Entrants.Add(new ProjectJianghu.Core.Generated.Proto.Entrant
+            {
+                Seat = 31, FighterId = "player", IsPlayer = true,
+            });
+            original.Tournament.SettledMatchIds.Add("r1-m16");
+
+            ProtoSaveData restored = ProtoSaveData.Parser.ParseFrom(original.ToByteArray());
+
+            Assert.Equal(original, restored);
+            Assert.Equal(ProjectJianghu.Config.ConfigBuildMetadata.ConfigHash, restored.Header.ConfigHash);
+            Assert.Equal(18, restored.Character.Attributes[22]);
+            Assert.Equal(5, restored.Character.Mastery[0].Level);
+            Assert.Equal(31, restored.Tournament.PlayerSeat);
+            Assert.Equal("r1-m16", restored.Tournament.SettledMatchIds[0]);
+        }
+
+        [Fact]
         public void Protobuf_field_numbers_match_the_proto_definition()
         {
             // proto/app.proto is the external contract; the field numbers are the wire format and must
@@ -135,6 +231,12 @@ namespace ProjectJianghu.Core.Tests
             Assert.Equal(4, ProtoProbe.Descriptor.FindFieldByNumber(4).FieldNumber);
             Assert.Equal(2, ProtoSaveHeader.Descriptor.Fields.InFieldNumberOrder().Count);
             Assert.Equal("config_hash", ProtoSaveHeader.Descriptor.FindFieldByNumber(2).Name);
+
+            // The replay's shape is a contract with a future replay viewer: setup in field 4, the
+            // (tick, command) stream in field 5.
+            Assert.Equal("fighters", ProtoArenaReplay.Descriptor.FindFieldByNumber(4).Name);
+            Assert.Equal("entries", ProtoArenaReplay.Descriptor.FindFieldByNumber(5).Name);
+            Assert.Equal("tick", ProtoReplayEntry.Descriptor.FindFieldByNumber(1).Name);
         }
     }
 }

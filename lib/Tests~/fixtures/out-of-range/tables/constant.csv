@@ -1,2 +1,2 @@
-##,max_hp,max_mp,move_speed,pickup_radius
-,0,50,4.0,1.5
+##,atb_full,match_ticks,move_atb_cost,jump_atb_cost,meditate_atb_cost,jump_cooldown_ticks,meditate_neili_restore,damage_mitigation_k,max_mastery_level,starting_attribute_points
+,0,3600,10000,5000,10000,45,300,1000,10,20

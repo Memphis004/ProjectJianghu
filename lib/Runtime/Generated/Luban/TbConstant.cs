@@ -15,22 +15,28 @@ namespace ProjectJianghu.Config
 public partial class TbConstant
 {
 
-     private readonly Constant _data;
+     private readonly ConstantDef _data;
 
-     public Constant Data => _data;
+     public ConstantDef Data => _data;
 
     public TbConstant(ByteBuf _buf)
     {
         int n = _buf.ReadSize();
         if (n != 1) throw new SerializationException("table mode=one, but size != 1");
-        _data = global::ProjectJianghu.Config.Constant.DeserializeConstant(_buf);
+        _data = global::ProjectJianghu.Config.ConstantDef.DeserializeConstantDef(_buf);
     }
 
 
-     public int MaxHp => _data.MaxHp;
-     public int MaxMp => _data.MaxMp;
-     public float MoveSpeed => _data.MoveSpeed;
-     public float PickupRadius => _data.PickupRadius;
+     public int AtbFull => _data.AtbFull;
+     public int MatchTicks => _data.MatchTicks;
+     public int MoveAtbCost => _data.MoveAtbCost;
+     public int JumpAtbCost => _data.JumpAtbCost;
+     public int MeditateAtbCost => _data.MeditateAtbCost;
+     public int JumpCooldownTicks => _data.JumpCooldownTicks;
+     public int MeditateNeiliRestore => _data.MeditateNeiliRestore;
+     public int DamageMitigationK => _data.DamageMitigationK;
+     public int MaxMasteryLevel => _data.MaxMasteryLevel;
+     public int StartingAttributePoints => _data.StartingAttributePoints;
     
     public void ResolveRef(Tables tables)
     {

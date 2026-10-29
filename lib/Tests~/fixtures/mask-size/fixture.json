@@ -1,0 +1,8 @@
+{
+  "name": "mask-size",
+  "stage": "semantic",
+  "why": "map.open_court declares height 12 but its mask has 11 rows",
+  "expectedCodes": [
+    "arena_map.mask_size"
+  ]
+}

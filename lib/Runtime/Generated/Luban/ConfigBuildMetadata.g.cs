@@ -11,12 +11,12 @@ namespace ProjectJianghu.Config
     public static class ConfigBuildMetadata
     {
         /// <summary>SHA-256 (upper-case hex) over the generated table bytes, in name order.</summary>
-        public const string ConfigHash = "DDFDF33800712F9D4ECC410EBD24FF407492E1BC5D74A72BF70BCA52AA64E70F";
+        public const string ConfigHash = "27912FAC7B0F8970791C3168B273D5DFBB7F90A03302EC78F199AABF88104272";
 
         /// <summary>Luban CLI version that produced the generated readers.</summary>
         public const string LubanVersion = "5.1.0";
 
         /// <summary>Schema revision of data/Defines. Bump when a field is added or renamed.</summary>
-        public const int SchemaVersion = 3;
+        public const int SchemaVersion = 4;
     }
 }

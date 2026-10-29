@@ -1,0 +1,3 @@
+##,id,round_min,round_max,weight,gear_id,skill_id,note_key
+,reward.round_1_gear,1,1,60,gear.jade_pendant,,reward.round_1_gear.note
+,reward.round_1_skill,1,2,40,,skill.falling_rain_slash,

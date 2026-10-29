@@ -1,6 +1,8 @@
 {
   "name": "blank-text",
   "stage": "semantic",
-  "why": "a localization row has no Thai and a whitespace-only English cell",
-  "expectedCodes": ["localization.blank_text"]
+  "why": "ui.generic.close has no Thai and no English cell, so the row can never be shown",
+  "expectedCodes": [
+    "localization.blank_text"
+  ]
 }

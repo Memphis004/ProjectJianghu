@@ -1,0 +1,8 @@
+{
+  "name": "dangling-ref",
+  "stage": "semantic",
+  "why": "fighter.rival_01's optional weapon_id points at gear.gone, which does not exist; the schema cannot check it because an empty cell is a legal value there",
+  "expectedCodes": [
+    "reference.missing"
+  ]
+}

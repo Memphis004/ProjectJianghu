@@ -44,7 +44,7 @@ the Editor.
 | Stage | Deliverable | State | Evidence |
 | --- | --- | --- | --- |
 | **00** | Fork + docs baseline: GDD, plan, glossary, ADR 0100–0102, scene mapping | **done** | [`docs/stages/00-report.md`](docs/stages/00-report.md) |
-| 01 | Luban/protoc rebuilt for the game: enums, beans, 13 empty tables, `SaveData`/`TournamentState`/`ArenaReplay` | planned | — |
+| 01 | Luban/protoc rebuilt for the game: 10 enums, 3 beans, 13 tables + localization, `SaveData`/`CharacterState`/`TournamentState`/`ArenaReplay` | **done** | [`docs/stages/01-report.md`](docs/stages/01-report.md) |
 | 02 | Arena contract in `Domain.Arena` + `EventRing<T>` in Shared + `FakeArenaSession` + contract suite | planned | — |
 | 03 | Unity shell → Jianghu screens (`CharacterCreate`, `Bracket`, `Rest`, `Arena`); HD-2D iso spike; 3 URP tiers; WebGL canvas | planned | — |
 | 04 | Prototype content: attributes, `stat_formula`, 13 skills, gear, 4 statuses, 4 backgrounds, 31 fighters, map, reward pool | planned | — |
@@ -83,13 +83,15 @@ The template is extracted from a finished prototype (the game repo, tag
 A game built from this template starts its own stage numbering at 01 and writes
 its reports under `docs/stages/` (skeleton: [`docs/stages/_TEMPLATE.md`](docs/stages/_TEMPLATE.md)).
 
-**Current state:** the package has three data tables (`localization`, `constant`,
-`sample`), the `IGameConfig` port with its Infrastructure adapter, the shared
+**Current state:** the package has the game's fourteen data tables (`localization`,
+`constant`, `attribute`, `stat_formula`, `skill`, `skill_level`, `gear`, `status`,
+`fighter`, `ai_profile`, `arena_map`, `tournament`, `reward_pool`, `background`), the
+`IGameConfig` port with its Infrastructure adapter, the shared
 deterministic primitives (`IRandomSource`/`Xoshiro128`/`RandomStreams`,
 `IClock`/`SystemClock`, `FixedTicker`, `EventRing<T>`, `PrevCurBuffer<T>`,
 `Result`/`Error`), the run skeleton (`RunSession`, `SceneFlow`, `ReplayLog`) and a
 serialization probe. Unity ships six scenes (Boot, Title, Hub, Encounter, Result, ThaiTextSpike), a
-7-probe smoke suite, the page bridge and the Web build pipeline. `dotnet` carries **124** xUnit cases; Unity
+7-probe smoke suite, the page bridge and the Web build pipeline. `dotnet` carries **138** xUnit cases; Unity
 carries **32** EditMode and **6** PlayMode cases; Playwright has **4** tests in
 three specs (`smoke`, `title`, `loop`).
 
@@ -245,7 +247,7 @@ Full detail: [`docs/architecture/overview.md`](docs/architecture/overview.md).
 | [`docs/template/examples/`](docs/template/examples/) | the game's ADRs and notes — examples, not rules |
 | [`llmwiki/index.md`](llmwiki/index.md) | wiki index (systems + gotchas) |
 | [`llmwiki/glossary.md`](llmwiki/glossary.md) | code names ↔ Thai terms |
-| [`llmwiki/systems/data-schema.md`](llmwiki/systems/data-schema.md) | the three tables, their rules, the pipeline |
+| [`llmwiki/systems/data-schema.md`](llmwiki/systems/data-schema.md) | the fourteen tables, their rules, the pipeline |
 | [`llmwiki/systems/loop-and-scopes.md`](llmwiki/systems/loop-and-scopes.md) | the loop and the three scopes |
 | [`llmwiki/systems/unity-shell.md`](llmwiki/systems/unity-shell.md) | scenes, DI, the published globals, the Web build |
 | [`tools/versions.lock.json`](tools/versions.lock.json) | engine + tool version lock |
