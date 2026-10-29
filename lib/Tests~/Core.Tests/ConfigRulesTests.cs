@@ -508,6 +508,7 @@ namespace ProjectJianghu.Core.Tests
                     RangeMin = 1,
                     RangeMax = 1,
                     AtbCost = 10000,
+                    Hits = 1,
                     StatusId = "status.one",
                     LevelBonus = new List<SkillLevelBonus>
                     {
@@ -528,6 +529,7 @@ namespace ProjectJianghu.Core.Tests
                     RangeMin = 1,
                     RangeMax = 1,
                     AtbCost = 10000,
+                    Hits = 1,
                     LevelBonus = new List<SkillLevelBonus>
                     {
                         new SkillLevelBonus { Level = 5, Attribute = EAttribute.Sword, Value = 1 },
@@ -547,6 +549,7 @@ namespace ProjectJianghu.Core.Tests
                     RangeMin = 1,
                     RangeMax = 1,
                     AtbCost = 10000,
+                    Hits = 1,
                     LevelBonus = new List<SkillLevelBonus>
                     {
                         new SkillLevelBonus { Level = 5, Attribute = EAttribute.Sword, Value = 1 },
@@ -566,6 +569,7 @@ namespace ProjectJianghu.Core.Tests
                     RangeMin = 1,
                     RangeMax = 1,
                     AtbCost = 10000,
+                    Hits = 1,
                     LevelBonus = new List<SkillLevelBonus>
                     {
                         new SkillLevelBonus { Level = 5, Attribute = EAttribute.Sword, Value = 1 },

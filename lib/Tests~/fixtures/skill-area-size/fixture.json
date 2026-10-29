@@ -1,0 +1,8 @@
+{
+  "name": "skill-area-size",
+  "stage": "semantic",
+  "why": "skill.half_moon_cut is a Line skill with area_size 0, which covers one tile instead of the three the shape promises (ADR 0113)",
+  "expectedCodes": [
+    "skill.area_size"
+  ]
+}

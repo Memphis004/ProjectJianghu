@@ -489,6 +489,25 @@ namespace ProjectJianghu.Data.Validator
                         "tbskill['" + row.Id + "']",
                         "range_max (" + row.RangeMax + ") is below range_min (" + row.RangeMin + ")"));
                 }
+
+                if (row.Hits < 1)
+                {
+                    findings.Add(new Finding("skill.hits", "tbskill['" + row.Id + "'].hits",
+                        "a cast must land at least one blow"));
+                }
+
+                // ADR 0113: a shape that has a size covers one tile when the size is 0,
+                // which for a Line, Cone, Cross, Diamond or Square is an authoring mistake.
+                if (row.AreaShape != EAreaShape.Single && row.AreaSize < 1)
+                {
+                    findings.Add(new Finding("skill.area_size", "tbskill['" + row.Id + "'].area_size",
+                        row.AreaShape + " needs an area_size of at least 1, or it covers one tile"));
+                }
+                else if (row.AreaShape == EAreaShape.Single && row.AreaSize != 0)
+                {
+                    findings.Add(new Finding("skill.area_size_single", "tbskill['" + row.Id + "'].area_size",
+                        "a Single skill ignores area_size, so it must be left at 0"));
+                }
             }
         }
 

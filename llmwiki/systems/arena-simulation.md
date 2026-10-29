@@ -40,7 +40,7 @@ and [ADR 0115](../../docs/adr/0115-arena-ai-seam-and-walk-reservations.md), the 
 | Tick rate (30), intro (30), ring capacity, max fighters (8), skill slots (4) | `ArenaConstants` (contract shape) |
 | ATB full (10,000), move/jump/meditate ATB cost, mitigation K, back/flank bonus, jump cooldown, meditate neili | `constant.csv` |
 | `AtbFillTicks`, `ActionSpeedX100` (hundredths of a percent, 10,000 = 1.0), move/jump range, accuracy, evasion, crit, counter, resistance | `stat_formula.csv` via `StatResolver` |
-| A skill's base damage, ratio, range, shape, wind-up, recovery, status, knockback | `skill.csv` |
+| A skill's base damage, ratio, range, shape **and area size**, blow count, wind-up, recovery, status, knockback | `skill.csv` |
 | A status's duration, tick interval, damage per tick, ATB and neili multipliers | `status.csv` |
 | Match length (3,600 ticks = 120 s) | `constant.match_ticks`, filled by the factory |
 
@@ -50,7 +50,9 @@ A change to any of these is `data/` + `tools/gen.ps1`, never a code edit (AGENTS
 
 Damage is integer and strictly ordered: `base + power×ratio/10000` → mastery → back/flank bonus →
 crit → mitigation `K/(defense+K)` (ADR 0114 §4). Hit and crit are two rolls on the match's single
-stream; hit chance is `accuracy − evasion`. A counter uses the defender's first in-range skill and
+stream; hit chance is `accuracy − evasion`. `skill.hits` repeats the whole hit/crit/mitigation
+sequence per blow inside one cast (`falling_rain_slash` cuts twice), while the cast counts once as
+a use. A counter uses the defender's first in-range skill and
 rolls `CounterChanceX100` after a landed hit. Knockback walks the victim away one tile at a time
 and stops at the edge, a wall or a fighter. A status rolls its chance, then the victim's resist, and
 keeps the longest duration. A jumping fighter is not hit at all, and a fighter that left the aimed
@@ -79,14 +81,19 @@ dotnet test lib/Tests~/Core.Tests/ProjectJianghu.Core.Tests.csproj --filter "Ful
 ```
 
 `--matches N` implies `--mode balance`. The CSV has one row per power rank (matches, wins, draws,
-win rate, average duration) and one per skill used (uses, hits), plus a `total` row;
-`avgMsPerMatch` with `verdict=PASS` is the per-match budget. The reference numbers are in
+knockouts, timeouts, win rate, average duration) and one per skill used (uses, hits), plus a `total` row.
+A rank row counts **appearances** (a match contributes to both fighters' ranks, as `matches`
+always has); the `total` row counts matches.
+`avgMsPerMatch` with `verdict=PASS` is the per-match budget, `knockouts` / `timeouts` say how the
+matches ended, and the per-skill `uses` / `hits` columns are how a two-blow skill shows up (more
+hits than uses). The reference numbers are in
 [`../../docs/stages/07-report.md`](../../docs/stages/07-report.md).
 
 ## Known gaps
 
-- Matches are decided by the HP-percentage timeout rather than a defeat: a hit is ~1.5 % of HP. A
-  balance pass on `skill.power` / `ratio_x100` is the fix, not a rule change (ADR 0114 §14).
-- `skill.csv` has no `area_size` or `hits`, so every area skill resolves as one tile
-  (`ArenaFighterBuilder` passes `AreaSize = 0`, `Hits = 1`).
+- The balance is a first pass (ADR 0114 §15): 87 % of authored matches end in a defeat, average
+  91 s of the 120 s limit, rank 1 → 7 win rate 43.6 % → 61.7 %. Movement turns still eat a large
+  share of the clock, which is the AI's problem, not the numbers'.
+- A `Line`/`Cone` is anchored on the aim tile and grows away from the caster, so it can reach one tile
+  past `range_max` — geometry, not a rules rule (ADR 0113).
 - The placeholder AI does not retreat, use reach or score skills; Stage 08 owns `ai_profile`.

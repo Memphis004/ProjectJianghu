@@ -212,6 +212,84 @@ namespace ProjectJianghu.Core.Tests.Arena
             Assert.True(Find(session, 2).Hp < 5000);
         }
 
+        /// <summary>
+        /// A Line skill's size comes from <c>skill.area_size</c> (ADR 0113: total tiles,
+        /// anchor included), and the line grows away from the caster, so a size of 2 aimed
+        /// at the near enemy reaches the one behind it.
+        /// </summary>
+        [Fact]
+        public void A_line_skill_covers_every_tile_away_from_the_caster()
+        {
+            ArenaFighterSetup player = Fighter(0, 0, true, new GridCoord(1, 1));
+            player.Skills = new[] { Skill(101, 1000, rangeMax: 3, area: AreaShape.Line, areaSize: 2) };
+
+            ArenaFighterSetup near = Fighter(1, 1, false, new GridCoord(2, 1), IsoDir.NW);
+            ArenaFighterSetup far = Fighter(2, 1, false, new GridCoord(3, 1), IsoDir.NW);
+
+            using IArenaSession session = Create(Match(player, near, far));
+            RunToRunning(session);
+
+            uint cursor = 0;
+            Drain(session, ref cursor);
+            Assert.Equal(CommandResult.Ok, session.Submit(ArenaCommand.Dev(ArenaCommandKind.DevFillAtb, 0)));
+            Assert.Equal(CommandResult.Ok, session.Submit(ArenaCommand.Skill(0, 0, new GridCoord(2, 1))));
+
+            List<ArenaEvent> events = Read(session, ref cursor);
+            var hits = new List<ArenaEvent>();
+            for (int i = 0; i < events.Count; i++)
+            {
+                if (events[i].Type == ArenaEventType.Hit)
+                {
+                    hits.Add(events[i]);
+                }
+            }
+
+            Assert.Equal(2, hits.Count);
+            Assert.Equal(4000, Find(session, 1).Hp);
+            Assert.Equal(4000, Find(session, 2).Hp);
+        }
+
+        /// <summary>
+        /// <c>skill.hits</c> is how many separate blows one cast lands: every blow is its own
+        /// accuracy, crit and mitigation, while the cast still counts as one use for mastery.
+        /// </summary>
+        [Fact]
+        public void A_two_hit_skill_rolls_every_blow_and_counts_one_use()
+        {
+            ArenaFighterSetup player = Fighter(0, 0, true, new GridCoord(1, 1));
+            player.Skills = new[] { Skill(101, 1000, hits: 2) };
+
+            ArenaFighterSetup enemy = Fighter(1, 1, false, new GridCoord(2, 2), IsoDir.NW);
+
+            using IArenaSession session = Create(Match(player, enemy));
+            RunToRunning(session);
+
+            uint cursor = 0;
+            Drain(session, ref cursor);
+            Assert.Equal(CommandResult.Ok, session.Submit(ArenaCommand.Dev(ArenaCommandKind.DevFillAtb, 0)));
+            Assert.Equal(CommandResult.Ok, session.Submit(ArenaCommand.Skill(0, 0, new GridCoord(2, 2))));
+
+            List<ArenaEvent> events = Read(session, ref cursor);
+            int landed = 0;
+            for (int i = 0; i < events.Count; i++)
+            {
+                if (events[i].Type == ArenaEventType.Hit)
+                {
+                    landed++;
+                }
+            }
+
+            Assert.Equal(2, landed);
+            Assert.Equal(5000 - 2000, Find(session, 1).Hp);
+
+            Assert.Equal(CommandResult.Ok, session.Submit(ArenaCommand.Dev(ArenaCommandKind.DevKillEnemies, 0)));
+            Assert.True(session.TryGetResult(out ArenaMatchResult result));
+
+            SkillUseStat use = Assert.Single(result.Fighters[0].SkillUses);
+            Assert.Equal(1, use.Uses);
+            Assert.Equal(2, use.Hits);
+        }
+
         // ---------------------------------------------------------------- statuses
 
         [Fact]
@@ -417,7 +495,8 @@ namespace ProjectJianghu.Core.Tests.Arena
             int recovery = 0,
             int knockback = 0,
             int statusId = 0,
-            int statusChanceX100 = 0) => new ArenaSkillLoadout
+            int statusChanceX100 = 0,
+            int hits = 1) => new ArenaSkillLoadout
         {
             SkillId = skillId,
             Slot = 0,
@@ -432,7 +511,7 @@ namespace ProjectJianghu.Core.Tests.Arena
             BaseDamage = baseDamage,
             RatioX100 = ratioX100,
             MasteryX100 = 10000,
-            Hits = 1,
+            Hits = hits,
             WindUpTicks = windUp,
             RecoveryTicks = recovery,
             CooldownTicks = 0,

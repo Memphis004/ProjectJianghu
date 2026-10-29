@@ -54,7 +54,7 @@ All four also run inside `tools/test.ps1`. Exit codes: `0` ok, `1` a required ch
 | `constant` | one row | ATB bar, match length, command costs, mitigation K, mastery cap, intellect XP rate, PowerScore rank thresholds | 04–05 |
 | `attribute` | `id` | display metadata per `EAttribute`: category, sort order, display-only, name key, PowerScore/radar weights, creation bounds | 04–05 |
 | `stat_formula` | `id` | one derived stat: `clamp(base + Σ terms, min, max)` | 04 |
-| `skill` | `id` | external / inner / movement skills, their cost, area, telegraph and level bonuses | 04 |
+| `skill` | `id` | external / inner / movement skills: cost, area shape **and size**, blow count, telegraph and level bonuses | 04, 07 |
 | `skill_level` | `id` | the global mastery ladder (XP per level, combat mastery multiplier) | 04–05 |
 | `gear` | `id` | weapons, armour, accessories and their attribute mods | 04 |
 | `status` | `id` | the four abnormal states and what they do per tick | 04 |
@@ -139,6 +139,8 @@ Rules that follow from it:
 | `constant.power_rank_order` | configured PowerScore rank thresholds are not strictly increasing |
 | `mastery.progression_order` | mastery XP thresholds decrease or a combat mastery multiplier is negative |
 | `skill.range_order` | `range_max` is below `range_min` |
+| `skill.hits` | a cast lands at least one blow |
+| `skill.area_size` / `skill.area_size_single` | a Line, Cone, Cross, Diamond or Square declares a size of at least 1 (0 is one tile, ADR 0113); a Single skill leaves it 0 |
 | `arena_map.mask_size` | the mask has a row count ≠ `height`, or a row length ≠ `width` |
 | `arena_map.mask_char` | a mask cell is neither `.` (walkable) nor `#` (blocked) |
 | `reward_pool.source` | an offer names both a gear row and a skill, or neither |

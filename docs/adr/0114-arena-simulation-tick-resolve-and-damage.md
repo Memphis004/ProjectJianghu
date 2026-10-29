@@ -83,7 +83,7 @@ its action in the same tick.
 13. **Nothing allocates per tick.** Every buffer (fighters, skills, paths, statuses, the ring, the
     two frames) is allocated in the constructor; a query writes into the caller's span. Measured:
     0 bytes over 600 ticks after warm-up, and 0.47 ms for a whole 3,600-tick match.
-14. **Three authored numbers were corrected when the simulation first consumed them.** They are
+14. **Four authored things were corrected when the simulation first consumed them.** They are
     data, not code, and each was wrong in a way the arena could not work around:
     - `stat.action_speed_x100` was authored as `100 + Lightness×2 + Decisiveness` with a 50..250
       clamp, but the column (and `CombatStatBlock`) means **hundredths of a percent**, where 1.0 is
@@ -98,6 +98,23 @@ its action in the same tick.
       as the intended long-term formula.
     - The two are visible in `artifacts/balance.csv`: before, 13 of 200 matches ended with **no
       attack at all**; after, 0 of 500 did, at 13–29 casts a match.
+    - `skill.csv` had no `area_size` and no `hits`, so `ArenaFighterBuilder` handed every skill
+      `AreaSize = 0` and `Hits = 1`: a Line, Cone, Cross, Diamond or Square resolved as one tile,
+      and `skill.falling_rain_slash`'s authored "two cuts" was not modelled at all. Both columns
+      are authored now (ADR 0113 defines what the size means per shape), the data validator
+      refuses a sized shape with `area_size` 0 (`skill.area_size`, with a fixture) and a cast with
+      no blows (`skill.hits`), and the builder passes them through instead of hardcoding them.
+15. **The authored damage scale was tuned to the authored HP scale, and the artifact is the
+    evidence.** With the rules correct and the numbers as authored, every one of 500 matches reached
+    the 120-second limit — a hit removed ~1.4 k of 89–102 k HP, so no fighter could fall in 20
+    turns. The flat `skill.power` and `skill.ratio_x100` columns were raised ~10× and then ~25 %
+    more (the GDD's HP target of 80 k–120 k stays as authored; the damage was the column that did
+    not match it), and the two damage-over-time statuses were scaled with them
+    (`internal_injury` 250 → 1,200 per tick, `poison` 400 → 1,800). Measured on the same 500-match
+    sweep: **433 knockouts / 67 timeouts** (87 % decided by a defeat, 0 draws), average match
+    **91 s** against the 120 s limit, and the power-rank gradient survived (rank 1 → 7: 43.6 % →
+    61.7 %). `skill.falling_rain_slash` now lands 608 hits in 501 casts — the two-blow column doing
+    what it says.
 
 ## Alternatives considered
 
@@ -124,16 +141,12 @@ its action in the same tick.
   contract suite passes on both); a batch of matches is cheap enough to run in `test.ps1`.
 - **Positive:** the numbers the rules use are all read from `constant`, `skill`, `status` and
   `stat_formula`, so a balance pass is a data edit plus `tools/gen.ps1`.
-- **Negative — the balance finding this stage produced:** every match of the 500-match sweep hit
-  the 120-second limit (win rate by rank 43 % → 63 %, no draws, decided by HP percentage). A hit
-  does ~1.4 k against 89–102 k HP, about 1.5 %: roughly 60 hits to defeat anyone. The rules are
-  correct — the authored `skill.power`/`ratio_x100` values and the 80 k HP floor are simply an
-  order of magnitude apart. Tuning them is a balance pass, not a simulation change, and
-  `artifacts/balance.csv` is the measurement to start from.
-- **Negative:** `skill.csv` has no `area_size` (or `hits`) column, so `ArenaFighterBuilder` hands
-  every area skill `AreaSize = 0` and `Hits = 1`. Line, Cone, Cross, Diamond and Square therefore
-  resolve as a single tile today, and `skill.falling_rain_slash`'s "two cuts" is not modelled. The
-  geometry is implemented and tested; the data column is missing.
+- **Positive:** the balance data now produces matches that end in a defeat, and the shape of the
+  sweep (per-rank win rate, knockouts vs timeouts, duration, per-skill uses and hits) is what a
+  balance pass reads; see §15 for the numbers and the values that produced them.
+- **Negative:** the balance numbers are first-pass. 87 % of matches end in a defeat and the rest
+  reach the limit, which is playable but not yet a tuned game; every later content addition moves
+  these numbers and the sweep is the tool that says by how much.
 - **Negative:** AI reaction time (`ai_profile.decision_delay_ticks`) is applied as a delay after
   the bar fills, not as a decision cadence, and the placeholder AI ignores `engage_range`,
   `retreat_hp_x100` and `aggression_x100` entirely — Stage 08 owns those.

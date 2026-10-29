@@ -285,6 +285,25 @@ namespace ProjectJianghu.Core.Tests
             Assert.Empty(setup.Skills); Assert.Equal("skill.falling_rain_slash", c.Loadout.ExternalSkillId(0));
         }
 
+        [Fact] public void Builder_carries_the_authored_area_size_and_hit_count()
+        {
+            LubanGameConfig config = Config; var c = MakeCharacter(config);
+            c.Loadout.SetExternalSkill(1, "skill.half_moon_cut");
+            var setup = new ArenaFighterBuilder(config, new StatResolver(config)).Build(c, 2, 1, false, 3, 4, default, IsoDir.SW).Value;
+
+            // The two sword skills the fixture equips: one single target with two blows,
+            // one three-tile line. Both numbers come from skill.csv, not from the builder.
+            ArenaSkillLoadout rain = setup.Skills.Single(x => x.SkillId == StatGrowth.StableId("skill.falling_rain_slash"));
+            Assert.Equal(2, rain.Hits);
+            Assert.Equal(0, rain.AreaSize);
+            Assert.Equal(AreaShape.Single, rain.Area);
+
+            ArenaSkillLoadout halfMoon = setup.Skills.Single(x => x.SkillId == StatGrowth.StableId("skill.half_moon_cut"));
+            Assert.Equal(1, halfMoon.Hits);
+            Assert.Equal(3, halfMoon.AreaSize);
+            Assert.Equal(AreaShape.Line, halfMoon.Area);
+        }
+
         [Fact] public void Skill_ids_are_stable()
         {
             Assert.Equal(StatGrowth.StableId("skill.falling_rain_slash"), StatGrowth.StableId("skill.falling_rain_slash"));

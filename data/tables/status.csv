@@ -1,5 +1,5 @@
 ##,id,kind,duration_ticks,tick_interval_ticks,damage_per_tick,atb_multiplier_x100,neili_regen_multiplier_x100,name_key,desc_key
 ,status.acupoint_seal,AcupointSeal,60,30,0,0,100,status.acupoint_seal.name,status.acupoint_seal.desc
-,status.internal_injury,InternalInjury,180,30,250,100,50,status.internal_injury.name,status.internal_injury.desc
-,status.poison,Poison,150,30,400,100,100,status.poison.name,status.poison.desc
+,status.internal_injury,InternalInjury,180,30,1200,100,50,status.internal_injury.name,status.internal_injury.desc
+,status.poison,Poison,150,30,1800,100,100,status.poison.name,status.poison.desc
 ,status.stagger,Stagger,45,15,0,60,100,status.stagger.name,status.stagger.desc

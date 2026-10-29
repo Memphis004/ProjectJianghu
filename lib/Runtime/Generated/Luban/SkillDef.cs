@@ -21,6 +21,8 @@ public sealed partial class SkillDef : Luban.BeanBase
         WeaponType = (EWeaponType)_buf.ReadInt();
         Target = (ESkillTarget)_buf.ReadInt();
         AreaShape = (EAreaShape)_buf.ReadInt();
+        AreaSize = _buf.ReadInt();
+        Hits = _buf.ReadInt();
         RangeMin = _buf.ReadInt();
         RangeMax = _buf.ReadInt();
         Power = _buf.ReadInt();
@@ -49,6 +51,8 @@ public sealed partial class SkillDef : Luban.BeanBase
     public readonly EWeaponType WeaponType;
     public readonly ESkillTarget Target;
     public readonly EAreaShape AreaShape;
+    public readonly int AreaSize;
+    public readonly int Hits;
     public readonly int RangeMin;
     public readonly int RangeMax;
     public readonly int Power;
@@ -83,6 +87,8 @@ public sealed partial class SkillDef : Luban.BeanBase
         + "weaponType:" + WeaponType + ","
         + "target:" + Target + ","
         + "areaShape:" + AreaShape + ","
+        + "areaSize:" + AreaSize + ","
+        + "hits:" + Hits + ","
         + "rangeMin:" + RangeMin + ","
         + "rangeMax:" + RangeMax + ","
         + "power:" + Power + ","

@@ -230,6 +230,13 @@
     <var name="weapon_type" type="EWeaponType"/>
     <var name="target" type="ESkillTarget"/>
     <var name="area_shape" type="EAreaShape"/>
+    <!-- What the shape measures (ADR 0113): Line = tiles including the anchor,
+         Cone = rows, Cross = arm length, Diamond = Manhattan radius, Square = half
+         extent, Single = ignored. 0 is legal and means the smallest area (one tile). -->
+    <var name="area_size" type="int#(range=[0,12])"/>
+    <!-- How many separate blows one cast lands; each rolls hit and crit on its
+         own (skill.falling_rain_slash cuts twice, GDD section 1.5). -->
+    <var name="hits" type="int#(range=[1,6])"/>
     <var name="range_min" type="int#(range=[0,32])"/>
     <var name="range_max" type="int#(range=[0,32])"/>
     <var name="power" type="int"/>

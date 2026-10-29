@@ -77,6 +77,8 @@ namespace ProjectJianghu.Sim
             var rankMatches = new int[RankBuckets];
             var rankWins = new int[RankBuckets];
             var rankDraws = new int[RankBuckets];
+            var rankKnockouts = new int[RankBuckets];
+            var rankTimeouts = new int[RankBuckets];
             var rankDurations = new long[RankBuckets];
             var skillUse = new Dictionary<int, int>();
             var skillHit = new Dictionary<int, int>();
@@ -85,6 +87,8 @@ namespace ProjectJianghu.Sim
             long totalMilliseconds = 0;
             int wins = 0;
             int draws = 0;
+            int knockouts = 0;
+            int timeouts = 0;
 
             var stopwatch = new Stopwatch();
 
@@ -111,6 +115,30 @@ namespace ProjectJianghu.Sim
                 rankDurations[ranks[first]] += result.DurationTicks;
                 rankMatches[ranks[second]]++;
                 rankDurations[ranks[second]] += result.DurationTicks;
+
+                // How the match ended is the number a balance pass tunes against: a limit
+                // reached by HP percentage is a match that could not finish what it started.
+                bool knockedOut = result.Reason == ArenaEndReason.AllEnemiesDefeated
+                    || result.Reason == ArenaEndReason.AllAlliesDefeated;
+                if (knockedOut)
+                {
+                    knockouts++;
+                }
+                else if (result.Reason == ArenaEndReason.TimeoutHpRatio || result.Reason == ArenaEndReason.TimeoutDraw)
+                {
+                    timeouts++;
+                }
+
+                if (knockedOut)
+                {
+                    rankKnockouts[ranks[first]]++;
+                    rankKnockouts[ranks[second]]++;
+                }
+                else if (result.Reason == ArenaEndReason.TimeoutHpRatio || result.Reason == ArenaEndReason.TimeoutDraw)
+                {
+                    rankTimeouts[ranks[first]]++;
+                    rankTimeouts[ranks[second]]++;
+                }
 
                 if (result.Outcome == ArenaOutcome.Victory)
                 {
@@ -166,8 +194,8 @@ namespace ProjectJianghu.Sim
                 Directory.CreateDirectory(directory);
             }
 
-            WriteCsv(output, config, options.Matches, wins, draws, totalTicks,
-                rankMatches, rankWins, rankDraws, rankDurations, skillUse, skillHit);
+            WriteCsv(output, config, options.Matches, wins, draws, knockouts, timeouts, totalTicks,
+                rankMatches, rankWins, rankDraws, rankKnockouts, rankTimeouts, rankDurations, skillUse, skillHit);
 
             double perMatch = options.Matches == 0 ? 0 : (double)totalMilliseconds / options.Matches;
             double secondsPerMatch = options.Matches == 0 ? 0 : totalTicks / (double)options.Matches / ArenaConstants.TickRate;
@@ -175,6 +203,8 @@ namespace ProjectJianghu.Sim
             Console.WriteLine("balance: matches=" + options.Matches.ToString(CultureInfo.InvariantCulture)
                 + " wins=" + wins.ToString(CultureInfo.InvariantCulture)
                 + " draws=" + draws.ToString(CultureInfo.InvariantCulture)
+                + " knockouts=" + knockouts.ToString(CultureInfo.InvariantCulture)
+                + " timeouts=" + timeouts.ToString(CultureInfo.InvariantCulture)
                 + " avgTicks=" + Format(options.Matches == 0 ? 0 : totalTicks / (double)options.Matches)
                 + " avgSeconds=" + Format(secondsPerMatch));
             Console.WriteLine("balance: avgMsPerMatch=" + Format(perMatch)
@@ -339,16 +369,21 @@ namespace ProjectJianghu.Sim
             int matches,
             int wins,
             int draws,
+            int knockouts,
+            int timeouts,
             long totalTicks,
             int[] rankMatches,
             int[] rankWins,
             int[] rankDraws,
+            int[] rankKnockouts,
+            int[] rankTimeouts,
             long[] rankDurations,
             Dictionary<int, int> skillUse,
             Dictionary<int, int> skillHit)
         {
             var text = new StringBuilder(4096);
-            text.Append("type,name,power_rank,matches,wins,draws,win_rate,avg_duration_ticks,avg_duration_seconds,uses,hits\n");
+            text.Append("type,name,power_rank,matches,wins,draws,knockouts,timeouts,win_rate,"
+                + "avg_duration_ticks,avg_duration_seconds,uses,hits\n");
 
             for (int rank = 0; rank < RankBuckets; rank++)
             {
@@ -364,6 +399,8 @@ namespace ProjectJianghu.Sim
                     .Append(',').Append(Num(rankMatches[rank]))
                     .Append(',').Append(Num(rankWins[rank]))
                     .Append(',').Append(Num(rankDraws[rank]))
+                    .Append(',').Append(Num(rankKnockouts[rank]))
+                    .Append(',').Append(Num(rankTimeouts[rank]))
                     .Append(',').Append(Frac(rate))
                     .Append(',').Append(Frac(ticks))
                     .Append(',').Append(Frac(ticks / ArenaConstants.TickRate))
@@ -387,7 +424,7 @@ namespace ProjectJianghu.Sim
             for (int i = 0; i < byName.Count; i++)
             {
                 text.Append("skill,").Append(byName[i].Name)
-                    .Append(",0,0,0,0,0,0,0,")
+                    .Append(",0,0,0,0,0,0,0,0,0,")
                     .Append(Num(byName[i].Uses)).Append(',').Append(Num(byName[i].Hits)).Append('\n');
             }
 
@@ -395,6 +432,8 @@ namespace ProjectJianghu.Sim
             text.Append("total,total,0,").Append(Num(matches))
                 .Append(',').Append(Num(wins))
                 .Append(',').Append(Num(draws))
+                .Append(',').Append(Num(knockouts))
+                .Append(',').Append(Num(timeouts))
                 .Append(",0,").Append(Frac(averageTicks))
                 .Append(',').Append(Frac(averageTicks / ArenaConstants.TickRate))
                 .Append(",0,0\n");

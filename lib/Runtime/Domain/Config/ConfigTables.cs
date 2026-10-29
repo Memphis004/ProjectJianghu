@@ -155,6 +155,16 @@ namespace ProjectJianghu.Core.Domain.Config
         /// <summary>The tiles the skill covers.</summary>
         public EAreaShape AreaShape { get; set; }
 
+        /// <summary>
+        /// What <see cref="AreaShape"/> measures — Line: tiles including the anchor,
+        /// Cone: rows, Cross: arm length, Diamond: Manhattan radius, Square: half extent,
+        /// Single: ignored (ADR 0113). 0 is the smallest area, one tile.
+        /// </summary>
+        public int AreaSize { get; set; }
+
+        /// <summary>How many separate blows one cast lands; each rolls hit and crit on its own.</summary>
+        public int Hits { get; set; }
+
         /// <summary>Minimum Manhattan range from the caster.</summary>
         public int RangeMin { get; set; }
 

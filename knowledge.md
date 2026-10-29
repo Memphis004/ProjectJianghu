@@ -266,11 +266,10 @@ Full detail: [`docs/architecture/overview.md`](docs/architecture/overview.md).
   ([ADR 0002](docs/adr/0002-thin-mvp-ui-approach.md)).
 - `Simulation` now holds the arena match loop (`Simulation/Arena`, ADR 0114/0115);
   a different game would replace that folder, not add an engine (ADR 0101).
-- The arena's balance data is not tuned yet: a hit is ~1.5 % of HP, so every authored
-  match is decided by the 120 s HP-percentage timeout. `artifacts/balance.csv` is the
-  measurement to start from.
-- `skill.csv` has no `area_size`/`hits` column, so area skills resolve as one tile and
-  `falling_rain_slash`'s two cuts are not modelled.
+- The arena's balance is a first pass, measured by `tools/sim.ps1 --matches 500`
+  (`artifacts/balance.csv`): 433 of 500 matches end in a defeat, 91 s average of the
+  120 s limit. The rest run out of time repositioning — an AI problem, not a numbers one
+  (ADR 0114 §15).
 - `Contracts/Save` holds only `CheckpointProbe`; the first real save format is the
   game's decision, and it should start at schema version 1 with a migration story.
 - `SaveHeader` has no reader yet.

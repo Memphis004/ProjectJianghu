@@ -160,6 +160,8 @@ namespace ProjectJianghu.Core.Infrastructure.Config
                     WeaponType = (EWeaponType)row.WeaponType,
                     Target = (ESkillTarget)row.Target,
                     AreaShape = (EAreaShape)row.AreaShape,
+                    AreaSize = row.AreaSize,
+                    Hits = row.Hits,
                     RangeMin = row.RangeMin,
                     RangeMax = row.RangeMax,
                     Power = row.Power,
