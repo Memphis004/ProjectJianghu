@@ -53,7 +53,7 @@ DoD: check-links ผ่าน, test.ps1 -Suite Fast ผ่าน, commit "stage-
 DoD: gen idempotent (รันซ้ำ diff ว่าง), validate ผ่าน, เทสต์โหลด Tables ผ่าน
 
 
-## Stage 02
+## Stage 02: ArenaBattle Contract v1
 ทำ Stage 02 เท่านั้น: Arena Contract + Fake + contract tests (ยังไม่ทำ sim จริง)
 งาน:
 1. สร้างไฟล์ตาม contract ที่แนบใน lib/Runtime/Domain/Arena/ (namespace ProjectJianghu.Core.Domain.Arena)
@@ -79,7 +79,7 @@ DoD: gen idempotent (รันซ้ำ diff ว่าง), validate ผ่า�
    กฎ "event ใช้แค่ VFX/เสียง/UI"
 DoD: contract suite ผ่านกับ Fake ทุกข้อ, compile ใน Unity ไม่มี warning ใหม่
 
-## Stage 03
+## Stage 03: Unity Shell Re-baseline
 ทำ Stage 03 เท่านั้น (ฉบับ v0.2): ปรับ Unity shell ของ template ให้เป็นของ Jianghu
 (shell, scope, ฟอนต์ไทย และ Web smoke มีอยู่แล้ว ห้ามสร้างซ้ำ)
 

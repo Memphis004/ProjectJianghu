@@ -22,6 +22,7 @@ docs.
 | The loop and the three scopes (App / Run / Scene), `SceneLoader`, the published screens | [`systems/loop-and-scopes.md`](systems/loop-and-scopes.md) | done |
 | Unity shell (scenes, DI, the 7-probe smoke suite, page globals, the Web build) | [`systems/unity-shell.md`](systems/unity-shell.md) | done |
 | Core primitives (RNG, clock, ticker, `Result`, `EventRing<T>`, `PrevCurBuffer<T>`) | [`../docs/architecture/overview.md`](../docs/architecture/overview.md), [ADR 0004](../docs/adr/0004-dotnet-layer-enforcement.md), [ADR 0024](../docs/adr/0024-shared-generic-buffers.md) | done |
+| Arena contract v1 (`Domain.Arena`): commands, frame/query, events, results, the shared frame buffer, the fake and replay | [`systems/arena-contract.md`](systems/arena-contract.md) | done |
 | Save / resume | *(pending — a game's decision)* | not started |
 
 Notes live in [`systems/`](systems/). Create one file per system as it lands.

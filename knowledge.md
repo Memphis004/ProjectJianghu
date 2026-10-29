@@ -45,7 +45,7 @@ the Editor.
 | --- | --- | --- | --- |
 | **00** | Fork + docs baseline: GDD, plan, glossary, ADR 0100–0102, scene mapping | **done** | [`docs/stages/00-report.md`](docs/stages/00-report.md) |
 | 01 | Luban/protoc rebuilt for the game: 10 enums, 3 beans, 13 tables + localization, `SaveData`/`CharacterState`/`TournamentState`/`ArenaReplay` | **done** | [`docs/stages/01-report.md`](docs/stages/01-report.md) |
-| 02 | Arena contract in `Domain.Arena` + `EventRing<T>` in Shared + `FakeArenaSession` + contract suite | planned | — |
+| 02 | Arena contract in `Domain.Arena` + shared `ArenaFrameBuffer` + `FakeArenaSession`/factory/auto-resolver + `ArenaReplay` + contract suite | **done** | [`docs/stages/02-report.md`](docs/stages/02-report.md) |
 | 03 | Unity shell → Jianghu screens (`CharacterCreate`, `Bracket`, `Rest`, `Arena`); HD-2D iso spike; 3 URP tiers; WebGL canvas | planned | — |
 | 04 | Prototype content: attributes, `stat_formula`, 13 skills, gear, 4 statuses, 4 backgrounds, 31 fighters, map, reward pool | planned | — |
 | 05 | Character / stats / loadout domain: `StatResolver`, `ModifierStack`, `PowerScore`, `ArenaFighterBuilder`, `CharacterCreation` | planned | — |
@@ -89,9 +89,12 @@ its reports under `docs/stages/` (skeleton: [`docs/stages/_TEMPLATE.md`](docs/st
 `IGameConfig` port with its Infrastructure adapter, the shared
 deterministic primitives (`IRandomSource`/`Xoshiro128`/`RandomStreams`,
 `IClock`/`SystemClock`, `FixedTicker`, `EventRing<T>`, `PrevCurBuffer<T>`,
-`Result`/`Error`), the run skeleton (`RunSession`, `SceneFlow`, `ReplayLog`) and a
-serialization probe. Unity ships six scenes (Boot, Title, Hub, Encounter, Result, ThaiTextSpike), a
-7-probe smoke suite, the page bridge and the Web build pipeline. `dotnet` carries **138** xUnit cases; Unity
+`Result`/`Error`), the run skeleton (`RunSession`, `SceneFlow`, `ReplayLog`), a
+serialization probe, and the ArenaBattle v1 contract (`Domain.Arena`: commands, frames,
+queries, events, results) with the shared `ArenaFrameBuffer`, a deterministic
+`FakeArenaSession`/factory/auto-resolver and `ArenaReplay` in Application. Unity ships six
+scenes (Boot, Title, Hub, Encounter, Result, ThaiTextSpike), a
+7-probe smoke suite, the page bridge and the Web build pipeline. `dotnet` carries **156** xUnit cases; Unity
 carries **32** EditMode and **6** PlayMode cases; Playwright has **4** tests in
 three specs (`smoke`, `title`, `loop`).
 

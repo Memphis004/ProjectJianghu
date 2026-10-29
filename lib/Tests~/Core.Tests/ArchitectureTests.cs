@@ -88,6 +88,21 @@ namespace ProjectJianghu.Core.Tests
                 { "ProjectJianghu.Core.Contracts", Array.Empty<string>() },
             };
 
+        /// <summary>
+        /// Namespaces the ArenaBattle contract must never name. The arena was chosen as the
+        /// seam between rules and presentation (GDD part 2), so a public contract type that
+        /// mentions an engine, R3, VContainer or UniTask has started a dependency that the
+        /// layer graph cannot take back.
+        /// </summary>
+        private static readonly string[] ForbiddenContractNamespaces =
+        {
+            "UnityEngine",
+            "UnityEditor",
+            "R3",
+            "VContainer",
+            "Cysharp",
+        };
+
         /// <summary>APIs AGENTS.md rule 6 keeps out of the rule engine.</summary>
         private static readonly string[] ForbiddenRuleEngineApis =
         {
@@ -114,6 +129,42 @@ namespace ProjectJianghu.Core.Tests
                             || referencedName.StartsWith("UnityEditor", StringComparison.Ordinal)))
                     {
                         offenders.Add(name + " references " + referencedName);
+                    }
+                }
+            }
+
+            Assert.Empty(offenders);
+        }
+
+        /// <summary>
+        /// The public types of <c>ProjectJianghu.Core.Domain.Arena</c> name nothing from
+        /// UnityEngine, R3, VContainer or UniTask, and neither do the sources behind them.
+        /// </summary>
+        [Fact]
+        public void Arena_contract_public_types_are_engine_free()
+        {
+            Assembly assembly = Assembly.Load(new AssemblyName("ProjectJianghu.Core.Domain"));
+            var offenders = new List<string>();
+
+            Type[] arenaTypes = assembly.GetTypes()
+                .Where(type => type.IsPublic && type.Namespace == "ProjectJianghu.Core.Domain.Arena")
+                .ToArray();
+
+            Assert.NotEmpty(arenaTypes);
+
+            foreach (Type type in arenaTypes)
+            {
+                CheckContractType(type, type.FullName ?? type.Name, offenders);
+            }
+
+            foreach (string file in LibSourceFiles("Runtime/Domain/Arena"))
+            {
+                string code = StripComments(File.ReadAllText(file));
+                foreach (string forbidden in ForbiddenContractNamespaces)
+                {
+                    if (code.Contains(forbidden, StringComparison.Ordinal))
+                    {
+                        offenders.Add(RelativePath(file) + " names " + forbidden);
                     }
                 }
             }
@@ -466,6 +517,87 @@ namespace ProjectJianghu.Core.Tests
                 .ToList();
 
             Assert.Equal(new[] { "lib/Runtime/Generated/Proto/App.cs" }, copies);
+        }
+
+        private static void CheckContractType(Type type, string owner, List<string> offenders)
+        {
+            CheckContractReference(type.BaseType, owner, offenders);
+
+            foreach (Type implemented in type.GetInterfaces())
+            {
+                CheckContractReference(implemented, owner, offenders);
+            }
+
+            const BindingFlags Declared = BindingFlags.Public | BindingFlags.NonPublic
+                | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly;
+
+            foreach (FieldInfo field in type.GetFields(Declared))
+            {
+                CheckContractReference(field.FieldType, owner, offenders);
+            }
+
+            foreach (PropertyInfo property in type.GetProperties(Declared))
+            {
+                CheckContractReference(property.PropertyType, owner, offenders);
+            }
+
+            foreach (MethodInfo method in type.GetMethods(Declared))
+            {
+                CheckContractReference(method.ReturnType, owner, offenders);
+                foreach (ParameterInfo parameter in method.GetParameters())
+                {
+                    CheckContractReference(parameter.ParameterType, owner, offenders);
+                }
+            }
+
+            foreach (ConstructorInfo constructor in type.GetConstructors(Declared))
+            {
+                foreach (ParameterInfo parameter in constructor.GetParameters())
+                {
+                    CheckContractReference(parameter.ParameterType, owner, offenders);
+                }
+            }
+        }
+
+        private static void CheckContractReference(Type? type, string owner, List<string> offenders)
+        {
+            if (type is null)
+            {
+                return;
+            }
+
+            if (type.IsGenericParameter)
+            {
+                foreach (Type constraint in type.GetGenericParameterConstraints())
+                {
+                    CheckContractReference(constraint, owner, offenders);
+                }
+
+                return;
+            }
+
+            if (type.HasElementType)
+            {
+                CheckContractReference(type.GetElementType(), owner, offenders);
+                return;
+            }
+
+            string nameSpace = type.Namespace ?? string.Empty;
+            foreach (string forbidden in ForbiddenContractNamespaces)
+            {
+                if (nameSpace == forbidden || nameSpace.StartsWith(forbidden + ".", StringComparison.Ordinal))
+                {
+                    offenders.Add(owner + " references " + type.FullName);
+                }
+            }
+
+            if (type.IsGenericType)
+            {
+                foreach (Type argument in type.GetGenericArguments())
+                {
+                    CheckContractReference(argument, owner, offenders);
+                }
+            }
         }
 
         private static string RepoRoot => RepoLayout.Root;
