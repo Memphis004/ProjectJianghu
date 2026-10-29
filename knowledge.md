@@ -50,7 +50,7 @@ the Editor.
 | 03 | Unity shell → Jianghu screens (`CharacterCreate`, `Bracket`, `Rest`, `Arena`); HD-2D iso spike; 3 URP tiers; WebGL canvas | **done** | [`docs/stages/03-report.md`](docs/stages/03-report.md) |
 | 04 | Prototype content: attributes, `stat_formula`, 13 skills, gear, 4 statuses, 4 backgrounds, 31 fighters, map, reward pool | **done** | [`docs/stages/04-report.md`](docs/stages/04-report.md) |
 | 05 | Character / stats / loadout domain: `StatResolver`, `ModifierStack`, `PowerScore`, `ArenaFighterBuilder`, `CharacterCreation` | **done** | [`docs/stages/05-report.md`](docs/stages/05-report.md) |
-| 06 | Grid and targeting domain: reachability, jump, area shapes, facing (pure, zero-alloc) | planned | — |
+| 06 | Grid and targeting domain: reachability, jump, area shapes, facing (pure, zero-alloc) | **done** | [`docs/stages/06-report.md`](docs/stages/06-report.md) |
 | 07 | `ArenaSimulation`: struct-array fighters ([ADR 0101](docs/adr/0101-no-ecs-struct-array-fighters.md)), ATB, resolve, stats | planned | — |
 | 08 | Arena AI: utility scoring, 4 archetypes, telegraph evasion | planned | — |
 | 09 | Arena presentation: HD-2D scene, `ArenaRunner`, sprite pool, tile highlights, HUD | planned | — |
@@ -84,7 +84,7 @@ The template is extracted from a finished prototype (the game repo, tag
 A game built from this template starts its own stage numbering at 01 and writes
 its reports under `docs/stages/` (skeleton: [`docs/stages/_TEMPLATE.md`](docs/stages/_TEMPLATE.md)).
 
-**Current state:** Stage 05 adds the pure C# `Domain.Character` rules (character state, source-preserving modifiers, config-driven stat resolution, loadout validation, character creation, mastery growth and arena-fighter setup building). The package has the game's fourteen data tables (`localization`,
+**Current state:** Stage 06 adds the pure C# grid rules (`Domain.Arena`: `ArenaGrid` mask and occupancy, BFS walk reachability and paths, jump landings, six area shapes, and the facing / front-flank-back rule — all writing into caller spans, measured at 0 bytes allocated), on top of Stage 05's `Domain.Character` rules (character state, source-preserving modifiers, config-driven stat resolution, loadout validation, character creation, mastery growth and arena-fighter setup building). The package has the game's fourteen data tables (`localization`,
 `constant`, `attribute`, `stat_formula`, `skill`, `skill_level`, `gear`, `status`,
 `fighter`, `ai_profile`, `arena_map`, `tournament`, `reward_pool`, `background`), the
 `IGameConfig` port with its Infrastructure adapter, the shared
@@ -95,8 +95,7 @@ serialization probe, and the ArenaBattle v1 contract (`Domain.Arena`: commands, 
 queries, events, results) with the shared `ArenaFrameBuffer`, a deterministic
 `FakeArenaSession`/factory/auto-resolver and `ArenaReplay` in Application. Unity ships eight
 scenes (Boot, Title, ThaiTextSpike, CharacterCreate, Bracket, Rest, Arena, Result), the HD-2D
-isometric spike with its sorting probe, three URP quality tiers, a project WebGL template, a
-7-probe smoke suite, the page bridge and the Web build pipeline. `dotnet` carries **208** xUnit cases;
+isometric spike with its sorting probe, three URP quality tiers, a project WebGL template,a 7-probe smoke suite, the page bridge and the Web build pipeline. `dotnet` carries **272** xUnit cases;
 Unity carries **42** EditMode and **7** PlayMode cases; Playwright has **4** tests in
 three specs (`smoke`, `title`, `loop`).
 
