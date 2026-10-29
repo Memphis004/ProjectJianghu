@@ -14,11 +14,15 @@ namespace ProjectJianghu.Core.Application.Arena.Fake
     /// <remarks>
     /// <para>
     /// Everything the contract promises is honoured here, but only in the simplest way
-    /// that can be: an empty grid, Manhattan reachability, one-tile skills and no
-    /// crit/evade/counter. The one thing it must <b>not</b> be is fuzzy — the same
-    /// setup, seed and command stream always produce the same
-    /// <see cref="ComputeStateHash"/>, because the replay contract is what the suite
-    /// checks.
+    /// that can be: an empty grid, no crit/evade/counter, and Move/Jump that arrive in
+    /// one tick. The <b>geometry</b> is not simplified, though: reachability, jump
+    /// landings, skill areas and facing come from the Stage 06 domain
+    /// (<see cref="ArenaPathfinder"/>, <see cref="ArenaArea"/>, <see cref="ArenaFacing"/>)
+    /// over an <see cref="ArenaGrid"/> whose occupant mirror this class keeps current, so
+    /// a highlight the presentation shows and the command that later validates cannot
+    /// disagree. The one thing it must <b>not</b> be is fuzzy — the same setup, seed and
+    /// command stream always produce the same <see cref="ComputeStateHash"/>, because the
+    /// replay contract is what the suite checks.
     /// </para>
     /// <para>
     /// The seed decides each fighter's initial ATB fill (a 0–12.5% head start), so a
@@ -55,6 +59,9 @@ namespace ProjectJianghu.Core.Application.Arena.Fake
         private readonly float[] _previousX;
         private readonly float[] _previousY;
         private readonly GridCoord[] _tileBuffer;
+        private readonly GridCoord[] _pathBuffer;
+        private readonly GridCoord[] _areaBuffer;
+        private readonly ArenaGrid _grid;
         private readonly ArenaFrameBuffer _frame;
         private readonly EventRing<ArenaEvent> _ring;
         private readonly FakeArenaQuery _query;
@@ -94,8 +101,10 @@ namespace ProjectJianghu.Core.Application.Arena.Fake
             FakeArenaOptions knobs = options ?? new FakeArenaOptions();
 
             _introTicks = Math.Max(0, knobs.IntroTicks);
-            _width = Math.Max(1, knobs.Width);
-            _height = Math.Max(1, knobs.Height);
+            // ArenaGrid owns the contract's maximum; an option outside it would otherwise
+            // make the constructor throw where the fake used to accept any size.
+            _width = Math.Clamp(knobs.Width, 1, ArenaConstants.MaxGridSize);
+            _height = Math.Clamp(knobs.Height, 1, ArenaConstants.MaxGridSize);
             _winAtTick = knobs.WinAtTick;
             _loseAtTick = knobs.LoseAtTick;
             _timeoutAtTick = knobs.TimeoutAtTick;
@@ -117,6 +126,9 @@ namespace ProjectJianghu.Core.Application.Arena.Fake
             _previousX = new float[MaxFighters];
             _previousY = new float[MaxFighters];
             _tileBuffer = new GridCoord[ArenaConstants.MaxGridTiles];
+            _pathBuffer = new GridCoord[ArenaConstants.MaxGridTiles];
+            _areaBuffer = new GridCoord[ArenaConstants.MaxGridTiles];
+            _grid = new ArenaGrid(_width, _height);
             _frame = new ArenaFrameBuffer();
             _ring = new EventRing<ArenaEvent>(ArenaConstants.EventRingCapacity);
             _query = new FakeArenaQuery(this);
@@ -482,29 +494,10 @@ namespace ProjectJianghu.Core.Application.Arena.Fake
             }
 
             ref FakeFighter self = ref _fighters[index];
-            int count = 0;
-            for (int y = 0; y < _height; y++)
-            {
-                for (int x = 0; x < _width; x++)
-                {
-                    var tile = new GridCoord(x, y);
-                    int distance = self.Tile.Manhattan(tile);
-                    if (distance == 0 || distance > self.MoveRange || IsOccupied(tile))
-                    {
-                        continue;
-                    }
+            SyncOccupancy();
 
-                    if (count == destination.Length)
-                    {
-                        return count;
-                    }
-
-                    destination[count] = tile;
-                    count++;
-                }
-            }
-
-            return count;
+            // A walk, not a Manhattan disk: a fighter in the corridor is an obstacle now.
+            return ArenaPathfinder.GetReachable(_grid, self.Tile, self.MoveRange, destination);
         }
 
         internal int WriteJumpTiles(byte fighter, Span<GridCoord> destination)
@@ -516,29 +509,9 @@ namespace ProjectJianghu.Core.Application.Arena.Fake
             }
 
             ref FakeFighter self = ref _fighters[index];
-            int count = 0;
-            for (int y = 0; y < _height; y++)
-            {
-                for (int x = 0; x < _width; x++)
-                {
-                    var tile = new GridCoord(x, y);
-                    int distance = self.Tile.Manhattan(tile);
-                    if (distance == 0 || distance > self.JumpRange || IsOccupied(tile))
-                    {
-                        continue;
-                    }
+            SyncOccupancy();
 
-                    if (count == destination.Length)
-                    {
-                        return count;
-                    }
-
-                    destination[count] = tile;
-                    count++;
-                }
-            }
-
-            return count;
+            return ArenaPathfinder.GetJumpTargets(_grid, self.Tile, self.JumpRange, destination);
         }
 
         internal int WriteSkillRangeTiles(byte fighter, byte slot, Span<GridCoord> destination)
@@ -601,19 +574,19 @@ namespace ProjectJianghu.Core.Application.Arena.Fake
             }
 
             ref FakeFighter self = ref _fighters[index];
-            if (slot >= self.Skills.Length || !IsWalkableTile(target) || destination.Length == 0)
+            if (slot >= self.Skills.Length || !_grid.IsWalkable(target) || destination.Length == 0)
             {
                 return 0;
             }
 
-            // The fake resolves every skill on the single target tile; shapes are Stage 06's
-            // geometry and are deliberately not guessed here.
-            destination[0] = target;
-            return 1;
+            // The same call the resolve makes, so the preview is the truth rather than an
+            // estimate: shape, size and the caster's facing all come from the loadout.
+            ArenaSkillLoadout skill = self.Skills[slot];
+            return ArenaArea.Resolve(
+                skill.Area, target, ArenaFacing.Toward(self.Tile, target), skill.AreaSize, _grid, destination);
         }
 
-        internal bool IsWalkableTile(GridCoord tile) =>
-            tile.X >= 0 && tile.Y >= 0 && tile.X < _width && tile.Y < _height;
+        internal bool IsWalkableTile(GridCoord tile) => _grid.IsWalkable(tile);
 
         // ---------------------------------------------------------------- validation
 
@@ -624,14 +597,23 @@ namespace ProjectJianghu.Core.Application.Arena.Fake
                 return CommandResult.RejectedOutOfRange;
             }
 
-            if (target == fighter.Tile || IsOccupied(target))
+            if (target == fighter.Tile)
             {
                 return CommandResult.RejectedBlocked;
             }
 
+            SyncOccupancy();
+
+            // Accept exactly what the walk can reach: an in-range tile behind a fighter is
+            // blocked, not "in range" — the highlight and the command now agree.
+            if (ArenaPathfinder.FindPath(_grid, fighter.Tile, target, fighter.MoveRange, _pathBuffer) > 0)
+            {
+                return CommandResult.Ok;
+            }
+
             return fighter.Tile.Manhattan(target) > fighter.MoveRange
                 ? CommandResult.RejectedOutOfRange
-                : CommandResult.Ok;
+                : CommandResult.RejectedBlocked;
         }
 
         private CommandResult ValidateJump(in FakeFighter fighter, GridCoord target)
@@ -646,14 +628,29 @@ namespace ProjectJianghu.Core.Application.Arena.Fake
                 return CommandResult.RejectedOutOfRange;
             }
 
-            if (target == fighter.Tile || IsOccupied(target))
+            SyncOccupancy();
+
+            if (target == fighter.Tile || _grid.IsOccupied(target))
             {
                 return CommandResult.RejectedBlocked;
             }
 
-            return fighter.Tile.Manhattan(target) > fighter.JumpRange
-                ? CommandResult.RejectedOutOfRange
-                : CommandResult.Ok;
+            if (fighter.Tile.Manhattan(target) > fighter.JumpRange)
+            {
+                return CommandResult.RejectedOutOfRange;
+            }
+
+            // The last word is the same query the highlight comes from.
+            int count = ArenaPathfinder.GetJumpTargets(_grid, fighter.Tile, fighter.JumpRange, _areaBuffer);
+            for (int i = 0; i < count; i++)
+            {
+                if (_areaBuffer[i] == target)
+                {
+                    return CommandResult.Ok;
+                }
+            }
+
+            return CommandResult.RejectedBlocked;
         }
 
         private CommandResult ValidateSkill(in FakeFighter fighter, byte slot, GridCoord target)
@@ -674,7 +671,7 @@ namespace ProjectJianghu.Core.Application.Arena.Fake
                 return CommandResult.RejectedNoNeili;
             }
 
-            if (!IsWalkableTile(target))
+            if (!_grid.IsWalkable(target))
             {
                 return CommandResult.RejectedOutOfRange;
             }
@@ -940,7 +937,9 @@ namespace ProjectJianghu.Core.Application.Arena.Fake
         private void ApplyMove(ref FakeFighter fighter, GridCoord target)
         {
             int distance = fighter.Tile.Manhattan(target);
-            fighter.Facing = FacingTowards(target.X - fighter.Tile.X, target.Y - fighter.Tile.Y);
+            // The fake arrives in one tick, so the facing is the move's dominant axis
+            // rather than the direction of a last step.
+            fighter.Facing = ArenaFacing.Toward(fighter.Tile, target);
             fighter.Tile = target;
             fighter.State = FighterState.Charging;
             fighter.Atb = 0;
@@ -954,7 +953,7 @@ namespace ProjectJianghu.Core.Application.Arena.Fake
         private void ApplyJump(ref FakeFighter fighter, GridCoord target)
         {
             int distance = fighter.Tile.Manhattan(target);
-            fighter.Facing = FacingTowards(target.X - fighter.Tile.X, target.Y - fighter.Tile.Y);
+            fighter.Facing = ArenaFacing.Toward(fighter.Tile, target);
             fighter.Tile = target;
             fighter.JumpCooldown = fighter.JumpCooldownTicks;
             fighter.State = FighterState.Charging;
@@ -995,9 +994,18 @@ namespace ProjectJianghu.Core.Application.Arena.Fake
             Emit(ArenaEventType.SkillWindUp, fighter.Id, targetId, skill.SkillId, slot, skill.WindUpTicks, target);
             Emit(ArenaEventType.SkillCast, fighter.Id, targetId, skill.SkillId, skill.BaseDamage, 0, target, flags);
 
-            if (hasTarget)
+            // The area decides who is hit, and it is the same tile set PreviewSkillArea
+            // reports. For a Single shape this is the aimed tile, which is all the
+            // contract suite's setup uses; a wider shape hits everyone standing in it.
+            int areaCount = ArenaArea.Resolve(
+                skill.Area, target, ArenaFacing.Toward(fighter.Tile, target), skill.AreaSize, _grid, _areaBuffer);
+
+            for (int i = 0; i < areaCount; i++)
             {
-                ApplyHit(index, targetIndex, slot, in skill, flags);
+                if (TryFindFighterAt(_areaBuffer[i], fighter.Team, out int victimIndex))
+                {
+                    ApplyHit(index, victimIndex, slot, in skill, flags);
+                }
             }
 
             fighter.ActiveSkillId = 0;
@@ -1369,17 +1377,26 @@ namespace ProjectJianghu.Core.Application.Arena.Fake
             return index >= 0 && index < _fighterCount;
         }
 
-        private bool IsOccupied(GridCoord tile)
+        /// <summary>
+        /// Rebuilds the grid's occupant mirror from the fighters still standing.
+        /// </summary>
+        /// <remarks>
+        /// The fighters own their tiles; the mirror exists so one grid answers walk, jump,
+        /// area and preview questions the same way. Rebuilding at every entry point costs a
+        /// handful of iterations for at most eight fighters and cannot go stale, which is
+        /// cheaper to reason about than an update scattered over every HP change.
+        /// </remarks>
+        private void SyncOccupancy()
         {
+            _grid.ClearOccupancy();
             for (int i = 0; i < _fighterCount; i++)
             {
-                if (_fighters[i].Hp > 0 && _fighters[i].Tile == tile)
+                ref FakeFighter fighter = ref _fighters[i];
+                if (fighter.Hp > 0)
                 {
-                    return true;
+                    _grid.TryOccupy(fighter.Tile, fighter.Id);
                 }
             }
-
-            return false;
         }
 
         private bool TryFindFighterAt(GridCoord tile, byte team, out int index)
@@ -1408,16 +1425,6 @@ namespace ProjectJianghu.Core.Application.Arena.Fake
             }
 
             return ArenaConstants.NoFighter;
-        }
-
-        private static IsoDir FacingTowards(int dx, int dy)
-        {
-            if (Math.Abs(dx) >= Math.Abs(dy))
-            {
-                return dx < 0 ? IsoDir.NW : IsoDir.SE;
-            }
-
-            return dy < 0 ? IsoDir.SW : IsoDir.NE;
         }
 
         private static ArenaSkillLoadout[] CopySkills(IReadOnlyList<ArenaSkillLoadout>? source, int count)

@@ -14,28 +14,38 @@ No Unity API, no config row, no allocation. Every query writes into the caller's
 | # | Criterion | Verdict | Evidence |
 | --- | --- | --- | --- |
 | 1 | `ArenaGrid` from an `arena_map` mask; occupancy; `GridCoord` ↔ index | **PASS** | `GridDomainTests.Grid_reads_its_size_and_blocked_tiles_from_a_mask`, `Authored_arena_map_loads_into_a_grid` (the real `map.open_court` row: 12×12, 8 blocked), `Grid_index_round_trips_…`, `Occupancy_is_exclusive_…`, `Grid_rejects_a_malformed_mask`. |
-| 2 | Reachability: BFS over four directions within `moveRange`, no walking through a fighter, empty destination, path returned one tile at a time | **PASS** | `Reachable_on_an_open_grid_is_the_manhattan_disk`, `Reachable_does_not_pass_through_a_fighter` (a wall of one fighter makes two in-range tiles unreachable), `Path_is_one_adjacent_step_per_tile_and_ends_on_the_goal`, `Path_refuses_…`, `Path_truncation_reports_failure_…`. |
+| 2 | Reachability: BFS over four directions within `moveRange`, no walking through a fighter, empty destination, path returned one tile at a time | **PASS** | `Reachable_on_an_open_grid_is_the_manhattan_disk`, `Reachable_does_not_pass_through_a_fighter` (a wall of one fighter makes two in-range tiles unreachable), `Path_is_one_adjacent_step_per_tile_and_ends_on_the_goal`, `Path_refuses_…`, `Path_truncation_reports_failure_…`; `FakeArenaGeometryTests.A_fighter_in_the_way_shortens_the_walk_and_the_command_says_blocked` shows the shipped query and the shipped command agreeing. |
 | 3 | Jump targets within `jumpRange` Manhattan, landing walkable and empty, fighters jumped over | **PASS** | `Jump_lands_only_on_free_tiles_within_manhattan_range` (start (0,0), fighter at (2,0): (3,0) and (4,0) are legal landings), `Jump_excludes_a_blocked_landing_tile_and_far_landings`. |
-| 4 | Six area shapes, anchored on the target tile and oriented by the caster's facing, clipped at the grid edge | **PASS** | `Shape_golden` — 20 golden cases (every shape, all four directions), `Line_and_cone_grow_away_from_the_caster_in_generation_order`, `Shape_is_clipped_to_the_grid_bounds` (corner, edge and a 1-tile square). |
-| 5 | Facing after a walk, facing toward a target, relative angle → front / flank / back | **PASS** | `Direction_delta_and_opposite_are_the_four_axes`, `Facing_toward_uses_the_dominant_axis_and_ties_go_to_x`, `Relative_angle_is_front_flank_or_back` (20 cases: four facings × four neighbour and diagonal positions). |
+| 4 | Six area shapes, anchored on the target tile and oriented by the caster's facing, clipped at the grid edge | **PASS** | `Shape_golden` — 20 golden cases (every shape, all four directions), `Line_and_cone_grow_away_from_the_caster_in_generation_order`, `Shape_is_clipped_to_the_grid_bounds` (corner, edge and a 1-tile square); `FakeArenaGeometryTests.The_preview_is_exactly_the_area_the_resolve_hits` (a cross damages the enemy in the area who is not on the aim tile). |
+| 5 | Facing after a walk, facing toward a target, relative angle → front / flank / back | **PASS** | `Direction_delta_and_opposite_are_the_four_axes`, `Facing_toward_uses_the_dominant_axis_and_ties_go_to_x`, `Relative_angle_is_front_flank_or_back` (20 cases: four facings × four neighbour and diagonal positions); `FakeArenaGeometryTests.Facing_after_a_move_is_the_stage06_direction` (all four axes through the shipped fake). |
 | 6 | All buffers are caller spans; no allocation | **PASS** | `Queries_write_into_caller_spans_without_allocating` — `GC.GetAllocatedBytesForCurrentThread` delta over 500 rounds of all four query kinds = **0 bytes**; truncation instead of growth proven by `Reachable_truncates_to_the_callers_span` and `Shape_zero_size_and_small_buffers_are_defined`. |
 | 7 | 10,000-iteration property test: path length ≤ range, no path crosses an obstacle | **PASS** | `Every_reachable_tile_has_a_legal_path_and_nothing_else_does` — 10,000 random boards (1..6 × 1..6, 30% blocked, up to two fighters) compared tile-for-tile with an independent flood fill, plus >10,000 reconstructed paths checked for adjacency, walkability, no repeats and length ≤ `moveRange`. |
 | 8 | Benchmark query < 0.05 ms | **PASS** | `Arena_queries_stay_under_fifty_microseconds` — reachability + path + jump + cone, 5,000 rounds on the authored 12×12 map: **4.702 µs per query** (0.0047 ms) on the reference machine, .NET 9 Debug. |
 
-Supporting counts: `dotnet test` **272 passed** (64 of them this stage), Stage-06 class 64/64 in
-261 ms.
+Supporting counts: `dotnet test` **279 passed** (71 of them this stage: 64 domain, 7 pinning
+the fake's geometry to the domain), Stage-06 domain class 64/64 in 261 ms.
+
+The fake session (`Application/Arena/Fake`) was switched to the new functions as part of
+this stage: `WriteReachableTiles`, `WriteJumpTiles` and `WriteSkillArea` call the domain,
+Move validation requires an actual walk, Jump validation requires a real landing tile, the
+skill's resolve hits the same tile set its preview shows, and the fake's private copy of the
+facing rule is gone.
 
 ## 3. Not tested, and risks
 
 - **NOT RUN:** Unity PlayMode, WebGL build and Playwright — the Fast suite was run, not Full.
   Stage 06 changed no scene, so no PlayMode gate closes here; the Unity build is still owed at
   the next stage that opens the Editor for it.
-- The fake session (`Application/Arena/Fake`) still answers reachability with a plain Manhattan
-  scan and previews every skill on one tile. Stage 07 replaces it with these functions; until
-  then the fake and the domain can disagree, and only the domain is authoritative.
-- `ArenaFacing`'s grid-axis ↔ `IsoDir` mapping is now the single source of truth, but the fake
-  has its own private copy of the same rule. They agree today (checked by reading both); the
-  fake's copy should be deleted, not maintained, in Stage 07.
+- What is still fake is the *match*, not the geometry: no crit/evade/counter/knockback, and
+  Move/Jump arrive in one tick, so a walk's path is validated but never animated. Stage 07
+  owns the real timing.
+- The fake's grid is an empty rectangle because `ArenaMatchSetup` carries only `ArenaMapId`;
+  the mask reaches a session when Stage 07 loads the row. Its occupant mirror is rebuilt from
+  the fighters at every query, which is exact but O(fighters) per call — fine for eight, and
+  Stage 07 should update it incrementally instead.
+- `ArenaFacing`'s grid-axis ↔ `IsoDir` mapping is the single source of truth: the fake's
+  private copy was deleted rather than kept in sync, and `FakeArenaGeometryTests` fails if
+  either side drifts.
 - An area keeps tiles the mask blocks — geometry, not legality. If a wall should stop a skill,
   Stage 07 adds that rule, not this one.
 - Occupancy is a mirror the simulation must keep current; nothing in the domain can detect a
@@ -49,8 +59,8 @@ Supporting counts: `dotnet test` **272 passed** (64 of them this stage), Stage-0
 ```powershell
 dotnet build lib/Tests~/Layers/ProjectJianghu.Core.Domain.csproj -v q   # PASS, 0 warnings, 0 errors
 dotnet test lib/Tests~/Core.Tests/ProjectJianghu.Core.Tests.csproj --filter "FullyQualifiedName~GridDomainTests"   # PASS 64/64, 261 ms
-dotnet test lib/Tests~/Core.Tests/ProjectJianghu.Core.Tests.csproj      # PASS 272 passed, 0 failed
-pwsh -NoProfile -File tools/test.ps1 -Suite Fast                        # PASS 9 | FAIL 0 | NOT RUN 3; xUnit 272, Unity EditMode 42/42
+dotnet test lib/Tests~/Core.Tests/ProjectJianghu.Core.Tests.csproj      # PASS 279 passed, 0 failed
+pwsh -NoProfile -File tools/test.ps1 -Suite Fast                        # PASS 9 | FAIL 0 | NOT RUN 3; xUnit 279, Unity EditMode 42/42
 ```
 
 The one-off benchmark reading came from the same test with its budget temporarily forced to

@@ -51,6 +51,13 @@ Controller  ──────────────────────�
 and `TimeoutAtTick` (elapsed ticks). They are not part of the contract; the
 real simulation gets its endings from play.
 
+The fake is a stand-in for the **match**, not for the **geometry**: since Stage 06
+its walk query, jump query, skill preview, hit area, command validation and facing all
+come from `Domain.Arena`'s `ArenaPathfinder`/`ArenaArea`/`ArenaFacing` over one
+`ArenaGrid`, so a highlight and the command that later validates cannot disagree.
+What is still fake is combat — no crit, evade, counter or knockback — and Move/Jump
+arrive in a single tick. See [`grid-and-targeting.md`](grid-and-targeting.md).
+
 ## 3. Fighter ids
 
 `ArenaCommand.Actor`, `ArenaEvent.Source/Target`, `IArenaFrame.PlayerFighter`

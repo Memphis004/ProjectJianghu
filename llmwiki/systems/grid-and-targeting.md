@@ -95,11 +95,22 @@ jump and a cone resolved back to back average **4.7 µs per query** against the 
 and a 10,000-case property run compares the search against an independent flood fill over
 random 1..6 × 1..6 boards with random blockers.
 
+## Who calls this today
+
+`FakeArenaSession` does, for every geometric question: `GetReachableTiles`,
+`GetJumpTiles`, `PreviewSkillArea`, the Move and Jump validation (a walk must have a path,
+not just a Manhattan distance) and the facing after a move. It keeps an `ArenaGrid`'s
+occupant mirror current from the fighters that are still standing, and a skill's resolve
+hits every opposing fighter in the same tile set its preview showed. That is why a
+highlight can be trusted before Stage 07 exists; `FakeArenaGeometryTests` pins each of
+those agreements, including the contrast that a tile a walk cannot reach is still a legal
+jump landing.
+
 ## What Stage 07 still owes
 
-- Populate the occupancy mirror as fighters move, and map `FindPath`'s `0` to the right
-  `CommandResult`.
+- Populate the occupant mirror from the real simulation and map `FindPath`'s `0` to the
+  right `CommandResult` per reason.
 - Read `moveRange`/`jumpRange` from `CombatStatBlock` and `AreaSize`/`Area` from
-  `ArenaSkillLoadout`, and `Query.GetReachableTiles`/`GetJumpTiles`/`PreviewSkillArea` from
-  these functions instead of the fake's Manhattan scan.
+  `ArenaSkillLoadout`, and build the grid from the `arena_map` row instead of the fake's
+  empty rectangle (`ArenaMatchSetup` carries only `ArenaMapId`).
 - Decide whether a blocked tile stops a skill's area (the geometry keeps it today).

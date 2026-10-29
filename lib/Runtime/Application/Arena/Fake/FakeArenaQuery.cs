@@ -4,11 +4,15 @@ using ProjectJianghu.Core.Domain.Arena;
 namespace ProjectJianghu.Core.Application.Arena.Fake
 {
     /// <summary>
-    /// The fake's <see cref="IArenaQuery"/>: an empty grid, Manhattan movement and one
-    /// tile per skill. The geometry rules of Stage 06 replace it in the simulation;
-    /// keeping this version deliberately simple is what makes the contract suite a
-    /// test of the contract rather than of the map.
+    /// The fake's <see cref="IArenaQuery"/>: an empty grid, and the Stage 06 geometry
+    /// rules answering every geometric question — the same functions the session uses to
+    /// validate and resolve, which is what makes a highlight trustworthy.
     /// </summary>
+    /// <remarks>
+    /// What is still fake is the match, not the geometry: no crit, evade, counter or
+    /// knockback, and Move/Jump arrive in one tick. The map is an empty rectangle because
+    /// the arena setup does not carry one; Stage 07 loads the row and builds the grid.
+    /// </remarks>
     public sealed class FakeArenaQuery : IArenaQuery
     {
         private readonly FakeArenaSession _session;

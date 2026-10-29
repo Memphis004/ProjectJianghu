@@ -95,7 +95,7 @@ serialization probe, and the ArenaBattle v1 contract (`Domain.Arena`: commands, 
 queries, events, results) with the shared `ArenaFrameBuffer`, a deterministic
 `FakeArenaSession`/factory/auto-resolver and `ArenaReplay` in Application. Unity ships eight
 scenes (Boot, Title, ThaiTextSpike, CharacterCreate, Bracket, Rest, Arena, Result), the HD-2D
-isometric spike with its sorting probe, three URP quality tiers, a project WebGL template,a 7-probe smoke suite, the page bridge and the Web build pipeline. `dotnet` carries **272** xUnit cases;
+isometric spike with its sorting probe, three URP quality tiers, a project WebGL template,a 7-probe smoke suite, the page bridge and the Web build pipeline. `dotnet` carries **279** xUnit cases;
 Unity carries **42** EditMode and **7** PlayMode cases; Playwright has **4** tests in
 three specs (`smoke`, `title`, `loop`).
 
