@@ -1,5 +1,5 @@
-##,id,archetype,engage_range,retreat_hp_x100,aggression_x100,decision_delay_ticks,name_key
-,ai.melee,Melee,1,1500,8500,12,ai.melee.name
-,ai.kiter,Kiter,4,4500,5500,18,ai.kiter.name
-,ai.inner_tank,InnerTank,2,2000,6500,15,ai.inner_tank.name
-,ai.evader,Evader,3,3500,4500,9,ai.evader.name
+##,id,archetype,engage_range,retreat_hp_x100,aggression_x100,decision_delay_ticks,skill_weight,move_weight,jump_weight,meditate_weight,flank_weight,retreat_weight,decisiveness_delay_x100,difficulty_delay_x100,name_key
+,ai.melee,Melee,1,1500,8500,12,9000,8000,1000,1500,4500,1000,20,15,ai.melee.name
+,ai.kiter,Kiter,4,4500,5500,18,8000,8000,2000,1500,1000,9000,25,20,ai.kiter.name
+,ai.inner_tank,InnerTank,2,2000,6500,15,7500,5500,500,7000,1500,1500,20,15,ai.inner_tank.name
+,ai.evader,Evader,3,3500,4500,9,7500,4500,10000,1000,2500,4500,30,25,ai.evader.name

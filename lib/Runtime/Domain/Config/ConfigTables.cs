@@ -338,8 +338,32 @@ namespace ProjectJianghu.Core.Domain.Config
         /// <summary>Weight of attacking over repositioning, times 100.</summary>
         public int AggressionX100 { get; set; }
 
-        /// <summary>How long the AI waits between decisions.</summary>
+        /// <summary>Base delay before acting, in ticks.</summary>
         public int DecisionDelayTicks { get; set; }
+
+        /// <summary>Utility weight for attacks, in ten-thousandths.</summary>
+        public int SkillWeight { get; set; }
+
+        /// <summary>Utility weight for movement, in ten-thousandths.</summary>
+        public int MoveWeight { get; set; }
+
+        /// <summary>Utility weight for jumps, in ten-thousandths.</summary>
+        public int JumpWeight { get; set; }
+
+        /// <summary>Utility weight for meditation, in ten-thousandths.</summary>
+        public int MeditateWeight { get; set; }
+
+        /// <summary>Utility bonus for a flank/back position, in ten-thousandths.</summary>
+        public int FlankWeight { get; set; }
+
+        /// <summary>Utility weight for retreating below the profile's HP threshold.</summary>
+        public int RetreatWeight { get; set; }
+
+        /// <summary>Delay reduction per point of decisiveness, in hundredths.</summary>
+        public int DecisivenessDelayX100 { get; set; }
+
+        /// <summary>Reaction improvement per power-rank step above the baseline, in hundredths.</summary>
+        public int DifficultyDelayX100 { get; set; }
 
         /// <summary>Localization key of the profile's name.</summary>
         public string NameKey { get; set; } = string.Empty;

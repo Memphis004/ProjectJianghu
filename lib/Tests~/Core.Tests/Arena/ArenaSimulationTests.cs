@@ -387,9 +387,173 @@ namespace ProjectJianghu.Core.Tests.Arena
             Assert.Equal(2, result.Fighters.Count);
         }
 
+        [Fact]
+        public void Event_ring_overflow_does_not_change_real_simulation_state()
+        {
+            LubanGameConfig config = Config;
+            AiProfileConfig profile = config.AiProfiles[0];
+            profile.DecisionDelayTicks = 0;
+
+            ArenaFighterSetup player = Fighter(0, 0, true, new GridCoord(1, 1));
+            player.Stats.AtbFillTicks = 1;
+            ArenaFighterSetup enemy = Fighter(1, 1, false, new GridCoord(4, 1));
+            enemy.AiProfileId = StatGrowth.StableId(profile.Id);
+            enemy.Stats.AtbFillTicks = 1;
+            enemy.Stats.MaxHp = 1_000_000;
+            enemy.StartHp = 1_000_000;
+            ArenaMatchSetup setup = Match(player, enemy);
+
+            var factory = new ArenaSimulationFactory(config, new MeditateHook());
+            using IArenaSession reading = factory.Create(setup);
+            using IArenaSession control = factory.Create(setup);
+            for (int i = 0; i < 800; i++)
+            {
+                reading.Step();
+                control.Step();
+            }
+
+            var buffer = new ArenaEvent[64];
+            uint cursor = 0;
+            reading.Events.Read(ref cursor, buffer, out int dropped);
+
+            Assert.True(dropped > 0, "the simulation did not generate enough events to overflow its ring");
+            Assert.Equal(control.ComputeStateHash(), reading.ComputeStateHash());
+            Assert.Equal(control.Phase, reading.Phase);
+        }
+
+        [Fact]
+        public void Utility_ai_uses_a_legal_available_skill()
+        {
+            ArenaMatchSetup setup = Match(
+                Fighter(0, 0, true, new GridCoord(1, 1)),
+                Fighter(1, 1, false, new GridCoord(2, 1)));
+            setup.Fighters[0].Stats.AtbFillTicks = 1000;
+            setup.Fighters[1].Stats.AtbFillTicks = 1;
+            setup.Fighters[1].AiProfileId = StatGrowth.StableId("ai.melee");
+            setup.Fighters[1].Skills = new[] { Skill(202, 50) };
+
+            (int readyTick, int commandTick, ArenaCommandKind kind) = WaitForAiCommand(setup, 1);
+
+            Assert.True(commandTick > readyTick);
+            Assert.Equal(ArenaCommandKind.UseSkill, kind);
+        }
+
+        [Fact]
+        public void Decisiveness_and_power_rank_reduce_profile_reaction_delay()
+        {
+            ArenaMatchSetup baseline = CreateDelaySetup(powerRank: 1, decisiveness: 0);
+            ArenaMatchSetup experienced = CreateDelaySetup(powerRank: 9, decisiveness: 100);
+
+            (int baselineReady, int baselineCommand, _) = WaitForAiCommand(baseline, 1);
+            (int experiencedReady, int experiencedCommand, _) = WaitForAiCommand(experienced, 1);
+
+            Assert.True(baselineCommand - baselineReady > experiencedCommand - experiencedReady,
+                "higher decisiveness and power rank should shorten the configured AI delay");
+        }
+
+        [Fact]
+        public void Evader_jumps_to_a_tile_outside_an_incoming_telegraph()
+        {
+            var player = Fighter(0, 0, true, new GridCoord(1, 1));
+            player.Stats.AtbFillTicks = 1000;
+            player.Skills = new[] { Skill(101, 100, windUp: 20) };
+
+            var evader = Fighter(1, 1, false, new GridCoord(4, 1), IsoDir.NW);
+            evader.AiProfileId = StatGrowth.StableId("ai.evader");
+            evader.Stats.AtbFillTicks = 1;
+            evader.Stats.JumpRange = 7;
+
+            using IArenaSession session = new ArenaSimulationFactory(Config).Create(Match(player, evader));
+            RunToRunning(session);
+            Assert.Equal(CommandResult.Ok, session.Submit(ArenaCommand.Dev(ArenaCommandKind.DevFillAtb, 0)));
+            Assert.Equal(CommandResult.Ok, session.Submit(ArenaCommand.Skill(0, 0, evader.StartTile)));
+
+            uint cursor = 0;
+            var buffer = new ArenaEvent[128];
+            bool jumped = false;
+            bool evaded = false;
+            for (int tick = 0; tick < 40 && !evaded; tick++)
+            {
+                session.Step();
+                int count;
+                do
+                {
+                    count = session.Events.Read(ref cursor, buffer, out _);
+                    for (int i = 0; i < count; i++)
+                    {
+                        ArenaEvent arenaEvent = buffer[i];
+                        if (arenaEvent.Type == ArenaEventType.JumpStarted && arenaEvent.Source == 1)
+                        {
+                            jumped = true;
+                            Assert.NotEqual(evader.StartTile, arenaEvent.Tile);
+                        }
+
+                        if (arenaEvent.Type == ArenaEventType.Evaded && arenaEvent.Target == 1)
+                        {
+                            evaded = true;
+                        }
+                    }
+                }
+                while (count > 0);
+            }
+
+            Assert.True(jumped, "the evader did not leave the telegraphed tile");
+            Assert.True(evaded, "the incoming skill did not resolve as evaded");
+            Assert.Equal(5000, Find(session, 1).Hp);
+        }
+
         // ---------------------------------------------------------------- helpers
 
         private static LubanGameConfig Config => ConfigFixture.Load();
+
+        private static ArenaMatchSetup CreateDelaySetup(int powerRank, int decisiveness)
+        {
+            ArenaMatchSetup setup = Match(
+                Fighter(0, 0, true, new GridCoord(1, 1)),
+                Fighter(1, 1, false, new GridCoord(2, 1)));
+            setup.Fighters[0].Stats.AtbFillTicks = 1000;
+            setup.Fighters[1].Stats.AtbFillTicks = 1;
+            setup.Fighters[1].AiProfileId = StatGrowth.StableId("ai.melee");
+            setup.Fighters[1].PowerRank = powerRank;
+            setup.Fighters[1].Decisiveness = decisiveness;
+            return setup;
+        }
+
+        private static (int ReadyTick, int CommandTick, ArenaCommandKind Kind) WaitForAiCommand(
+            ArenaMatchSetup setup, byte aiFighter)
+        {
+            using IArenaSession session = new ArenaSimulationFactory(Config).Create(setup);
+            RunToRunning(session);
+
+            uint cursor = 0;
+            var buffer = new ArenaEvent[128];
+            int readyTick = -1;
+            for (int tick = 0; tick < 300; tick++)
+            {
+                session.Step();
+                int count;
+                do
+                {
+                    count = session.Events.Read(ref cursor, buffer, out _);
+                    for (int i = 0; i < count; i++)
+                    {
+                        ArenaEvent arenaEvent = buffer[i];
+                        if (arenaEvent.Type == ArenaEventType.AtbReady && arenaEvent.Source == aiFighter)
+                        {
+                            readyTick = arenaEvent.Tick;
+                        }
+
+                        if (arenaEvent.Type == ArenaEventType.CommandAccepted && arenaEvent.Source == aiFighter)
+                        {
+                            return (readyTick, arenaEvent.Tick, (ArenaCommandKind)arenaEvent.Value);
+                        }
+                    }
+                }
+                while (count > 0);
+            }
+
+            throw new InvalidOperationException("AI did not issue a command within the test budget.");
+        }
 
         private static (string Outcome, FighterView Enemy) CastAtAJumpingEnemy(int windUpTicks, GridCoord landing)
         {
@@ -574,10 +738,20 @@ namespace ProjectJianghu.Core.Tests.Arena
             }
         }
 
+        private sealed class MeditateHook : IArenaAiHook
+        {
+            public bool TryChoose(IArenaFrame frame, IArenaQuery query,
+                ProjectJianghu.Core.Shared.IRandomSource random, byte fighterId, out ArenaCommand command)
+            {
+                command = ArenaCommand.Meditate(fighterId);
+                return query.Validate(in command) == CommandResult.Ok;
+            }
+        }
+
         /// <summary>An AI hook that never wants to act, so a test controls every decision.</summary>
         private sealed class PassiveHook : IArenaAiHook
         {
-            public bool TryChoose(IArenaFrame frame, IArenaQuery query, byte fighterId, out ArenaCommand command)
+            public bool TryChoose(IArenaFrame frame, IArenaQuery query, ProjectJianghu.Core.Shared.IRandomSource random, byte fighterId, out ArenaCommand command)
             {
                 command = ArenaCommand.Meditate(fighterId);
                 return false;
@@ -591,7 +765,7 @@ namespace ProjectJianghu.Core.Tests.Arena
 
             public JumpHook(GridCoord landing) => _landing = landing;
 
-            public bool TryChoose(IArenaFrame frame, IArenaQuery query, byte fighterId, out ArenaCommand command)
+            public bool TryChoose(IArenaFrame frame, IArenaQuery query, ProjectJianghu.Core.Shared.IRandomSource random, byte fighterId, out ArenaCommand command)
             {
                 command = ArenaCommand.Jump(fighterId, _landing);
                 return query.Validate(in command) == CommandResult.Ok;

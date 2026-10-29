@@ -311,6 +311,14 @@
     <var name="retreat_hp_x100" type="int#(range=[0,10000])"/>
     <var name="aggression_x100" type="int#(range=[0,10000])"/>
     <var name="decision_delay_ticks" type="int#(range=[0,300])"/>
+    <var name="skill_weight" type="int#(range=[0,10000])"/>
+    <var name="move_weight" type="int#(range=[0,10000])"/>
+    <var name="jump_weight" type="int#(range=[0,10000])"/>
+    <var name="meditate_weight" type="int#(range=[0,10000])"/>
+    <var name="flank_weight" type="int#(range=[0,10000])"/>
+    <var name="retreat_weight" type="int#(range=[0,10000])"/>
+    <var name="decisiveness_delay_x100" type="int#(range=[0,10000])"/>
+    <var name="difficulty_delay_x100" type="int#(range=[0,10000])"/>
     <var name="name_key" type="string#ref=TbLocalization"/>
   </bean>
 

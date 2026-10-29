@@ -22,7 +22,7 @@ namespace ProjectJianghu.Core.Simulation.Arena
 
         /// <summary>Creates a factory with the default <see cref="GreedyArenaAiHook"/>.</summary>
         /// <exception cref="ArgumentNullException"><paramref name="config"/> is null.</exception>
-        public ArenaSimulationFactory(IGameConfig config) : this(config, new GreedyArenaAiHook())
+        public ArenaSimulationFactory(IGameConfig config) : this(config, new GreedyArenaAiHook(config))
         {
         }
 

@@ -58,5 +58,6 @@ namespace ProjectJianghu.Core.Simulation.Arena
 
         /// <inheritdoc />
         public bool IsWalkable(GridCoord tile) => _session.IsWalkableTile(tile);
+
     }
 }

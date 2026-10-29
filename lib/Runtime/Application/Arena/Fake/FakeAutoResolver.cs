@@ -73,6 +73,8 @@ namespace ProjectJianghu.Core.Application.Arena.Fake
                     PlayerControlled = false,
                     AiProfileId = source.AiProfileId,
                     AiReactionTicks = source.AiReactionTicks,
+                    PowerRank = source.PowerRank,
+                    Decisiveness = source.Decisiveness,
                     StartTile = source.StartTile,
                     StartFacing = source.StartFacing,
                     StartHp = source.StartHp,

@@ -15,7 +15,18 @@ and [ADR 0115](../../docs/adr/0115-arena-ai-seam-and-walk-reservations.md), the 
 | `ArenaSimulationFactory` | `IArenaSessionFactory`; reads `constant.match_ticks` when the setup says 0 |
 | `ArenaAutoResolver` | `IArenaAutoResolver`: create both sides as AI, step until done or out of budget |
 | `ArenaSimulationQuery` | `IArenaQuery` over the live state (the AI gets one with the player-control check off) |
-| `IArenaAiHook` / `GreedyArenaAiHook` | the decision seam; Stage 08 replaces the placeholder |
+| `IArenaAiHook` / `GreedyArenaAiHook` | profile-driven utility scorer; uses only the live public frame, shared arena query and encounter RNG |
+
+## Stage 08 AI
+
+`GreedyArenaAiHook` scores legal skill targets (including area coverage and positional advantage),
+walks toward the profile's engage range or toward a better flank, retreats/kites when the profile
+and HP threshold call for it, jumps only to a landing tile outside incoming telegraphs, and
+meditates when that wins on utility. Ties consume the encounter random stream; no hidden session
+state is exposed to the hook. `ai_profile.csv` owns the utility weights, four archetypes, and the
+base reaction delay. Decisiveness and power rank reduce that configured delay by per-profile
+scales. `ArenaFighterBuilder` carries rank and decisiveness into the setup; roster and fake/auto
+resolver conversions preserve them. The hook's tile/area buffers are preallocated.
 
 ## A tick, in order
 
@@ -87,13 +98,15 @@ always has); the `total` row counts matches.
 `avgMsPerMatch` with `verdict=PASS` is the per-match budget, `knockouts` / `timeouts` say how the
 matches ended, and the per-skill `uses` / `hits` columns are how a two-blow skill shows up (more
 hits than uses). The reference numbers are in
-[`../../docs/stages/07-report.md`](../../docs/stages/07-report.md).
+[`../../docs/stages/08-report.md`](../../docs/stages/08-report.md) (current AI and balance results); Stage 07's simulation baseline remains in [`../../docs/stages/07-report.md`](../../docs/stages/07-report.md).
 
 ## Known gaps
 
-- The balance is a first pass (ADR 0114 §15): 87 % of authored matches end in a defeat, average
-  91 s of the 120 s limit, rank 1 → 7 win rate 43.6 % → 61.7 %. Movement turns still eat a large
-  share of the clock, which is the AI's problem, not the numbers'.
+- This is a first-pass heuristic, not tactical search: it sees current public telegraphs but does not
+  predict future occupancy or opponent intent. The current 500-match rank-gap sample has 36.53%
+  higher-rank wins (118/323, draws counted as non-wins), below the Stage-08 75% target; 343 matches
+  timed out. Pairing and archetype are confounded in the current schedule, so use a stratified matrix
+  before drawing causal balance conclusions. Aggregate behavior differences across all four profiles
+  have not yet been measured.
 - A `Line`/`Cone` is anchored on the aim tile and grows away from the caster, so it can reach one tile
   past `range_max` — geometry, not a rules rule (ADR 0113).
-- The placeholder AI does not retreat, use reach or score skills; Stage 08 owns `ai_profile`.

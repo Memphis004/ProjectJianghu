@@ -52,7 +52,7 @@ the Editor.
 | 05 | Character / stats / loadout domain: `StatResolver`, `ModifierStack`, `PowerScore`, `ArenaFighterBuilder`, `CharacterCreation` | **done** | [`docs/stages/05-report.md`](docs/stages/05-report.md) |
 | 06 | Grid and targeting domain: reachability, jump, area shapes, facing (pure, zero-alloc) | **done** | [`docs/stages/06-report.md`](docs/stages/06-report.md) |
 | 07 | `ArenaSimulation`: struct-array fighters ([ADR 0101](docs/adr/0101-no-ecs-struct-array-fighters.md)), ATB, resolve, stats | **done** | [`docs/stages/07-report.md`](docs/stages/07-report.md) |
-| 08 | Arena AI: utility scoring, 4 archetypes, telegraph evasion | planned | — |
+| 08 | Arena AI: utility scoring, 4 archetypes, telegraph evasion | **implemented; balance DoD open** | [`docs/stages/08-report.md`](docs/stages/08-report.md) |
 | 09 | Arena presentation: HD-2D scene, `ArenaRunner`, sprite pool, tile highlights, HUD | planned | — |
 | 10 | Tournament + run flow: bracket, background matches, rewards, `Rest` | planned | — |
 | 11 | Character sheet, loadout and character-create UI | planned | — |
@@ -84,7 +84,7 @@ The template is extracted from a finished prototype (the game repo, tag
 A game built from this template starts its own stage numbering at 01 and writes
 its reports under `docs/stages/` (skeleton: [`docs/stages/_TEMPLATE.md`](docs/stages/_TEMPLATE.md)).
 
-**Current state:** Stage 06 adds the pure C# grid rules (`Domain.Arena`: `ArenaGrid` mask and occupancy, BFS walk reachability and paths, jump landings, six area shapes, and the facing / front-flank-back rule — all writing into caller spans, measured at 0 bytes allocated), on top of Stage 05's `Domain.Character` rules (character state, source-preserving modifiers, config-driven stat resolution, loadout validation, character creation, mastery growth and arena-fighter setup building). The package has the game's fourteen data tables (`localization`,
+**Current state:** Stage 08 has added profile-driven Arena utility AI (skill, movement, retreat, flank, meditation and telegraph evasion), four configured archetypes and reaction-delay scaling from decisiveness and power rank. The 500-match Release sweep is under the 20 ms runtime budget (0.90 ms/match), but the rank-gap acceptance is still open: higher-rank win rate is 36.53% for pairings at least two ranks apart, below the 75% Stage-08 target, with 343/500 timeouts. The pure `Domain.Arena` grid rules (Stage 06) and `Domain.Character` rules (Stage 05) remain the foundations. The package has the game's fourteen data tables (`localization`,
 `constant`, `attribute`, `stat_formula`, `skill`, `skill_level`, `gear`, `status`,
 `fighter`, `ai_profile`, `arena_map`, `tournament`, `reward_pool`, `background`), the
 `IGameConfig` port with its Infrastructure adapter, the shared
@@ -266,10 +266,9 @@ Full detail: [`docs/architecture/overview.md`](docs/architecture/overview.md).
   ([ADR 0002](docs/adr/0002-thin-mvp-ui-approach.md)).
 - `Simulation` now holds the arena match loop (`Simulation/Arena`, ADR 0114/0115);
   a different game would replace that folder, not add an engine (ADR 0101).
-- The arena's balance is a first pass, measured by `tools/sim.ps1 --matches 500`
-  (`artifacts/balance.csv`): 433 of 500 matches end in a defeat, 91 s average of the
-  120 s limit. The rest run out of time repositioning — an AI problem, not a numbers one
-  (ADR 0114 §15).
+- Arena balance remains unclosed after Stage 08: the 500-match run completes in 0.90 ms/match,
+  but only 36.53% of two-rank-gap pairings are won by the higher rank (75% target) and 343/500
+  matches time out; see [`docs/stages/08-report.md`](docs/stages/08-report.md) for the sample caveat.
 - `Contracts/Save` holds only `CheckpointProbe`; the first real save format is the
   game's decision, and it should start at schema version 1 with a migration story.
 - `SaveHeader` has no reader yet.

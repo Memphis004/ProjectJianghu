@@ -23,6 +23,15 @@ namespace ProjectJianghu.Core.Domain.Arena
         /// <summary>Appearance / roster row id from data.</summary>
         public int DefId;
 
+        /// <summary>Public AI profile identity (0 for player-controlled fighters).</summary>
+        public int AiProfileId;
+
+        /// <summary>Skill slot currently creating the visible telegraph.</summary>
+        public byte ActiveSkillSlot;
+
+        /// <summary>Tile currently shown as the skill telegraph's aim point.</summary>
+        public GridCoord ActionTarget;
+
         /// <summary>What the fighter is doing.</summary>
         public FighterState State;
 

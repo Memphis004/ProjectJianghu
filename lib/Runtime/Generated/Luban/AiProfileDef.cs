@@ -22,6 +22,14 @@ public sealed partial class AiProfileDef : Luban.BeanBase
         RetreatHpX100 = _buf.ReadInt();
         AggressionX100 = _buf.ReadInt();
         DecisionDelayTicks = _buf.ReadInt();
+        SkillWeight = _buf.ReadInt();
+        MoveWeight = _buf.ReadInt();
+        JumpWeight = _buf.ReadInt();
+        MeditateWeight = _buf.ReadInt();
+        FlankWeight = _buf.ReadInt();
+        RetreatWeight = _buf.ReadInt();
+        DecisivenessDelayX100 = _buf.ReadInt();
+        DifficultyDelayX100 = _buf.ReadInt();
         NameKey = _buf.ReadString();
         NameKey_Ref = null;
     }
@@ -37,6 +45,14 @@ public sealed partial class AiProfileDef : Luban.BeanBase
     public readonly int RetreatHpX100;
     public readonly int AggressionX100;
     public readonly int DecisionDelayTicks;
+    public readonly int SkillWeight;
+    public readonly int MoveWeight;
+    public readonly int JumpWeight;
+    public readonly int MeditateWeight;
+    public readonly int FlankWeight;
+    public readonly int RetreatWeight;
+    public readonly int DecisivenessDelayX100;
+    public readonly int DifficultyDelayX100;
     public readonly string NameKey;
     public Localization NameKey_Ref;
    
@@ -57,6 +73,14 @@ public sealed partial class AiProfileDef : Luban.BeanBase
         + "retreatHpX100:" + RetreatHpX100 + ","
         + "aggressionX100:" + AggressionX100 + ","
         + "decisionDelayTicks:" + DecisionDelayTicks + ","
+        + "skillWeight:" + SkillWeight + ","
+        + "moveWeight:" + MoveWeight + ","
+        + "jumpWeight:" + JumpWeight + ","
+        + "meditateWeight:" + MeditateWeight + ","
+        + "flankWeight:" + FlankWeight + ","
+        + "retreatWeight:" + RetreatWeight + ","
+        + "decisivenessDelayX100:" + DecisivenessDelayX100 + ","
+        + "difficultyDelayX100:" + DifficultyDelayX100 + ","
         + "nameKey:" + NameKey + ","
         + "}";
     }

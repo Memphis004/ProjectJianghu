@@ -355,6 +355,8 @@ namespace ProjectJianghu.Sim
             PlayerControlled = false,
             AiProfileId = source.AiProfileId,
             AiReactionTicks = source.AiReactionTicks,
+            PowerRank = source.PowerRank,
+            Decisiveness = source.Decisiveness,
             StartTile = tile,
             StartFacing = facing,
             StartHp = -1,

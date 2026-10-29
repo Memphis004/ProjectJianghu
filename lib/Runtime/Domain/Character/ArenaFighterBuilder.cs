@@ -54,10 +54,13 @@ namespace ProjectJianghu.Core.Domain.Character
                 GearInventoryEntry entry = character.FindGear(character.Loadout.AccessoryInstanceId(i));
                 if (entry is not null) passives.Add(StatGrowth.StableId(entry.GearId));
             }
+            PowerProfile power = _stats.GetPower(character);
             return Result<ArenaFighterSetup>.Ok(new ArenaFighterSetup
             {
                 Id = id, Team = team, DefId = defId, PlayerControlled = playerControlled,
-                AiProfileId = aiProfileId, AiReactionTicks = aiReactionTicks, StartTile = startTile,
+                AiProfileId = aiProfileId, AiReactionTicks = aiReactionTicks,
+                PowerRank = power.Rank, Decisiveness = _stats.GetAttribute(character, EAttribute.Decisiveness),
+                StartTile = startTile,
                 StartFacing = facing, StartHp = -1, Stats = _stats.Resolve(character).Stats,
                 Skills = skills, PassiveIds = passives,
             });

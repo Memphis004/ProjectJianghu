@@ -249,6 +249,14 @@ namespace ProjectJianghu.Core.Infrastructure.Config
                     RetreatHpX100 = row.RetreatHpX100,
                     AggressionX100 = row.AggressionX100,
                     DecisionDelayTicks = row.DecisionDelayTicks,
+                    SkillWeight = row.SkillWeight,
+                    MoveWeight = row.MoveWeight,
+                    JumpWeight = row.JumpWeight,
+                    MeditateWeight = row.MeditateWeight,
+                    FlankWeight = row.FlankWeight,
+                    RetreatWeight = row.RetreatWeight,
+                    DecisivenessDelayX100 = row.DecisivenessDelayX100,
+                    DifficultyDelayX100 = row.DifficultyDelayX100,
                     NameKey = row.NameKey,
                 });
             }

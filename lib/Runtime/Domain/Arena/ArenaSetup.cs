@@ -261,8 +261,14 @@ namespace ProjectJianghu.Core.Domain.Arena
         /// <summary>AI profile row id for an AI-controlled fighter; 0 otherwise.</summary>
         public int AiProfileId;
 
-        /// <summary>How many ticks the AI waits after becoming ready before acting.</summary>
+        /// <summary>Fallback reaction delay for an AI without a matching data profile.</summary>
         public int AiReactionTicks;
+
+        /// <summary>Power rank used by profile difficulty delay scaling; 1 is the baseline.</summary>
+        public int PowerRank = 1;
+
+        /// <summary>Decisiveness attribute used by profile reaction delay scaling.</summary>
+        public int Decisiveness;
 
         /// <summary>Where the fighter starts.</summary>
         public GridCoord StartTile;

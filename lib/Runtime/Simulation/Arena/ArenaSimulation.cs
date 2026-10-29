@@ -71,6 +71,7 @@ namespace ProjectJianghu.Core.Simulation.Arena
         private readonly ArenaFighter[] _fighters;
         private readonly int[] _idToIndex;
         private readonly ArenaSkillLoadout[] _skills;
+        private readonly AiProfileConfig[] _aiProfiles;
         private readonly byte[] _skillStatusRule;
         private readonly int[] _skillStatusTicks;
         private readonly int[] _skillCount;
@@ -136,7 +137,30 @@ namespace ProjectJianghu.Core.Simulation.Arena
                 throw new ArgumentException("A match cannot hold more than ArenaConstants.MaxFighters.", nameof(setup));
             }
 
-            _ai = aiHook ?? new GreedyArenaAiHook();
+            _ai = aiHook ?? new GreedyArenaAiHook(config);
+            _aiProfiles = new AiProfileConfig[config.AiProfiles.Count];
+            for (int i = 0; i < _aiProfiles.Length; i++)
+            {
+                AiProfileConfig profile = config.AiProfiles[i];
+                _aiProfiles[i] = new AiProfileConfig
+                {
+                    Id = profile.Id,
+                    Archetype = profile.Archetype,
+                    EngageRange = profile.EngageRange,
+                    RetreatHpX100 = profile.RetreatHpX100,
+                    AggressionX100 = profile.AggressionX100,
+                    DecisionDelayTicks = profile.DecisionDelayTicks,
+                    SkillWeight = profile.SkillWeight,
+                    MoveWeight = profile.MoveWeight,
+                    JumpWeight = profile.JumpWeight,
+                    MeditateWeight = profile.MeditateWeight,
+                    FlankWeight = profile.FlankWeight,
+                    RetreatWeight = profile.RetreatWeight,
+                    DecisivenessDelayX100 = profile.DecisivenessDelayX100,
+                    DifficultyDelayX100 = profile.DifficultyDelayX100,
+                    NameKey = profile.NameKey,
+                };
+            }
             _mode = setup.Mode;
             _timeLimitTicks = setup.TimeLimitTicks;
             _devCheatsAllowed = setup.DevCheatsAllowed;
@@ -843,7 +867,7 @@ namespace ProjectJianghu.Core.Simulation.Arena
 
                 fighter.Atb = _atbFull;
                 fighter.State = FighterState.Ready;
-                fighter.AiDelay = fighter.AiReactionTicks;
+                fighter.AiDelay = ComputeAiDelay(i);
                 Emit(ArenaEventType.AtbReady, fighter.Id, fighter.Id, 0, fighter.Atb, 0, fighter.Tile);
             }
         }
@@ -1707,6 +1731,35 @@ namespace ProjectJianghu.Core.Simulation.Arena
 
         // ---------------------------------------------------------------- AI
 
+        private int ComputeAiDelay(int index)
+        {
+            ref ArenaFighter fighter = ref _fighters[index];
+            if (fighter.PlayerControlled)
+            {
+                return fighter.AiReactionTicks;
+            }
+
+            AiProfileConfig? profile = null;
+            for (int i = 0; i < _aiProfiles.Length; i++)
+            {
+                if (StatGrowth.StableId(_aiProfiles[i].Id) == fighter.AiProfileId)
+                {
+                    profile = _aiProfiles[i];
+                    break;
+                }
+            }
+
+            if (profile is null)
+            {
+                return fighter.AiReactionTicks;
+            }
+
+            long delayScale = 10000L - (long)Math.Max(0, fighter.Decisiveness) * profile.DecisivenessDelayX100;
+            delayScale -= (long)Math.Max(0, fighter.PowerRank - 1) * profile.DifficultyDelayX100;
+            delayScale = Math.Clamp(delayScale, 0L, 10000L);
+            return (int)((long)profile.DecisionDelayTicks * delayScale / 10000L);
+        }
+
         private void RunAi()
         {
             if (_fighterCount < 2)
@@ -1731,7 +1784,7 @@ namespace ProjectJianghu.Core.Simulation.Arena
                 }
 
                 ArenaCommand command;
-                if (!_ai.TryChoose(_liveFrame, _aiQuery, fighter.Id, out command)
+                if (!_ai.TryChoose(_liveFrame, _aiQuery, _random, fighter.Id, out command)
                     || ValidateCommand(in command, false) != CommandResult.Ok)
                 {
                     // A hook that cannot find a play does not stall the match: meditating is
@@ -2003,6 +2056,9 @@ namespace ProjectJianghu.Core.Simulation.Arena
                 Id = fighter.Id,
                 Team = fighter.Team,
                 DefId = fighter.DefId,
+                AiProfileId = fighter.AiProfileId,
+                ActiveSkillSlot = fighter.ActionSlot,
+                ActionTarget = fighter.ActionTarget,
                 State = fighter.State,
                 Facing = fighter.Facing,
                 Tile = fighter.Tile,
@@ -2038,6 +2094,8 @@ namespace ProjectJianghu.Core.Simulation.Arena
             fighter.PlayerControlled = source.PlayerControlled;
             fighter.AiProfileId = source.AiProfileId;
             fighter.AiReactionTicks = Math.Max(0, source.AiReactionTicks);
+            fighter.PowerRank = source.PowerRank > 0 ? source.PowerRank : 1;
+            fighter.Decisiveness = source.Decisiveness;
             fighter.AiDelay = fighter.AiReactionTicks;
             fighter.State = FighterState.Charging;
             fighter.Facing = source.StartFacing;
@@ -2317,6 +2375,8 @@ namespace ProjectJianghu.Core.Simulation.Arena
             public int AiProfileId;
             public int AiReactionTicks;
             public int AiDelay;
+            public int PowerRank;
+            public int Decisiveness;
 
             public FighterState State;
             public IsoDir Facing;
