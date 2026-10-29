@@ -40,6 +40,15 @@ public partial class TbConstant
      public int MasteryXpPerUse => _data.MasteryXpPerUse;
      public int MaxMasteryLevel => _data.MaxMasteryLevel;
      public int StartingAttributePoints => _data.StartingAttributePoints;
+     public int MasteryIntellectBonusX100PerPoint => _data.MasteryIntellectBonusX100PerPoint;
+     public int PowerRank2Min => _data.PowerRank2Min;
+     public int PowerRank3Min => _data.PowerRank3Min;
+     public int PowerRank4Min => _data.PowerRank4Min;
+     public int PowerRank5Min => _data.PowerRank5Min;
+     public int PowerRank6Min => _data.PowerRank6Min;
+     public int PowerRank7Min => _data.PowerRank7Min;
+     public int PowerRank8Min => _data.PowerRank8Min;
+     public int PowerRank9Min => _data.PowerRank9Min;
     
     public void ResolveRef(Tables tables)
     {

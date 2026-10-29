@@ -70,6 +70,8 @@ namespace ProjectJianghu.Data.Validator
             Dictionary<string, HashSet<string>> ids = BuildIdSets(config);
 
             ValidateConstant(config.Constant, findings);
+            ValidateAttributeRules(config.Attributes, findings);
+            ValidateProgressionRules(config.SkillLevels, findings);
             ValidateLocalization(config, findings);
             ValidateIds(config, findings);
             ValidateLocalizationKeys(config, findings);
@@ -112,6 +114,64 @@ namespace ProjectJianghu.Data.Validator
                 RequireAtMostBar(constant.MoveAtbCost, constant.AtbFull, "move_atb_cost", findings);
                 RequireAtMostBar(constant.JumpAtbCost, constant.AtbFull, "jump_atb_cost", findings);
                 RequireAtMostBar(constant.MeditateAtbCost, constant.AtbFull, "meditate_atb_cost", findings);
+            }
+
+            int[] rankThresholds =
+            {
+                constant.PowerRank2Min, constant.PowerRank3Min, constant.PowerRank4Min,
+                constant.PowerRank5Min, constant.PowerRank6Min, constant.PowerRank7Min,
+                constant.PowerRank8Min, constant.PowerRank9Min,
+            };
+            bool hasRankThresholds = false;
+            for (int i = 0; i < rankThresholds.Length; i++) hasRankThresholds |= rankThresholds[i] != 0;
+            if (hasRankThresholds)
+            {
+                for (int i = 1; i < rankThresholds.Length; i++)
+                {
+                    if (rankThresholds[i] <= rankThresholds[i - 1])
+                    {
+                        findings.Add(new Finding("constant.power_rank_order", "tbconstant.power_rank_" + (i + 2) + "_min",
+                            "power rank thresholds must be strictly increasing"));
+                        break;
+                    }
+                }
+            }
+        }
+
+        private static void ValidateAttributeRules(IReadOnlyList<AttributeConfig> attributes, List<Finding> findings)
+        {
+            foreach (AttributeConfig row in attributes)
+            {
+                if (row.CreationMax < row.CreationMin)
+                {
+                    findings.Add(new Finding("attribute.creation_bounds", "tbattribute['" + row.Id + "']",
+                        "creation_max is below creation_min"));
+                }
+                if (row.PowerWeight < 0 || row.RadarWeight < 0)
+                {
+                    findings.Add(new Finding("attribute.negative_weight", "tbattribute['" + row.Id + "']",
+                        "power and radar weights must be non-negative"));
+                }
+                if (row.DisplayOnly && row.Category != EAttrCategory.LifeSkill && row.PowerWeight != 0)
+                {
+                    findings.Add(new Finding("attribute.display_only_power", "tbattribute['" + row.Id + "']",
+                        "display-only attributes cannot contribute to combat PowerScore"));
+                }
+            }
+        }
+
+        private static void ValidateProgressionRules(IReadOnlyList<SkillLevelConfig> levels, List<Finding> findings)
+        {
+            int previousXp = -1;
+            for (int i = 0; i < levels.Count; i++)
+            {
+                SkillLevelConfig level = levels[i];
+                if (level.MasteryXp < previousXp || level.CombatMasteryX100 < 0)
+                {
+                    findings.Add(new Finding("mastery.progression_order", "tbskilllevel['" + level.Id + "']",
+                        "mastery XP thresholds and combat mastery multipliers must be non-decreasing and non-negative"));
+                }
+                previousXp = level.MasteryXp;
             }
         }
 

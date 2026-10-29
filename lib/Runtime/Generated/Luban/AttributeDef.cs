@@ -21,6 +21,10 @@ public sealed partial class AttributeDef : Luban.BeanBase
         Category = (EAttrCategory)_buf.ReadInt();
         DisplayOnly = _buf.ReadBool();
         SortOrder = _buf.ReadInt();
+        PowerWeight = _buf.ReadInt();
+        RadarWeight = _buf.ReadInt();
+        CreationMin = _buf.ReadInt();
+        CreationMax = _buf.ReadInt();
         NameKey = _buf.ReadString();
         NameKey_Ref = null;
         DescKey = _buf.ReadString();
@@ -36,6 +40,10 @@ public sealed partial class AttributeDef : Luban.BeanBase
     public readonly EAttrCategory Category;
     public readonly bool DisplayOnly;
     public readonly int SortOrder;
+    public readonly int PowerWeight;
+    public readonly int RadarWeight;
+    public readonly int CreationMin;
+    public readonly int CreationMax;
     public readonly string NameKey;
     public Localization NameKey_Ref;
     public readonly string DescKey;
@@ -56,6 +64,10 @@ public sealed partial class AttributeDef : Luban.BeanBase
         + "category:" + Category + ","
         + "displayOnly:" + DisplayOnly + ","
         + "sortOrder:" + SortOrder + ","
+        + "powerWeight:" + PowerWeight + ","
+        + "radarWeight:" + RadarWeight + ","
+        + "creationMin:" + CreationMin + ","
+        + "creationMax:" + CreationMax + ","
         + "nameKey:" + NameKey + ","
         + "descKey:" + DescKey + ","
         + "}";

@@ -1,2 +1,2 @@
-##,atb_full,match_ticks,move_atb_cost,jump_atb_cost,meditate_atb_cost,jump_cooldown_ticks,meditate_neili_restore,damage_mitigation_k,back_damage_bonus_x100,flank_damage_bonus_x100,mastery_xp_per_use,max_mastery_level,starting_attribute_points
-,10000,3600,10000,5000,10000,45,300,1000,5000,1500,25,10,20
+##,atb_full,match_ticks,move_atb_cost,jump_atb_cost,meditate_atb_cost,jump_cooldown_ticks,meditate_neili_restore,damage_mitigation_k,back_damage_bonus_x100,flank_damage_bonus_x100,mastery_xp_per_use,max_mastery_level,starting_attribute_points,mastery_intellect_bonus_x100_per_point,power_rank_2_min,power_rank_3_min,power_rank_4_min,power_rank_5_min,power_rank_6_min,power_rank_7_min,power_rank_8_min,power_rank_9_min
+,10000,3600,10000,5000,10000,45,300,1000,5000,1500,25,10,20,100,120,160,200,240,280,320,360,400

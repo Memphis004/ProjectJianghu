@@ -203,6 +203,10 @@
     <var name="category" type="EAttrCategory"/>
     <var name="display_only" type="bool"/>
     <var name="sort_order" type="int"/>
+    <var name="power_weight" type="int#(range=[0,100000])"/>
+    <var name="radar_weight" type="int#(range=[0,100000])"/>
+    <var name="creation_min" type="int#(range=[0,100000])"/>
+    <var name="creation_max" type="int#(range=[0,100000])"/>
     <var name="name_key" type="string#ref=TbLocalization"/>
     <var name="desc_key" type="string"/>
   </bean>
@@ -248,6 +252,7 @@
     <var name="id" type="string"/>
     <var name="level" type="int#(range=[1,10])"/>
     <var name="mastery_xp" type="int#(range=[0,10000000])"/>
+    <var name="combat_mastery_x100" type="int#(range=[0,1000000])"/>
   </bean>
 
   <bean name="GearDef">
@@ -358,6 +363,15 @@
     <var name="mastery_xp_per_use" type="int#(range=[0,1000000])"/>
     <var name="max_mastery_level" type="int#(range=[1,10])"/>
     <var name="starting_attribute_points" type="int#(range=[0,1000])"/>
+    <var name="mastery_intellect_bonus_x100_per_point" type="int#(range=[0,100000])"/>
+    <var name="power_rank_2_min" type="int#(range=[0,2147483647])"/>
+    <var name="power_rank_3_min" type="int#(range=[0,2147483647])"/>
+    <var name="power_rank_4_min" type="int#(range=[0,2147483647])"/>
+    <var name="power_rank_5_min" type="int#(range=[0,2147483647])"/>
+    <var name="power_rank_6_min" type="int#(range=[0,2147483647])"/>
+    <var name="power_rank_7_min" type="int#(range=[0,2147483647])"/>
+    <var name="power_rank_8_min" type="int#(range=[0,2147483647])"/>
+    <var name="power_rank_9_min" type="int#(range=[0,2147483647])"/>
   </bean>
 
 </module>

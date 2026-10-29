@@ -109,6 +109,15 @@ namespace ProjectJianghu.Core.Infrastructure.Config
                 MasteryXpPerUse = constant.MasteryXpPerUse,
                 MaxMasteryLevel = constant.MaxMasteryLevel,
                 StartingAttributePoints = constant.StartingAttributePoints,
+                MasteryIntellectBonusX100PerPoint = constant.MasteryIntellectBonusX100PerPoint,
+                PowerRank2Min = constant.PowerRank2Min,
+                PowerRank3Min = constant.PowerRank3Min,
+                PowerRank4Min = constant.PowerRank4Min,
+                PowerRank5Min = constant.PowerRank5Min,
+                PowerRank6Min = constant.PowerRank6Min,
+                PowerRank7Min = constant.PowerRank7Min,
+                PowerRank8Min = constant.PowerRank8Min,
+                PowerRank9Min = constant.PowerRank9Min,
             };
 
             foreach (ProjectJianghu.Config.AttributeDef row in tables.TbAttribute.DataList)
@@ -120,6 +129,10 @@ namespace ProjectJianghu.Core.Infrastructure.Config
                     Category = (EAttrCategory)row.Category,
                     DisplayOnly = row.DisplayOnly,
                     SortOrder = row.SortOrder,
+                    PowerWeight = row.PowerWeight,
+                    RadarWeight = row.RadarWeight,
+                    CreationMin = row.CreationMin,
+                    CreationMax = row.CreationMax,
                     NameKey = row.NameKey,
                     DescKey = row.DescKey,
                 });
@@ -172,6 +185,7 @@ namespace ProjectJianghu.Core.Infrastructure.Config
                     Id = row.Id,
                     Level = row.Level,
                     MasteryXp = row.MasteryXp,
+                    CombatMasteryX100 = row.CombatMasteryX100,
                 });
             }
 

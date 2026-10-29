@@ -51,11 +51,11 @@ All four also run inside `tools/test.ps1`. Exit codes: `0` ok, `1` a required ch
 | Table | Key | What it is | Stage that fills it |
 | --- | --- | --- | --- |
 | `localization` | `key` | every player-facing string, `th` + `en` | ongoing |
-| `constant` | one row | ATB bar, match length, command costs, mitigation K, mastery cap | 04 |
-| `attribute` | `id` | display metadata per `EAttribute`: category, sort order, display-only, name key | 04 |
+| `constant` | one row | ATB bar, match length, command costs, mitigation K, mastery cap, intellect XP rate, PowerScore rank thresholds | 04–05 |
+| `attribute` | `id` | display metadata per `EAttribute`: category, sort order, display-only, name key, PowerScore/radar weights, creation bounds | 04–05 |
 | `stat_formula` | `id` | one derived stat: `clamp(base + Σ terms, min, max)` | 04 |
 | `skill` | `id` | external / inner / movement skills, their cost, area, telegraph and level bonuses | 04 |
-| `skill_level` | `id` | the global mastery ladder (XP per level) | 04 |
+| `skill_level` | `id` | the global mastery ladder (XP per level, combat mastery multiplier) | 04–05 |
 | `gear` | `id` | weapons, armour, accessories and their attribute mods | 04 |
 | `status` | `id` | the four abnormal states and what they do per tick | 04 |
 | `fighter` | `id` | the 31 tournament opponents: rank, AI, loadout, attribute values | 04 |
@@ -135,6 +135,9 @@ Rules that follow from it:
 | `fighter.loadout_weapon_mismatch` | each external skill matches the fighter's equipped weapon family |
 | `stat_formula.clamp_order` | `clamp_max` is below `clamp_min` |
 | `stat_formula.term_attribute_unknown` | a `StatTerm` names an `EAttribute` with no `attribute` row |
+| `attribute.creation_bounds` / `attribute.negative_weight` / `attribute.display_only_power` | creation minimum is above maximum, a PowerScore/radar weight is negative, or a display-only combat attribute contributes to PowerScore |
+| `constant.power_rank_order` | configured PowerScore rank thresholds are not strictly increasing |
+| `mastery.progression_order` | mastery XP thresholds decrease or a combat mastery multiplier is negative |
 | `skill.range_order` | `range_max` is below `range_min` |
 | `arena_map.mask_size` | the mask has a row count ≠ `height`, or a row length ≠ `width` |
 | `arena_map.mask_char` | a mask cell is neither `.` (walkable) nor `#` (blocked) |
@@ -181,6 +184,10 @@ the expected code and the stage that must catch it (`luban` or `semantic`).
 - Fighter loadouts reference one weapon, one armour piece, two accessories and four skills;
   every external skill must match the equipped `EWeaponType`. The gloves/wraps are `Fist` weapons.
 - `constant.back_damage_bonus_x100` and `flank_damage_bonus_x100` are times-100 additive
-  bonuses; mastery XP per skill use and jump cost are also authored in `constant`.
+  bonuses; mastery XP per skill use, the Intellect XP rate, PowerScore rank thresholds and jump
+  cost are authored in `constant`. `attribute.power_weight`, `radar_weight`, and creation bounds
+  are likewise data; `skill_level.combat_mastery_x100` is the authored combat mastery curve.
+- Stage 05's character-domain behavior is documented in
+  [`character-domain.md`](character-domain.md).
 - **`data/` is not live until `gen.ps1` runs.** The player and the tests read generated
   bytes; `verify-generated` is what proves they match.

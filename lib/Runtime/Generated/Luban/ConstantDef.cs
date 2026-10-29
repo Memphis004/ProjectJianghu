@@ -29,6 +29,15 @@ public sealed partial class ConstantDef : Luban.BeanBase
         MasteryXpPerUse = _buf.ReadInt();
         MaxMasteryLevel = _buf.ReadInt();
         StartingAttributePoints = _buf.ReadInt();
+        MasteryIntellectBonusX100PerPoint = _buf.ReadInt();
+        PowerRank2Min = _buf.ReadInt();
+        PowerRank3Min = _buf.ReadInt();
+        PowerRank4Min = _buf.ReadInt();
+        PowerRank5Min = _buf.ReadInt();
+        PowerRank6Min = _buf.ReadInt();
+        PowerRank7Min = _buf.ReadInt();
+        PowerRank8Min = _buf.ReadInt();
+        PowerRank9Min = _buf.ReadInt();
     }
 
     public static ConstantDef DeserializeConstantDef(ByteBuf _buf)
@@ -49,6 +58,15 @@ public sealed partial class ConstantDef : Luban.BeanBase
     public readonly int MasteryXpPerUse;
     public readonly int MaxMasteryLevel;
     public readonly int StartingAttributePoints;
+    public readonly int MasteryIntellectBonusX100PerPoint;
+    public readonly int PowerRank2Min;
+    public readonly int PowerRank3Min;
+    public readonly int PowerRank4Min;
+    public readonly int PowerRank5Min;
+    public readonly int PowerRank6Min;
+    public readonly int PowerRank7Min;
+    public readonly int PowerRank8Min;
+    public readonly int PowerRank9Min;
    
     public const int __ID__ = -413237855;
     public override int GetTypeId() => __ID__;
@@ -73,6 +91,15 @@ public sealed partial class ConstantDef : Luban.BeanBase
         + "masteryXpPerUse:" + MasteryXpPerUse + ","
         + "maxMasteryLevel:" + MaxMasteryLevel + ","
         + "startingAttributePoints:" + StartingAttributePoints + ","
+        + "masteryIntellectBonusX100PerPoint:" + MasteryIntellectBonusX100PerPoint + ","
+        + "powerRank2Min:" + PowerRank2Min + ","
+        + "powerRank3Min:" + PowerRank3Min + ","
+        + "powerRank4Min:" + PowerRank4Min + ","
+        + "powerRank5Min:" + PowerRank5Min + ","
+        + "powerRank6Min:" + PowerRank6Min + ","
+        + "powerRank7Min:" + PowerRank7Min + ","
+        + "powerRank8Min:" + PowerRank8Min + ","
+        + "powerRank9Min:" + PowerRank9Min + ","
         + "}";
     }
 }

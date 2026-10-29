@@ -92,6 +92,18 @@ namespace ProjectJianghu.Core.Domain.Config
         /// <summary>Display order inside the category; ties are allowed.</summary>
         public int SortOrder { get; set; }
 
+        /// <summary>Contribution weight for PowerScore.</summary>
+        public int PowerWeight { get; set; }
+
+        /// <summary>Weight when averaging this value into its radar category.</summary>
+        public int RadarWeight { get; set; }
+
+        /// <summary>Minimum character-creation value.</summary>
+        public int CreationMin { get; set; }
+
+        /// <summary>Maximum character-creation value.</summary>
+        public int CreationMax { get; set; }
+
         /// <summary>Localization key of the attribute's name.</summary>
         public string NameKey { get; set; } = string.Empty;
 
@@ -200,6 +212,9 @@ namespace ProjectJianghu.Core.Domain.Config
 
         /// <summary>Mastery XP needed to reach it from the level below.</summary>
         public int MasteryXp { get; set; }
+
+        /// <summary>Combat damage mastery multiplier, times 100.</summary>
+        public int CombatMasteryX100 { get; set; }
     }
 
     /// <summary>One piece of gear (the <c>gear</c> table).</summary>
@@ -464,5 +479,18 @@ namespace ProjectJianghu.Core.Domain.Config
 
         /// <summary>Attribute points a character starts with.</summary>
         public int StartingAttributePoints { get; set; }
+
+        /// <summary>Intellect mastery XP bonus per point, times 100.</summary>
+        public int MasteryIntellectBonusX100PerPoint { get; set; }
+
+        /// <summary>Minimum PowerScore for rank two; later ranks use their corresponding thresholds.</summary>
+        public int PowerRank2Min { get; set; }
+        public int PowerRank3Min { get; set; }
+        public int PowerRank4Min { get; set; }
+        public int PowerRank5Min { get; set; }
+        public int PowerRank6Min { get; set; }
+        public int PowerRank7Min { get; set; }
+        public int PowerRank8Min { get; set; }
+        public int PowerRank9Min { get; set; }
     }
 }

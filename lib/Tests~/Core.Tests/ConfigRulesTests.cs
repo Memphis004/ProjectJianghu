@@ -80,6 +80,38 @@ namespace ProjectJianghu.Core.Tests
             Assert.Equal("tbconstant.move_atb_cost", finding.Target);
         }
 
+        [Fact]
+        public void Character_creation_bounds_must_be_ordered()
+        {
+            var config = new TestConfig();
+            config.AttributeRows = new List<AttributeConfig>
+            {
+                new AttributeConfig { Id = "attribute.bad", Attribute = EAttribute.Toughness, CreationMin = 3, CreationMax = 2 },
+            };
+            config.StatFormulaRows[0].Terms = new List<StatTerm>
+            {
+                new StatTerm { Attribute = EAttribute.Toughness, Coefficient = 600, Min = 0, Max = 0 },
+            };
+
+            Finding finding = Assert.Single(ConfigValidator.Validate(config));
+            Assert.Equal("attribute.creation_bounds", finding.Code);
+        }
+
+        [Fact]
+        public void Power_rank_thresholds_must_be_increasing()
+        {
+            var config = new TestConfig();
+            config.ConstantValue = new ConstantConfig
+            {
+                AtbFull = 10000, MatchTicks = 3600, DamageMitigationK = 1000, MaxMasteryLevel = 10,
+                MoveAtbCost = 10000, JumpAtbCost = 5000, MeditateAtbCost = 10000,
+                PowerRank2Min = 10, PowerRank3Min = 9, PowerRank4Min = 20, PowerRank5Min = 30,
+                PowerRank6Min = 40, PowerRank7Min = 50, PowerRank8Min = 60, PowerRank9Min = 70,
+            };
+
+            Assert.Contains(ConfigValidator.Validate(config), row => row.Code == "constant.power_rank_order");
+        }
+
         // -- localization ------------------------------------------------------
 
         [Fact]
@@ -440,6 +472,10 @@ namespace ProjectJianghu.Core.Tests
                     Attribute = EAttribute.Toughness,
                     Category = EAttrCategory.Body,
                     SortOrder = 10,
+                    PowerWeight = 1,
+                    RadarWeight = 1,
+                    CreationMin = 0,
+                    CreationMax = 100,
                     NameKey = "ui.title",
                 },
             };

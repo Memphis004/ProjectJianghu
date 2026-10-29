@@ -19,6 +19,7 @@ public sealed partial class SkillLevelDef : Luban.BeanBase
         Id = _buf.ReadString();
         Level = _buf.ReadInt();
         MasteryXp = _buf.ReadInt();
+        CombatMasteryX100 = _buf.ReadInt();
     }
 
     public static SkillLevelDef DeserializeSkillLevelDef(ByteBuf _buf)
@@ -29,6 +30,7 @@ public sealed partial class SkillLevelDef : Luban.BeanBase
     public readonly string Id;
     public readonly int Level;
     public readonly int MasteryXp;
+    public readonly int CombatMasteryX100;
    
     public const int __ID__ = -1104212174;
     public override int GetTypeId() => __ID__;
@@ -43,6 +45,7 @@ public sealed partial class SkillLevelDef : Luban.BeanBase
         + "id:" + Id + ","
         + "level:" + Level + ","
         + "masteryXp:" + MasteryXp + ","
+        + "combatMasteryX100:" + CombatMasteryX100 + ","
         + "}";
     }
 }

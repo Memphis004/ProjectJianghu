@@ -23,6 +23,7 @@ docs.
 | Unity shell (scenes, DI, the 7-probe smoke suite, page globals, the Web build) | [`systems/unity-shell.md`](systems/unity-shell.md) | done |
 | Core primitives (RNG, clock, ticker, `Result`, `EventRing<T>`, `PrevCurBuffer<T>`) | [`../docs/architecture/overview.md`](../docs/architecture/overview.md), [ADR 0004](../docs/adr/0004-dotnet-layer-enforcement.md), [ADR 0024](../docs/adr/0024-shared-generic-buffers.md) | done |
 | Arena contract v1 (`Domain.Arena`): commands, frame/query, events, results, the shared frame buffer, the fake and replay | [`systems/arena-contract.md`](systems/arena-contract.md) | done |
+| Character/stat/loadout domain: modifiers, formula resolution, power/radar, creation, mastery and Arena fighter conversion | [`systems/character-domain.md`](systems/character-domain.md) | done |
 | HD-2D isometric presentation: camera pose, 32 PPU, pixel snap, depth→sorting order, sprite-vs-prop measurement | [ADR 0110](../docs/adr/0110-hd2d-isometric-camera-pixel-snap-and-sorting.md), [`systems/unity-shell.md`](systems/unity-shell.md) | done |
 | Quality tiers (3 URP assets + selector + frame probe) and the project WebGL template | [ADR 0111](../docs/adr/0111-webgl-canvas-fills-the-window.md), [`systems/unity-shell.md`](systems/unity-shell.md) | done |
 | Decorative Chinese characters as sprites (font atlas stays Thai-only) | [ADR 0112](../docs/adr/0112-decorative-cjk-glyphs-are-sprites.md) | done |
