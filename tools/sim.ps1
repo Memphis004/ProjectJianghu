@@ -1,7 +1,7 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-    Runs the headless determinism harness (the fixed tick over the three random streams).
+    Runs the headless harness: the determinism streams, or the arena balance sweep.
 
 .DESCRIPTION
     Builds lib/Tests~/Sim (Release by default) and runs it:
@@ -11,6 +11,11 @@
 
       pwsh -File tools/sim.ps1 --seed 7 --ticks 900 --trace 20
           the same, with the first 20 ticks echoed and a longer run.
+
+      pwsh -File tools/sim.ps1 --matches 500
+          resolves 500 arena matches with every side on AI (Stage 07) and writes
+          artifacts/balance.csv: win rate per power rank, match length, skill uses, plus the
+          per-match wall clock the stage's < 20 ms budget is read from.
 
     The output is what tools/test.ps1 compares at process level: the same seed must repeat
     byte-for-byte, a different seed must differ, and the three stream digests must differ from
@@ -64,6 +69,13 @@ param(
 
     [string]$Output = '',
 
+    [Alias('Matches')]
+    [int]$MatchCount = 0,
+
+    [string]$Mode = '',
+
+    [string]$BalanceOut = 'artifacts/balance.csv',
+
     [string]$Configuration = 'Release',
 
     [Alias('SkipBuild')]
@@ -79,7 +91,13 @@ $script:SlnDir = Split-Path -Parent $PSScriptRoot
 $script:SimProject = Join-Path $script:SlnDir 'lib\Tests~\Sim\ProjectJianghu.Sim.csproj'
 $script:Artifacts = Join-Path $script:SlnDir 'artifacts'
 
-if ($Output -eq '') { $Output = 'artifacts/sim-streams.txt' }
+$balanceRun = $MatchCount -gt 0 -or $Mode -eq 'balance'
+
+if ($Output -eq '') {
+    $Output = if ($balanceRun) { 'artifacts/sim-balance.txt' } else { 'artifacts/sim-streams.txt' }
+}
+
+$modeArgument = if ($balanceRun) { 'balance' } else { $Mode }
 
 $simDll = Join-Path $script:SlnDir ("lib\Tests~\Sim\bin\{0}\net9.0\ProjectJianghu.Sim.dll" -f $Configuration)
 
@@ -113,6 +131,18 @@ $simArguments = @(
 
 if ($Trace -gt 0) {
     $simArguments += @('--trace', "$Trace")
+}
+
+if ($MatchCount -gt 0) {
+    $simArguments += @('--matches', "$MatchCount")
+}
+
+if ($modeArgument -ne '') {
+    $simArguments += @('--mode', $modeArgument)
+}
+
+if ($balanceRun) {
+    $simArguments += @('--out', $BalanceOut)
 }
 
 if ($Quiet) {

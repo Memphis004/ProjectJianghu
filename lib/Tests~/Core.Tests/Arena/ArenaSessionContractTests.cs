@@ -277,7 +277,11 @@ namespace ProjectJianghu.Core.Tests.Arena
                     probe.Submit(ArenaCommand.Dev(ArenaCommandKind.DevFillAtb, player)));
 
                 Assert.Equal(CommandResult.Ok, probe.Submit(ArenaCommand.Move(player, tile)));
-                Assert.Equal(tile, FindView(probe.Frame, player).Tile);
+
+                // A walk is an action, not a teleport: the order is accepted now, the fighter
+                // arrives when it has walked (ADR 0115). The fake still arrives inside the
+                // submitting tick, so this loop runs zero times for it.
+                Assert.Equal(tile, StepUntilArrived(probe, player, tile));
             }
 
             using (IArenaSession outside = CreateSession(setup))
@@ -519,6 +523,17 @@ namespace ProjectJianghu.Core.Tests.Arena
             }
 
             Assert.Equal(ArenaPhase.Running, session.Phase);
+        }
+
+        private static GridCoord StepUntilArrived(IArenaSession session, byte id, GridCoord expected)
+        {
+            int guard = 0;
+            while (FindView(session.Frame, id).Tile != expected && guard++ < 64)
+            {
+                session.Step();
+            }
+
+            return FindView(session.Frame, id).Tile;
         }
 
         private static void StepUntilPhase(IArenaSession session, ArenaPhase phase, int maxSteps)

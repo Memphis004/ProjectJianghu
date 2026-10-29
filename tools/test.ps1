@@ -349,12 +349,44 @@ if ($dotnet -and (Test-Path -LiteralPath $script:Sln)) {
         return @{ Status = 'PASS'; Detail = ("{0} {1} {2}" -f $run, $encounter, $visual) }
     } | Out-Null
 
+    # Stage 07's loop end to end: data -> fighters -> AI on both sides -> result -> CSV.
+    # The gate is that a batch of authored matches resolves inside the per-match budget and
+    # every one of them produces a result row; the numbers themselves are the artifact.
+    Invoke-Step 'sim: balance sweep' 'Fast' {
+        if (-not (Test-Path -LiteralPath $script:SimDll)) {
+            return @{ Status = 'FAIL'; Detail = 'the Sim assembly was not built' }
+        }
+
+        $csv = Join-Path $script:DotnetDir 'balance-smoke.csv'
+        $sweep = Invoke-Native $dotnet @('exec', $script:SimDll, '--matches', '40', '--out', $csv)
+        Write-Artifact $script:DotnetDir 'balance-smoke.txt' $sweep.Output
+
+        if (-not $sweep.Ok) {
+            return @{ Status = 'FAIL'; Detail = ("sim exited with {0}" -f $sweep.Code) }
+        }
+
+        $timing = [string](@($sweep.Output -split "`r?`n" | Where-Object { $_ -match '^balance: avgMsPerMatch=' })[0])
+        $summary = [string](@($sweep.Output -split "`r?`n" | Where-Object { $_ -match '^balance: matches=' })[0])
+        if (-not $timing -or $timing -notmatch 'verdict=PASS') {
+            return @{ Status = 'FAIL'; Detail = ('over budget: ' + $timing) }
+        }
+        if (-not (Test-Path -LiteralPath $csv)) {
+            return @{ Status = 'FAIL'; Detail = ("no CSV at {0}" -f $csv) }
+        }
+        if (@(Get-Content -LiteralPath $csv | Where-Object { $_ -match '^total,' }).Count -ne 1) {
+            return @{ Status = 'FAIL'; Detail = 'the CSV has no total row' }
+        }
+
+        return @{ Status = 'PASS'; Detail = ((($timing -replace '^balance: ', '') -replace ' budgetMs=20', '') + '; ' + ($summary -replace '^balance: ', '')) }
+    } | Out-Null
+
 }
 else {
     Add-Step 'dotnet build' 'Fast' 'NOT RUN' 'dotnet is unavailable'
     Add-Step 'dotnet test (xUnit)' 'Fast' 'NOT RUN' 'dotnet is unavailable'
     Add-Step 'sim: determinism' 'Fast' 'NOT RUN' 'dotnet is unavailable'
     Add-Step 'sim: stream separation' 'Fast' 'NOT RUN' 'dotnet is unavailable'
+    Add-Step 'sim: balance sweep' 'Fast' 'NOT RUN' 'dotnet is unavailable'
 }
 
 # ---------------------------------------------------------------------------

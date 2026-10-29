@@ -51,7 +51,7 @@ the Editor.
 | 04 | Prototype content: attributes, `stat_formula`, 13 skills, gear, 4 statuses, 4 backgrounds, 31 fighters, map, reward pool | **done** | [`docs/stages/04-report.md`](docs/stages/04-report.md) |
 | 05 | Character / stats / loadout domain: `StatResolver`, `ModifierStack`, `PowerScore`, `ArenaFighterBuilder`, `CharacterCreation` | **done** | [`docs/stages/05-report.md`](docs/stages/05-report.md) |
 | 06 | Grid and targeting domain: reachability, jump, area shapes, facing (pure, zero-alloc) | **done** | [`docs/stages/06-report.md`](docs/stages/06-report.md) |
-| 07 | `ArenaSimulation`: struct-array fighters ([ADR 0101](docs/adr/0101-no-ecs-struct-array-fighters.md)), ATB, resolve, stats | planned | — |
+| 07 | `ArenaSimulation`: struct-array fighters ([ADR 0101](docs/adr/0101-no-ecs-struct-array-fighters.md)), ATB, resolve, stats | **done** | [`docs/stages/07-report.md`](docs/stages/07-report.md) |
 | 08 | Arena AI: utility scoring, 4 archetypes, telegraph evasion | planned | — |
 | 09 | Arena presentation: HD-2D scene, `ArenaRunner`, sprite pool, tile highlights, HUD | planned | — |
 | 10 | Tournament + run flow: bracket, background matches, rewards, `Rest` | planned | — |
@@ -107,7 +107,7 @@ license. Locked in [`tools/versions.lock.json`](tools/versions.lock.json).
 | Absent | Why | Where the game-era version is kept |
 | --- | --- | --- |
 | A genre, a theme, a combat loop | the template is the shell, not a game | [`docs/template/examples/`](docs/template/examples/) |
-| An ECS engine (EcsLite) | it left with the battle rules; `Simulation` is an empty guarded layer a game fills | [`docs/template/examples/gotchas/ecslite-pool-refs.md`](docs/template/examples/gotchas/ecslite-pool-refs.md) |
+| An ECS engine (EcsLite) | it left with the battle rules; `Simulation` is a plain struct-array layer (ADR 0101) | [`docs/template/examples/gotchas/ecslite-pool-refs.md`](docs/template/examples/gotchas/ecslite-pool-refs.md) |
 | A save format | `Contracts/Save` holds only the serialization probe | ADR 0012 and the probe's own remarks |
 | The template's original game screens | Hub/Encounter were placeholders in the template baseline | the game's current loop is documented in Stage 03 |
 
@@ -127,7 +127,7 @@ required check failed, `2` = the tool itself could not run.
 | [`validate-data.ps1`](tools/validate-data.ps1) | runs `lib/Tests~/Data.Validator` over the generated tables (cross-row rules Luban cannot express) | after `gen.ps1`; needs `-DataDir` (see the gotcha) |
 | [`verify-generated.ps1`](tools/verify-generated.ps1) | regenerates into a temp directory and compares byte for byte with what is committed | the reproducibility gate, inside Fast |
 | [`check-fixtures.ps1`](tools/check-fixtures.ps1) | proves every deliberately broken fixture under `lib/Tests~/fixtures/` is rejected **for the reason its `fixture.json` names** | after adding a data rule |
-| [`sim.ps1`](tools/sim.ps1) | builds and runs the headless determinism harness (`lib/Tests~/Sim`): one fingerprint per random stream + `determinismDigest` | determinism and stream-separation checks |
+| [`sim.ps1`](tools/sim.ps1) | builds and runs the headless harness (`lib/Tests~/Sim`): per-stream fingerprints + `determinismDigest`, and `--matches N` for the arena balance sweep (`artifacts/balance.csv`) | determinism, stream-separation and balance checks |
 | [`build-web.ps1`](tools/build-web.ps1) | batch-mode WebGL build through the project's own pipeline; Development or Release, optionally with a size profile | makes the player the browser tests need |
 | [`serve-web.mjs`](tools/serve-web.mjs) | static server that sets the content types a WebGL player needs | serving `UnityProject/Builds/Web` to Playwright or a person |
 | [`measure-web-size.mjs`](tools/measure-web-size.mjs) | raw / gzip -9 / Brotli q11 size of every file in a build | any payload claim |
@@ -158,6 +158,7 @@ pwsh -NoProfile -File tools/validate-data.ps1 -DataDir "lib/Tests~/data"
 pwsh -NoProfile -File tools/verify-generated.ps1
 pwsh -NoProfile -File tools/check-fixtures.ps1
 pwsh -NoProfile -File tools/sim.ps1 --seed 7 --trace 5
+pwsh -NoProfile -File tools/sim.ps1 --matches 500            # artifacts/balance.csv + per-match ms
 node tools/check-links.mjs
 pwsh -NoProfile -File tools/rename.ps1 -From ProjectJianghu -To MyGame -DryRun
 ```
@@ -254,6 +255,7 @@ Full detail: [`docs/architecture/overview.md`](docs/architecture/overview.md).
 | [`llmwiki/systems/data-schema.md`](llmwiki/systems/data-schema.md) | the fourteen tables, their rules, the pipeline |
 | [`llmwiki/systems/loop-and-scopes.md`](llmwiki/systems/loop-and-scopes.md) | the loop and the three scopes |
 | [`llmwiki/systems/unity-shell.md`](llmwiki/systems/unity-shell.md) | scenes, DI, the published globals, the Web build |
+| [`llmwiki/systems/arena-simulation.md`](llmwiki/systems/arena-simulation.md) | the arena tick, the resolve pipeline, the AI seam, the balance sweep |
 | [`tools/versions.lock.json`](tools/versions.lock.json) | engine + tool version lock |
 
 ---
@@ -262,8 +264,13 @@ Full detail: [`docs/architecture/overview.md`](docs/architecture/overview.md).
 
 - `UI.MVP Lite` has **no repository**; the project owns a thin MVP
   ([ADR 0002](docs/adr/0002-thin-mvp-ui-approach.md)).
-- `Simulation` is an empty, guarded layer: a game that needs an ECS engine adds one
-  (the game-era EcsLite note is kept under `docs/template/examples/`).
+- `Simulation` now holds the arena match loop (`Simulation/Arena`, ADR 0114/0115);
+  a different game would replace that folder, not add an engine (ADR 0101).
+- The arena's balance data is not tuned yet: a hit is ~1.5 % of HP, so every authored
+  match is decided by the 120 s HP-percentage timeout. `artifacts/balance.csv` is the
+  measurement to start from.
+- `skill.csv` has no `area_size`/`hits` column, so area skills resolve as one tile and
+  `falling_rain_slash`'s two cuts are not modelled.
 - `Contracts/Save` holds only `CheckpointProbe`; the first real save format is the
   game's decision, and it should start at schema version 1 with a migration story.
 - `SaveHeader` has no reader yet.

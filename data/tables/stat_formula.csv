@@ -6,10 +6,10 @@
 ,stat.inner_power,0,NeiliPower|25|0|999999|NeiliFlow|5|0|999999,1,100000,stat.inner_power.name
 ,stat.defense,0,Sinew|12|0|999999|LowerBody|8|0|999999,0,50000,stat.defense.name
 ,stat.inner_defense,0,NeiliPool|5|0|999999|Composure|10|0|999999,0,50000,stat.inner_defense.name
-,stat.move_range,3,Lightness|1|0|999999,1,12,stat.move_range.name
-,stat.jump_range,2,Lightness|1|0|999999,1,12,stat.jump_range.name
+,stat.move_range,3,Lightness|1|0|1,1,12,stat.move_range.name
+,stat.jump_range,2,Lightness|1|0|1,1,12,stat.jump_range.name
 ,stat.atb_fill_ticks,180,Lightness|-1|0|999999|Decisiveness|-1|0|999999,30,180,stat.atb_fill_ticks.name
-,stat.action_speed_x100,100,Lightness|2|0|999999|Decisiveness|1|0|999999,50,250,stat.action_speed_x100.name
+,stat.action_speed_x100,10000,Lightness|200|0|999999|Decisiveness|100|0|999999,5000,25000,stat.action_speed_x100.name
 ,stat.accuracy_x100,7500,Focus|35|0|999999,5000,10000,stat.accuracy_x100.name
 ,stat.evasion_x100,1000,Lightness|30|0|999999,0,8000,stat.evasion_x100.name
 ,stat.crit_chance_x100,500,Wit|20|0|999999,0,5000,stat.crit_chance_x100.name

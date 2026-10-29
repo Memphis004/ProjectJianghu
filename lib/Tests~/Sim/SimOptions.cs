@@ -10,6 +10,15 @@ namespace ProjectJianghu.Sim
     /// The template keeps one mode: <b>streams</b>, the fixed-tick determinism check. A game adds
     /// its own modes (a bot that plays, a benchmark that measures) here, next to this one.
     /// </remarks>
+    internal enum SimMode
+    {
+        /// <summary>The fixed-tick determinism fingerprint (Stage 01).</summary>
+        Streams = 0,
+
+        /// <summary>Auto-resolved arena matches and the balance CSV (Stage 07).</summary>
+        Balance = 1,
+    }
+
     internal sealed class SimOptions
     {
         internal const uint DefaultSeed = 20261013u;
@@ -17,11 +26,13 @@ namespace ProjectJianghu.Sim
         internal const double DefaultTickHz = 30.0;
         internal const double DefaultFrameHz = 60.0;
         internal const long DefaultRunIntervalTicks = 10;
+        internal const int DefaultMatches = 100;
 
         internal const string Usage =
             "usage: ProjectJianghu.Sim [--seed N] [--ticks N] [--tick-hz X] [--frame-hz X]\n"
             + "                         [--run-interval-ticks N] [--trace N] [--data DIR] [--quiet]\n"
-            + "  --seed N                 run seed (default " + "20261013" + ")\n"
+            + "                         [--mode streams|balance] [--matches N] [--out PATH]\n"
+            + "  --seed N                 run seed (default 20261013)\n"
             + "  --ticks N                ticks to produce (default 300)\n"
             + "  --tick-hz X              fixed tick rate (default 30)\n"
             + "  --frame-hz X             synthetic frame rate (default 60)\n"
@@ -29,6 +40,9 @@ namespace ProjectJianghu.Sim
             + "  --trace N                print the first N ticks\n"
             + "  --data DIR               directory holding the generated .bytes\n"
             + "  --quiet                  print only the determinism fingerprint\n"
+            + "  --mode NAME              streams (default) or balance\n"
+            + "  --matches N              balance: how many AI matches to resolve (implies --mode balance)\n"
+            + "  --out PATH               balance: CSV path (default artifacts/balance.csv)\n"
             + "  --help, -h               this text";
 
         private SimOptions()
@@ -50,6 +64,12 @@ namespace ProjectJianghu.Sim
         internal bool Quiet { get; private set; }
 
         internal string? DataDirectory { get; private set; }
+
+        internal SimMode Mode { get; private set; } = SimMode.Streams;
+
+        internal int Matches { get; private set; } = DefaultMatches;
+
+        internal string BalanceOut { get; private set; } = "artifacts/balance.csv";
 
         /// <summary>Parses the command line; <paramref name="helpRequested"/> means "print and exit 0".</summary>
         internal static bool TryParse(string[] args, out SimOptions options, out bool helpRequested)
@@ -124,6 +144,48 @@ namespace ProjectJianghu.Sim
                         }
 
                         parsed.Trace = (int)Math.Min(trace, int.MaxValue);
+                        break;
+
+                    case "--mode":
+                        if (!ReadValue(args, ref i, arg, out string modeName))
+                        {
+                            return false;
+                        }
+
+                        if (string.Equals(modeName, "streams", StringComparison.OrdinalIgnoreCase))
+                        {
+                            parsed.Mode = SimMode.Streams;
+                        }
+                        else if (string.Equals(modeName, "balance", StringComparison.OrdinalIgnoreCase))
+                        {
+                            parsed.Mode = SimMode.Balance;
+                        }
+                        else
+                        {
+                            Console.Error.WriteLine("unknown mode: " + modeName);
+                            Console.Error.WriteLine(Usage);
+                            return false;
+                        }
+
+                        break;
+
+                    case "--matches":
+                        if (!TryReadLong(args, ref i, arg, out long matches) || matches < 1 || matches > int.MaxValue)
+                        {
+                            return false;
+                        }
+
+                        parsed.Matches = (int)matches;
+                        parsed.Mode = SimMode.Balance;
+                        break;
+
+                    case "--out":
+                        if (!ReadValue(args, ref i, arg, out string output) || string.IsNullOrWhiteSpace(output))
+                        {
+                            return false;
+                        }
+
+                        parsed.BalanceOut = output;
                         break;
 
                     case "--data":

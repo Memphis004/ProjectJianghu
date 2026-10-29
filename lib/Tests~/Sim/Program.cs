@@ -44,12 +44,18 @@ namespace ProjectJianghu.Sim
 
             try
             {
-                if (!options.Quiet)
+                // The streams mode only needs the tables for its banner, so a quiet run skips
+                // the load; every arena mode needs them for real.
+                LubanGameConfig? config = null;
+                if (!options.Quiet || options.Mode == SimMode.Balance)
                 {
                     // Seed and config hash are the two facts a result is only meaningful with: the first
-                    // makes a run reproducible, the second says which balance data produced it. A game
-                    // adds its own mode here; this line is the part every mode wants.
-                    LubanGameConfig config = SimEnvironment.LoadConfig(options.DataDirectory);
+                    // makes a run reproducible, the second says which balance data produced it.
+                    config = SimEnvironment.LoadConfig(options.DataDirectory);
+                }
+
+                if (config is not null && !options.Quiet)
+                {
                     Console.WriteLine(
                         "seed=" + options.Seed.ToString(System.Globalization.CultureInfo.InvariantCulture)
                         + " configHash=" + config.ConfigHash
@@ -58,6 +64,11 @@ namespace ProjectJianghu.Sim
                         + ", skills " + config.Skills.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)
                         + ", fighters " + config.Fighters.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)
                         + ", atbFull " + config.Constant.AtbFull.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                }
+
+                if (options.Mode == SimMode.Balance)
+                {
+                    return BalanceMode.Run(options, config!);
                 }
 
                 return StreamsMode.Run(options);
