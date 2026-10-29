@@ -41,6 +41,9 @@ namespace ProjectJianghu.Game.Presentation.Thai
         [Tooltip("The TMP font asset generated from the Thai font (Editor-created).")]
         [SerializeField] private TMP_FontAsset _font;
 
+        [Tooltip("A label the size of the arena HUD's skill slot, used for the 1280x720 fit test.")]
+        [SerializeField] private TMP_Text _skillSlotLabel;
+
         /// <summary>
         /// Measures every string and appends the rows to <paramref name="report"/>.
         /// </summary>
@@ -69,6 +72,36 @@ namespace ProjectJianghu.Game.Presentation.Thai
 
                 report.Add(new ThaiSpikeRow(StackName, fontName, text, missing.Length, missing, size.x, size.y));
             }
+        }
+
+        /// <summary>
+        /// Measures a skill name inside a slot the HUD really has: no wrapping, clipped, at the slot's
+        /// own font size. A name that wants more width than the slot has is a name the player would
+        /// see cut off, which is what the fit test asserts against.
+        /// </summary>
+        /// <param name="text">The longest skill name in the current language.</param>
+        /// <param name="slotWidth">The slot's width in canvas units.</param>
+        /// <param name="report">The report to record the measurement in.</param>
+        public void AppendSkillSlot(string text, float slotWidth, ThaiSpikeReport report)
+        {
+            if (_skillSlotLabel is null)
+            {
+                report.RecordSkillSlot(text ?? string.Empty, 0f, 0f, slotWidth);
+                return;
+            }
+
+            if (_font is not null)
+            {
+                _skillSlotLabel.font = _font;
+            }
+
+            _skillSlotLabel.textWrappingMode = TextWrappingModes.NoWrap;
+            _skillSlotLabel.overflowMode = TextOverflowModes.Overflow;
+            _skillSlotLabel.text = text;
+            _skillSlotLabel.ForceMeshUpdate();
+
+            Vector2 size = _skillSlotLabel.GetPreferredValues(text);
+            report.RecordSkillSlot(text, size.x, size.y, slotWidth);
         }
 
         /// <summary>

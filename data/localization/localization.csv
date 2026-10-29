@@ -8,21 +8,31 @@
 ,ui.spike.thai.marks,ปื๊ด ตู้ เบ๊ ญี่ปุ่น น้ำตาล ฤๅษี ฎ ฏ ฐ ฅ ฃ,Thai tone-mark and rare-glyph stress sample
 ,title.start,เริ่มเล่น,Start
 ,title.quit,ออก,Quit
-,hub.title,ที่พัก,Rest
-,hub.instructions,เตรียมตัวแล้วออกเดินทาง,"Prepare, then set out."
-,hub.encounters.format,ผ่านมาแล้ว {0} รอบ,Cleared {0} encounters
-,hub.depart,ออกเดินทาง,Depart
-,hub.finish,จบการเดินทาง,End the run
-,encounter.title,ลานประลอง,Arena
-,encounter.progress.format,รอบที่ {0} จาก {1},Round {0} of {1}
-,encounter.win,ชนะ,Win
-,encounter.lose,แพ้,Lose
+,rest.title,ที่พัก,Rest
+,rest.instructions,เตรียมตัวแล้วออกเดินทาง,"Prepare, then set out."
+,rest.rounds.format,ผ่านมาแล้ว {0} รอบ,Cleared {0} rounds
+,rest.depart,ลงสนาม,Enter the arena
+,rest.finish,จบการเดินทาง,End the run
+,arena.title,ลานประลอง,Arena
+,arena.progress.format,รอบที่ {0} จาก {1},Round {0} of {1}
+,arena.win,ชนะ,Win
+,arena.lose,แพ้,Lose
 ,result.victory,สำเร็จ,Run complete
 ,result.defeat,จบแล้ว,Run over
 ,result.summary.format,ผ่าน {0} รอบ,Cleared {0} encounters
 ,result.seed.format,seed {0},seed {0}
 ,result.restart,เริ่มใหม่,New run
 ,result.title,กลับหน้าแรก,Back to title
+,charactercreate.title,สร้างตัวละคร,Create character
+,charactercreate.line,เลือกภูมิหลัง แจกแต้ม และเลือกวิชาเริ่มต้น (เร็วๆ นี้),"Background, points and a starting skill (coming soon)"
+,bracket.title,ผังทัวร์นาเมนต์,Tournament bracket
+,bracket.line,ผู้เข้าแข่ง 32 คน สายการแข่งจะมาใน Stage 10,32 entrants; the bracket arrives in Stage 10
+,settings.quality.low,ต่ำ,Low
+,settings.quality.medium,กลาง,Medium
+,settings.quality.high,สูง,High
+,settings.quality.status.format,คุณภาพ {0} · {1} FPS (1% ต่ำสุด {2}),Quality {0} · {1} FPS (1% low {2})
+,ui.spike.thai.skill_long,กระบี่สายฝนพรำเพลงดาบสวรรค์สะบั้นมาร,Rainfall Sword of the Heaven-Severing Blade
+,ui.spike.thai.banner,ธงอักษรจีน,Chinese-letter banner
 ,attr.toughness.name,กายแกร่ง,Toughness
 ,attr.toughness.desc,โครงร่างและกำลังภายในที่หล่อเลี้ยงพลังชีวิต,Bulk and the inner strength that feeds hit points
 ,attr.sinew.name,เอ็นกระดูก,Sinew

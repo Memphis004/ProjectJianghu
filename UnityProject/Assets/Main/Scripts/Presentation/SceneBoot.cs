@@ -39,7 +39,10 @@ namespace ProjectJianghu.Game.Presentation
         [SerializeField] private string _titleSceneName = "Title";
 
         [Tooltip("Scenes the page URL may request with ?scene=<name>. Only these names are accepted.")]
-        [SerializeField] private string[] _urlSceneOverrides = { "ThaiTextSpike", "Hub", "Encounter", "Result" };
+        [SerializeField] private string[] _urlSceneOverrides =
+        {
+            "ThaiTextSpike", "CharacterCreate", "Bracket", "Rest", "Arena", "Result",
+        };
 
         private CancellationTokenSource _lifetime;
 

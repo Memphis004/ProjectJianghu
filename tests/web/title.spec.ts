@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
-import { HUB, PLAYER_BOOT_TIMEOUT_MS, SCENE, SMOKE, TITLE } from "./globals.mjs";
-import type { Control, HubReport, TitleReport } from "./report-types";
+import { CHARACTER_CREATE, PLAYER_BOOT_TIMEOUT_MS, SCENE, SMOKE, TITLE } from "./globals.mjs";
+import type { Control, StepReport, TitleReport } from "./report-types";
 
 /**
  * The title screen, in a built player: **the screen and its start control**.
@@ -9,15 +9,15 @@ import type { Control, HubReport, TitleReport } from "./report-types";
  * The gap this spec closes is the same one the original camp spec closed for the game: a title
  * screen nothing can leave is a dead end. The player publishes where its start control is
  * (`__projectJianghuTitle`), this spec clicks that point, and what it asserts on afterwards is the
- * game's own answer — the scene marker becoming `Hub` and the Hub's own report showing a run that
- * has cleared no encounters yet and can depart.
+ * game's own answer — the scene marker becoming `CharacterCreate` and that step's own report
+ * showing a run that has started.
  *
  * Documents this spec reads, all on `window`:
  *
- *   __projectJianghuSmoke   - the boot self-check (the handover to the title is what it reports)
- *   __projectJianghuScene   - the scene on screen
- *   __projectJianghuTitle   - what the title screen shows, and where its start control is
- *   __projectJianghuHub     - the Hub's own report, after the press
+ *   __projectJianghuSmoke           - the boot self-check (the handover to the title is what it reports)
+ *   __projectJianghuScene           - the scene on screen
+ *   __projectJianghuTitle           - what the title screen shows, and where its start control is
+ *   __projectJianghuCharacterCreate - the step's own report, after the press
  *
  * Timing: the first load of a Unity WebGL player downloads and compiles the WASM, so the boot budget
  * is minutes. Everything after it is quick — a click, a fade and a scene load.
@@ -104,31 +104,36 @@ test.describe("the template's title screen in the browser", () => {
     expect(start.x).toBeLessThanOrEqual(title.canvasWidth);
     expect(start.y).toBeLessThanOrEqual(title.canvasHeight);
 
-    // The template's own player size, which is what the fixture starts at.
-    expect(title.canvasWidth, "the fixture starts at the template's own canvas size").toBe(960);
+    // The fixture's viewport, which the template fills: the canvas is the window (ADR 0111), not the
+    // 960×600 box Unity's default desktop template would pin it to.
+    expect(
+      title.canvasWidth,
+      "the player did not measure the 1280×720 viewport it was opened in",
+    ).toBe(1280);
+    expect(title.canvasHeight).toBe(720);
 
     // The control is centred on the canvas: the CanvasScaler's virtual width follows the canvas' aspect,
-    // so a corner-anchored control would sit 26 px right of 480 at this size (measured in Stage 10d).
+    // so a corner-anchored control would sit off-centre at this size.
     expect(
       Math.abs(start.x - title.canvasWidth / 2),
-      "the control is not where the canvas centre is at the template's own size",
+      "the control is not where the canvas centre is",
     ).toBeLessThanOrEqual(2);
 
-    // Now the GDD's second size, taken the way a player takes it: the size *and* the point it aims a
-    // click at. A document that never settles is a failure — the first one written after a resize is a
-    // frame early (`TitleSceneDirector` rewrites until the geometry agrees with the size it published).
-    await setCanvasSize(page, 1280, 720);
+    // Now a second size, taken the way a player takes it: the size *and* the point it aims a click at.
+    // A document that never settles is a failure — the first one written after a resize is a frame
+    // early (`TitleSceneDirector` rewrites until the geometry agrees with the size it published).
+    await setCanvasSize(page, 1920, 1080);
     const resized = await expect
       .poll(
         async () => {
           const report = await readGlobal<TitleReport>(page, TITLE);
-          return report.canvasWidth === 1280 && report.buttons.length === 1
+          return report.canvasWidth === 1920 && report.buttons.length === 1
             ? Math.round(report.buttons[0].x)
             : null;
         },
         { timeout: 15_000, polling: 250 },
       )
-      .toBe(640)
+      .toBe(960)
       .then(
         () => readGlobal<TitleReport>(page, TITLE),
         () => null,
@@ -138,7 +143,7 @@ test.describe("the template's title screen in the browser", () => {
       resized,
       "the title screen did not republish its control's position after the canvas was resized",
     ).not.toBeNull();
-    expect(resized!.canvasHeight).toBe(720);
+    expect(resized!.canvasHeight).toBe(1080);
     expect(resized!.startError).toBe("");
     expect(resized!.buttons.map((button) => button.name)).toEqual(["start"]);
 
@@ -171,7 +176,7 @@ test.describe("the template's title screen in the browser", () => {
 
       left = await expect
         .poll(() => readGlobal<string>(page, SCENE), { timeout: 10_000, polling: 500 })
-        .toBe("Hub")
+        .toBe("CharacterCreate")
         .then(
           () => true,
           () => false,
@@ -184,20 +189,20 @@ test.describe("the template's title screen in the browser", () => {
       }
     }
 
-    expect(left, "the title screen never left for the Hub: the start control did not start a run").toBe(true);
+    expect(left, "the title screen never left for character creation: the start control did not start a run")
+      .toBe(true);
 
-    // The Hub's own report: a run that has cleared nothing yet and has both ways out.
-    await waitForGlobal(page, HUB);
-    const hub = await readGlobal<HubReport>(page, HUB);
-    console.log("hub report (after the title):", JSON.stringify(hub));
+    // The step's own report: a started run, and its one way on.
+    await waitForGlobal(page, CHARACTER_CREATE);
+    const step = await readGlobal<StepReport>(page, CHARACTER_CREATE);
+    console.log("character-create report (after the title):", JSON.stringify(step));
 
-    expect(hub.scene).toBe("Hub");
-    expect(hub.encountersLine).toContain("0");
-    expect(hub.departLabel).toMatch(/[\u0E00-\u0E7F]/);
-    expect(hub.finishLabel).toMatch(/[\u0E00-\u0E7F]/);
-    expect(hub.buttons.map((button) => button.name).sort()).toEqual(["depart", "finish"]);
+    expect(step.scene).toBe("CharacterCreate");
+    expect(step.title).toMatch(/[\u0E00-\u0E7F]/);
+    expect(step.continueLabel).toMatch(/[\u0E00-\u0E7F]/);
+    expect(step.buttons.map((button) => button.name)).toEqual(["continue"]);
 
-    await page.screenshot({ path: "test-results/web-hub.png", fullPage: false });
+    await page.screenshot({ path: "test-results/web-character-create.png", fullPage: false });
 
     expect(pageErrors, `the page reported errors:\n${pageErrors.join("\n")}`).toEqual([]);
   });

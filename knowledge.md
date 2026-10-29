@@ -4,15 +4,16 @@ A **genre-free game skeleton**: Unity 6.3 + URP shell, an engine-free rule libra
 (`lib/`, a local UPM package), a data pipeline whose numbers live in `data/`, and a
 tooling set that builds, tests and ships a **Web (WebGL2, single-thread)** player.
 
-The loop the template ships is a placeholder:
+The loop this fork ships (Stage 03) is the game's, with two placeholder steps:
 
 ```
-Boot → Title → Hub ⇄ Encounter → Result → Title
+Boot → Title → CharacterCreate → Bracket → Rest ⇄ Arena → Result → Title
 ```
 
 Three lifetimes (`App`, `Run`, `Scene`) are wired, a run is started by the title
-(ADR 0022), and every scene change goes through one loader. A game built from the
-template replaces the Hub and Encounter screens and adds its own rules in `Domain`.
+(ADR 0022), and every scene change goes through one loader. `CharacterCreate` and
+`Bracket` are placeholders until Stage 11 and Stage 10; the Rest and Arena screens are
+where the tournament loop is played.
 
 This file is the fast on-ramp. Read it first, then follow the links.
 
@@ -46,7 +47,7 @@ the Editor.
 | **00** | Fork + docs baseline: GDD, plan, glossary, ADR 0100–0102, scene mapping | **done** | [`docs/stages/00-report.md`](docs/stages/00-report.md) |
 | 01 | Luban/protoc rebuilt for the game: 10 enums, 3 beans, 13 tables + localization, `SaveData`/`CharacterState`/`TournamentState`/`ArenaReplay` | **done** | [`docs/stages/01-report.md`](docs/stages/01-report.md) |
 | 02 | Arena contract in `Domain.Arena` + shared `ArenaFrameBuffer` + `FakeArenaSession`/factory/auto-resolver + `ArenaReplay` + contract suite | **done** | [`docs/stages/02-report.md`](docs/stages/02-report.md) |
-| 03 | Unity shell → Jianghu screens (`CharacterCreate`, `Bracket`, `Rest`, `Arena`); HD-2D iso spike; 3 URP tiers; WebGL canvas | planned | — |
+| 03 | Unity shell → Jianghu screens (`CharacterCreate`, `Bracket`, `Rest`, `Arena`); HD-2D iso spike; 3 URP tiers; WebGL canvas | **done** | [`docs/stages/03-report.md`](docs/stages/03-report.md) |
 | 04 | Prototype content: attributes, `stat_formula`, 13 skills, gear, 4 statuses, 4 backgrounds, 31 fighters, map, reward pool | planned | — |
 | 05 | Character / stats / loadout domain: `StatResolver`, `ModifierStack`, `PowerScore`, `ArenaFighterBuilder`, `CharacterCreation` | planned | — |
 | 06 | Grid and targeting domain: reachability, jump, area shapes, facing (pure, zero-alloc) | planned | — |
@@ -92,10 +93,11 @@ deterministic primitives (`IRandomSource`/`Xoshiro128`/`RandomStreams`,
 `Result`/`Error`), the run skeleton (`RunSession`, `SceneFlow`, `ReplayLog`), a
 serialization probe, and the ArenaBattle v1 contract (`Domain.Arena`: commands, frames,
 queries, events, results) with the shared `ArenaFrameBuffer`, a deterministic
-`FakeArenaSession`/factory/auto-resolver and `ArenaReplay` in Application. Unity ships six
-scenes (Boot, Title, Hub, Encounter, Result, ThaiTextSpike), a
-7-probe smoke suite, the page bridge and the Web build pipeline. `dotnet` carries **156** xUnit cases; Unity
-carries **32** EditMode and **6** PlayMode cases; Playwright has **4** tests in
+`FakeArenaSession`/factory/auto-resolver and `ArenaReplay` in Application. Unity ships eight
+scenes (Boot, Title, ThaiTextSpike, CharacterCreate, Bracket, Rest, Arena, Result), the HD-2D
+isometric spike with its sorting probe, three URP quality tiers, a project WebGL template, a
+7-probe smoke suite, the page bridge and the Web build pipeline. `dotnet` carries **156** xUnit cases;
+Unity carries **42** EditMode and **7** PlayMode cases; Playwright has **4** tests in
 three specs (`smoke`, `title`, `loop`).
 
 **Engine lock:** Unity **`6000.3.9f1`** (revision `7a9955a4f2fa`), Unity Personal
@@ -108,7 +110,7 @@ license. Locked in [`tools/versions.lock.json`](tools/versions.lock.json).
 | A genre, a theme, a combat loop | the template is the shell, not a game | [`docs/template/examples/`](docs/template/examples/) |
 | An ECS engine (EcsLite) | it left with the battle rules; `Simulation` is an empty guarded layer a game fills | [`docs/template/examples/gotchas/ecslite-pool-refs.md`](docs/template/examples/gotchas/ecslite-pool-refs.md) |
 | A save format | `Contracts/Save` holds only the serialization probe | ADR 0012 and the probe's own remarks |
-| Game screens beyond the placeholder loop | Hub/Encounter are deliberately empty | the inventory |
+| The template's original game screens | Hub/Encounter were placeholders in the template baseline | the game's current loop is documented in Stage 03 |
 
 ---
 

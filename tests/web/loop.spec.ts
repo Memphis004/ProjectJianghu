@@ -1,33 +1,46 @@
 import { expect, test, type Page } from "@playwright/test";
 
 import {
-  ENCOUNTER,
+  ARENA,
+  BRACKET,
+  CHARACTER_CREATE,
   HANDOVER_TIMEOUT_MS,
-  HUB,
   PLAYER_BOOT_TIMEOUT_MS,
+  REST,
   RESULT,
   SCENE,
   SMOKE,
   TITLE,
 } from "./globals.mjs";
-import type { Control, EncounterReport, HubReport, ResultReport, ScreenReport, TitleReport } from "./report-types";
+import type {
+  ArenaReport,
+  Control,
+  RestReport,
+  ResultReport,
+  ScreenReport,
+  StepReport,
+  TitleReport,
+} from "./report-types";
 
 /**
- * The template's loop, walked in a built player: **Title → Hub → Encounter → Hub → Result → Title**.
+ * The game's loop, walked in a built player:
+ * **Title → CharacterCreate → Bracket → Rest → Arena → Rest → Result → Title**.
  *
- * This is the browser-side twin of the PlayMode test that loops Hub ⇄ Encounter twenty times and
+ * This is the browser-side twin of the PlayMode test that loops Rest ⇄ Arena twenty times, and
  * checks that the run scope survives it. What a built player can add is that the loop is reachable
  * with a pointer: every step here is a click at the point the screen published, and every assertion
  * is the game's own answer — the scene marker changing, and the next screen's report.
  *
  * Documents this spec reads, all on `window`:
  *
- *   __projectJianghuSmoke      - the boot self-check
- *   __projectJianghuScene      - the scene on screen
- *   __projectJianghuTitle      - the title screen, and where its start control is
- *   __projectJianghuHub        - the Hub, its counters, and where its two controls are
- *   __projectJianghuEncounter  - the Encounter, its progress line, and its two controls
- *   __projectJianghuResult     - the summary, and where its two controls are
+ *   __projectJianghuSmoke            - the boot self-check
+ *   __projectJianghuScene            - the scene on screen
+ *   __projectJianghuTitle            - the title screen, and where its start control is
+ *   __projectJianghuCharacterCreate  - the character-creation step and its one control
+ *   __projectJianghuBracket          - the bracket step and its one control
+ *   __projectJianghuRest             - the rest house, its counters, and where its controls are
+ *   __projectJianghuArena            - the arena, its progress line, and its two controls
+ *   __projectJianghuResult           - the summary, and where its two controls are
  */
 
 function collectPageErrors(page: Page): string[] {
@@ -112,8 +125,8 @@ async function pressControl(
   return report;
 }
 
-test.describe("the template's loop in the browser", () => {
-  test("walks Title → Hub → Encounter → Hub → Result → Title by pressing the controls", async ({ page }) => {
+test.describe("the game's loop in the browser", () => {
+  test("walks Title → CharacterCreate → Bracket → Rest → Arena → Rest → Result → Title", async ({ page }) => {
     test.setTimeout(420_000);
     const pageErrors = collectPageErrors(page);
 
@@ -122,45 +135,62 @@ test.describe("the template's loop in the browser", () => {
     await waitForGlobal(page, SCENE);
     await waitForScene(page, "Title");
 
-    // Leg 1 — the title starts a run.
+    // Leg 1 — the title starts a run, which begins with a character.
     await waitForGlobal(page, TITLE);
     const title = await readGlobal<TitleReport>(page, TITLE);
     expect(title.startLabel).toMatch(/[\u0E00-\u0E7F]/);
-    await pressControl(page, TITLE, "start", "Hub");
+    await pressControl(page, TITLE, "start", "CharacterCreate");
 
-    // Leg 2 — the Hub shows a run that has cleared nothing, and departs.
-    await waitForGlobal(page, HUB);
-    const firstHub = await readGlobal<HubReport>(page, HUB);
-    console.log("hub report (start of run):", JSON.stringify(firstHub));
-    expect(firstHub.encountersLine).toContain("0");
-    expect(firstHub.departLabel).toMatch(/[\u0E00-\u0E7F]/);
-    expect(firstHub.buttons.map((button: Control) => button.name).sort()).toEqual(["depart", "finish"]);
-    await page.screenshot({ path: "test-results/web-loop-hub-0.png", fullPage: false });
+    // Leg 2 — the character-creation placeholder hands to the bracket.
+    await waitForGlobal(page, CHARACTER_CREATE);
+    const characterCreate = await readGlobal<StepReport>(page, CHARACTER_CREATE);
+    console.log("character-create report:", JSON.stringify(characterCreate));
+    expect(characterCreate.title).toMatch(/[\u0E00-\u0E7F]/);
+    expect(characterCreate.buttons.map((button: Control) => button.name)).toEqual(["continue"]);
+    await page.screenshot({ path: "test-results/web-loop-character-create.png", fullPage: false });
+    await pressControl(page, CHARACTER_CREATE, "continue", "Bracket");
 
-    await pressControl(page, HUB, "depart", "Encounter");
+    // Leg 3 — the bracket placeholder hands to the rest house.
+    await waitForGlobal(page, BRACKET);
+    const bracket = await readGlobal<StepReport>(page, BRACKET);
+    console.log("bracket report:", JSON.stringify(bracket));
+    expect(bracket.title).toMatch(/[\u0E00-\u0E7F]/);
+    await page.screenshot({ path: "test-results/web-loop-bracket.png", fullPage: false });
+    await pressControl(page, BRACKET, "continue", "Rest");
 
-    // Leg 3 — the encounter reports its progress and is cleared.
-    await waitForGlobal(page, ENCOUNTER);
-    const encounter = await readGlobal<EncounterReport>(page, ENCOUNTER);
-    console.log("encounter report:", JSON.stringify(encounter));
-    expect(encounter.progressLine).toContain("1");
-    expect(encounter.winLabel).toMatch(/[\u0E00-\u0E7F]/);
-    expect(encounter.loseLabel).toMatch(/[\u0E00-\u0E7F]/);
-    expect(encounter.buttons.map((button: Control) => button.name).sort()).toEqual(["lose", "win"]);
-    await page.screenshot({ path: "test-results/web-loop-encounter.png", fullPage: false });
+    // Leg 4 — the rest house shows a run that has cleared nothing, and departs.
+    await waitForGlobal(page, REST);
+    const firstRest = await readGlobal<RestReport>(page, REST);
+    console.log("rest report (start of run):", JSON.stringify(firstRest));
+    expect(firstRest.roundsLine).toContain("0");
+    expect(firstRest.departLabel).toMatch(/[\u0E00-\u0E7F]/);
+    expect(firstRest.buttons.map((button: Control) => button.name).sort()).toEqual(["depart", "finish"]);
+    await page.screenshot({ path: "test-results/web-loop-rest-0.png", fullPage: false });
 
-    await pressControl(page, ENCOUNTER, "win", "Hub");
+    await pressControl(page, REST, "depart", "Arena");
 
-    // Leg 4 — the Hub counts the cleared encounter, and the run is ended from here.
-    await waitForGlobal(page, HUB);
-    const secondHub = await readGlobal<HubReport>(page, HUB);
-    console.log("hub report (after one encounter):", JSON.stringify(secondHub));
-    expect(secondHub.encountersLine).toContain("1");
-    await page.screenshot({ path: "test-results/web-loop-hub-1.png", fullPage: false });
+    // Leg 5 — the arena reports its progress and is cleared.
+    await waitForGlobal(page, ARENA);
+    const arena = await readGlobal<ArenaReport>(page, ARENA);
+    console.log("arena report:", JSON.stringify(arena));
+    expect(arena.progressLine).toContain("1");
+    expect(arena.winLabel).toMatch(/[\u0E00-\u0E7F]/);
+    expect(arena.loseLabel).toMatch(/[\u0E00-\u0E7F]/);
+    expect(arena.buttons.map((button: Control) => button.name).sort()).toEqual(["lose", "win"]);
+    await page.screenshot({ path: "test-results/web-loop-arena.png", fullPage: false });
 
-    await pressControl(page, HUB, "finish", "Result");
+    await pressControl(page, ARENA, "win", "Rest");
 
-    // Leg 5 — the summary reports the run it is summarising, then hands back to the title.
+    // Leg 6 — the rest house counts the cleared round, and the run is ended from here.
+    await waitForGlobal(page, REST);
+    const secondRest = await readGlobal<RestReport>(page, REST);
+    console.log("rest report (after one round):", JSON.stringify(secondRest));
+    expect(secondRest.roundsLine).toContain("1");
+    await page.screenshot({ path: "test-results/web-loop-rest-1.png", fullPage: false });
+
+    await pressControl(page, REST, "finish", "Result");
+
+    // Leg 7 — the summary reports the run it is summarising, then hands back to the title.
     await waitForGlobal(page, RESULT);
     const result = await readGlobal<ResultReport>(page, RESULT);
     console.log("result report:", JSON.stringify(result));

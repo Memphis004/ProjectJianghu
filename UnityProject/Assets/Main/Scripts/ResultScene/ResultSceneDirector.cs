@@ -19,8 +19,8 @@ namespace ProjectJianghu.Game.ResultScene
     /// <see cref="ResultSceneScope"/>.
     /// </para>
     /// <para>
-    /// <b>Restart</b> loads the Hub and then disposes the run scope, so the Hub starts a brand-new
-    /// run — the seed's first encounter, no carried state. <b>Back to title</b> loads the title, and
+    /// <b>Restart</b> disposes the run scope and loads character creation, where a brand-new run is
+    /// started — the seed's first round, no carried state. <b>Back to title</b> loads the title, and
     /// the scene loader disposes the run on arrival (that disposal is a property of the Title
     /// transition, not something this screen remembers).
     /// </para>
@@ -89,9 +89,13 @@ namespace ProjectJianghu.Game.ResultScene
                 StartError = "the Result scene needs a finished run; this run is still in progress.";
                 Debug.LogWarning(StartError, this);
 
-                if (!_loader.TryGo(SceneId.Hub))
+                // A live run belongs in the loop, but no edge from an unfinished run leads to a
+                // summary's replacement. A fresh start is the one move that is always legal: drop the
+                // run and let character creation begin another.
+                _runs.DisposeRun();
+                if (!_loader.TryGo(SceneId.CharacterCreate))
                 {
-                    StartError += " The Hub could not be entered either: " + _loader.LastError;
+                    StartError += " A new run could not be started either: " + _loader.LastError;
                     Debug.LogError(StartError, this);
                 }
 
@@ -154,10 +158,10 @@ namespace ProjectJianghu.Game.ResultScene
             _departed = true;
             StartError = string.Empty;
 
-            if (target == SceneId.Hub)
+            if (target == SceneId.CharacterCreate)
             {
                 // Restart: after the loader accepted the move, so a refused load cannot drop a run the
-                // player is still looking at. The Hub builds and starts a new one.
+                // player is still looking at. Character creation builds and starts a new one.
                 _runs.DisposeRun();
             }
         }

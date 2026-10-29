@@ -7,8 +7,9 @@ using ProjectJianghu.Core.Application.Text;
 using ProjectJianghu.Core.Domain.Config;
 using ProjectJianghu.Core.Infrastructure.Config;
 using ProjectJianghu.Game.Presentation;
-using ProjectJianghu.Game.Presentation.Encounter;
-using ProjectJianghu.Game.Presentation.Hub;
+using ProjectJianghu.Game.Presentation.Arena;
+using ProjectJianghu.Game.Presentation.Steps;
+using ProjectJianghu.Game.Presentation.Rest;
 using UnityEngine;
 
 namespace ProjectJianghu.Game.Tests.EditMode
@@ -54,9 +55,11 @@ namespace ProjectJianghu.Game.Tests.EditMode
         {
             IGameConfig config = Config();
             string[] keys = TitleKeys.All
-                .Concat(HubKeys.All)
-                .Concat(EncounterKeys.All)
+                .Concat(RestKeys.All)
+                .Concat(ArenaKeys.All)
                 .Concat(ResultKeys.All)
+                .Concat(ArenaSpikeDirector.Keys.All)
+                .Concat(new[] { "charactercreate.title", "charactercreate.line", "bracket.title", "bracket.line" })
                 .ToArray();
 
             var problems = new List<string>();
@@ -78,30 +81,30 @@ namespace ProjectJianghu.Game.Tests.EditMode
         }
 
         [Test]
-        public void Departing_the_hub_begins_an_encounter_and_asks_for_that_scene()
+        public void Departing_the_rest_house_begins_a_round_and_asks_for_the_arena()
         {
             var run = new RunSession(7u);
             Assert.That(run.Start().IsSuccess, Is.True);
             var flow = new SceneFlow(run);
-            flow.SyncTo(SceneId.Hub);
+            flow.SyncTo(SceneId.Rest);
 
-            var presenter = new HubPresenter(run, flow, Text(), new HubUiState());
+            var presenter = new RestPresenter(run, flow, Text(), new RestUiState());
 
             Assert.That(presenter.RequestDepart(), Is.True);
             Assert.That(run.IsInEncounter, Is.True);
-            Assert.That(flow.CurrentScene, Is.EqualTo(SceneId.Encounter));
-            Assert.That(presenter.RequestedScene, Is.EqualTo(SceneId.Encounter));
+            Assert.That(flow.CurrentScene, Is.EqualTo(SceneId.Arena));
+            Assert.That(presenter.RequestedScene, Is.EqualTo(SceneId.Arena));
         }
 
         [Test]
-        public void Finishing_the_run_from_the_hub_asks_for_the_summary()
+        public void Finishing_the_run_from_the_rest_house_asks_for_the_summary()
         {
             var run = new RunSession(7u);
             Assert.That(run.Start().IsSuccess, Is.True);
             var flow = new SceneFlow(run);
-            flow.SyncTo(SceneId.Hub);
+            flow.SyncTo(SceneId.Rest);
 
-            var presenter = new HubPresenter(run, flow, Text(), new HubUiState());
+            var presenter = new RestPresenter(run, flow, Text(), new RestUiState());
 
             Assert.That(presenter.RequestFinish(), Is.True);
             Assert.That(run.Outcome, Is.EqualTo(RunOutcome.Completed));
@@ -109,22 +112,22 @@ namespace ProjectJianghu.Game.Tests.EditMode
         }
 
         [Test]
-        public void A_won_encounter_counts_once_and_returns_to_the_hub()
+        public void A_won_round_counts_once_and_returns_to_the_rest_house()
         {
             var run = new RunSession(7u);
             Assert.That(run.Start().IsSuccess, Is.True);
             var flow = new SceneFlow(run);
-            flow.SyncTo(SceneId.Encounter);
+            flow.SyncTo(SceneId.Arena);
             Assert.That(run.BeginEncounter().IsSuccess, Is.True);
 
-            var state = new EncounterUiState();
-            var presenter = new EncounterPresenter(run, flow, Text(), state);
+            var state = new ArenaUiState();
+            var presenter = new ArenaPresenter(run, flow, Text(), state);
             presenter.Refresh();
             Assert.That(state.ProgressLine.Value, Does.Contain("1"), "the progress line names the round");
 
             Assert.That(presenter.RequestWin(), Is.True);
             Assert.That(run.EncounterIndex, Is.EqualTo(1));
-            Assert.That(presenter.RequestedScene, Is.EqualTo(SceneId.Hub));
+            Assert.That(presenter.RequestedScene, Is.EqualTo(SceneId.Rest));
 
             // One request at a time: a second press changes nothing.
             Assert.That(presenter.RequestWin(), Is.False);
@@ -137,10 +140,10 @@ namespace ProjectJianghu.Game.Tests.EditMode
             var run = new RunSession(7u);
             Assert.That(run.Start().IsSuccess, Is.True);
             var flow = new SceneFlow(run);
-            flow.SyncTo(SceneId.Encounter);
+            flow.SyncTo(SceneId.Arena);
             Assert.That(run.BeginEncounter().IsSuccess, Is.True);
 
-            var presenter = new EncounterPresenter(run, flow, Text(), new EncounterUiState());
+            var presenter = new ArenaPresenter(run, flow, Text(), new ArenaUiState());
 
             Assert.That(presenter.RequestLose(), Is.True);
             Assert.That(run.Outcome, Is.EqualTo(RunOutcome.Failed));
@@ -166,9 +169,70 @@ namespace ProjectJianghu.Game.Tests.EditMode
             Assert.That(state.RestartLabel.Value, Is.Not.Empty);
             Assert.That(state.TitleLabel.Value, Is.Not.Empty);
 
+            // A new run is a new character, not a replay of this one: Stage 03's loop starts every
+            // run at CharacterCreate (SceneFlow.Result allows Title and CharacterCreate only).
             Assert.That(presenter.RequestRestart(), Is.True);
-            Assert.That(presenter.RequestedScene, Is.EqualTo(SceneId.Hub));
+            Assert.That(presenter.RequestedScene, Is.EqualTo(SceneId.CharacterCreate));
             Assert.That(presenter.RequestTitle(), Is.False);
+        }
+
+        [Test]
+        public void The_character_create_step_reads_its_keys_and_asks_for_the_bracket()
+        {
+            var run = new RunSession(7u);
+            Assert.That(run.Start().IsSuccess, Is.True);
+            var flow = new SceneFlow(run);
+            flow.SyncTo(SceneId.CharacterCreate);
+
+            var state = new StepUiState();
+            var presenter = new StepPresenter(
+                flow, Text(), state,
+                new StepContent("charactercreate.title", "charactercreate.line", "ui.generic.continue", SceneId.Bracket));
+
+            presenter.Refresh();
+            Assert.That(state.Title.Value, Is.Not.Empty);
+            Assert.That(state.Line.Value, Is.Not.Empty);
+            Assert.That(state.ContinueLabel.Value, Is.Not.Empty);
+
+            Assert.That(presenter.RequestContinue(), Is.True);
+            Assert.That(presenter.RequestedScene, Is.EqualTo(SceneId.Bracket));
+            Assert.That(presenter.RequestContinue(), Is.False, "one request at a time");
+        }
+
+        [Test]
+        public void The_bracket_step_reads_its_keys_and_asks_for_the_rest_house()
+        {
+            var run = new RunSession(7u);
+            Assert.That(run.Start().IsSuccess, Is.True);
+            var flow = new SceneFlow(run);
+            flow.SyncTo(SceneId.Bracket);
+
+            var state = new StepUiState();
+            var presenter = new StepPresenter(
+                flow, Text(), state,
+                new StepContent("bracket.title", "bracket.line", "ui.generic.continue", SceneId.Rest));
+
+            presenter.Refresh();
+            Assert.That(state.Title.Value, Is.Not.Empty);
+            Assert.That(presenter.RequestContinue(), Is.True);
+            Assert.That(flow.CurrentScene, Is.EqualTo(SceneId.Rest));
+        }
+
+        [Test]
+        public void A_step_the_loop_does_not_reach_from_here_is_refused()
+        {
+            var run = new RunSession(7u);
+            Assert.That(run.Start().IsSuccess, Is.True);
+            var flow = new SceneFlow(run);
+            flow.SyncTo(SceneId.CharacterCreate);
+
+            var presenter = new StepPresenter(
+                flow, Text(), new StepUiState(),
+                new StepContent("charactercreate.title", "charactercreate.line", "ui.generic.continue", SceneId.Arena));
+
+            Assert.That(presenter.RequestContinue(), Is.False);
+            Assert.That(presenter.RequestedScene, Is.Null);
+            Assert.That(flow.CurrentScene, Is.EqualTo(SceneId.CharacterCreate));
         }
 
         [Test]

@@ -54,6 +54,11 @@ interface ThaiSpikeReport {
   totalMissingGlyphs: number;
   coversEveryGlyph: boolean;
   stacksMeasureEqually: boolean;
+  skillName: string;
+  skillNameWidth: number;
+  skillNameFits: boolean;
+  skillSlotWidth: number;
+  skillSlotHeight: number;
   rows: Array<{ stack: string; missingGlyphs: number; width: number; height: number }>;
 }
 
@@ -139,12 +144,37 @@ test.describe("ProjectJianghu WebGL build", () => {
 
     expect(spike.platform).toBe("WebGLPlayer");
     expect(spike.font).toContain("Sarabun");
-    expect(spike.rowCount).toBe(6);
+    // Four spike keys (title, the required word set, the mark stress line, the long skill name)
+    // measured through each of the two text stacks.
+    expect(spike.rowCount).toBe(8);
     expect(
       spike.totalMissingGlyphs,
       `the shipped font asset cannot draw every spike string: ${JSON.stringify(spike.rows)}`,
     ).toBe(0);
     expect(spike.coversEveryGlyph).toBe(true);
+
+    // Stage 03 item 5, at the size the request names: the longest Thai skill name has to fit
+    // the arena's skill slot at 1280×720. Playwright's default viewport is 1280×720 and the
+    // project template fills it, so the canvas the player measured is that size — asserted here
+    // rather than assumed, because a template that pinned 960×600 would silently measure there.
+    const canvasSize = await page.evaluate(() => {
+      const canvas = document.querySelector("canvas");
+      const rect = canvas ? canvas.getBoundingClientRect() : null;
+      return { width: Math.round(rect?.width ?? 0), height: Math.round(rect?.height ?? 0) };
+    });
+    expect(canvasSize, "the player is not measuring a 1280×720 canvas").toEqual({ width: 1280, height: 720 });
+
+    console.log(
+      `long Thai skill name: "${spike.skillName}" ${spike.skillNameWidth.toFixed(1)} px in a ` +
+        `${spike.skillSlotWidth.toFixed(1)}×${spike.skillSlotHeight.toFixed(1)} px slot, fits=${spike.skillNameFits}`,
+    );
+    expect(spike.skillName).toMatch(/[\u0E00-\u0E7F]/);
+    expect(spike.skillSlotWidth).toBeGreaterThan(0);
+    expect(
+      spike.skillNameFits,
+      `the longest Thai skill name does not fit the skill slot at 1280×720: ` +
+        `${spike.skillNameWidth} px in ${spike.skillSlotWidth} px`,
+    ).toBe(true);
 
     await page.screenshot({ path: "test-results/web-thai-spike.png", fullPage: false });
 

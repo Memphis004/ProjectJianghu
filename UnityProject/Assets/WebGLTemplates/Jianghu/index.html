@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="th">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>{{{ PRODUCT_NAME }}}</title>
+    <!-- An inline empty icon: without a <link rel="icon"> the browser asks for /favicon.ico,
+         the build has none, and every session logs a 404 the browser tests count as a page
+         error. A data URI settles it without shipping a binary. -->
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="TemplateData/style.css">
+  </head>
+  <body>
+    <!--
+      The canvas fills the window. Unity's default desktop template writes
+      `canvas.style.width = "960px"` here, which pins the player at 960x600 on every
+      desktop browser and makes a window resize invisible to the game
+      (llmwiki/gotchas/webgl-template-canvas-960x600.md). The CSS below instead sizes
+      the element from the viewport, and the WebGL runtime keeps its render target
+      matched to the element's own size (scaled by devicePixelRatio), so the player
+      receives the real window size and a real resize.
+
+      ADR 0111 records the decision and the measurements behind it.
+    -->
+    <div id="unity-container">
+      <canvas id="unity-canvas" width={{{ WIDTH }}} height={{{ HEIGHT }}} tabindex="-1"></canvas>
+      <div id="unity-loading-bar">
+        <div id="unity-progress-bar-empty"><div id="unity-progress-bar-full"></div></div>
+      </div>
+      <div id="unity-warning"></div>
+    </div>
+    <script>
+      var canvas = document.querySelector("#unity-canvas");
+      var container = document.querySelector("#unity-container");
+
+      function unityShowBanner(msg, type) {
+        var warningBanner = document.querySelector("#unity-warning");
+        function updateBannerVisibility() {
+          warningBanner.style.display = warningBanner.children.length ? 'block' : 'none';
+        }
+        var div = document.createElement('div');
+        div.innerHTML = msg;
+        warningBanner.appendChild(div);
+        if (type == 'error') div.style = 'background: #7a1d1d; color: #fff; padding: 10px;';
+        else {
+          if (type == 'warning') div.style = 'background: #d9c14a; padding: 10px;';
+          setTimeout(function() {
+            warningBanner.removeChild(div);
+            updateBannerVisibility();
+          }, 5000);
+        }
+        updateBannerVisibility();
+      }
+
+      var buildUrl = "Build";
+      var loaderUrl = buildUrl + "/{{{ LOADER_FILENAME }}}";
+      var config = {
+        arguments: [],
+        dataUrl: buildUrl + "/{{{ DATA_FILENAME }}}",
+        frameworkUrl: buildUrl + "/{{{ FRAMEWORK_FILENAME }}}",
+        codeUrl: buildUrl + "/{{{ CODE_FILENAME }}}",
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: {{{ JSON.stringify(COMPANY_NAME) }}},
+        productName: {{{ JSON.stringify(PRODUCT_NAME) }}},
+        productVersion: {{{ JSON.stringify(PRODUCT_VERSION) }}},
+        showBanner: unityShowBanner,
+      };
+
+      // The element is sized by CSS; this keeps the render target matched to it on
+      // every resize, including a device-pixel-ratio change (dragging the window to
+      // a HiDPI display). Without it the player keeps the size it booted at.
+      window.addEventListener("resize", function() {
+        // A no-op when the runtime is already listening; kept explicit so a reader
+        // can see that a resize is meant to reach the game and not only the layout.
+        if (window.unityInstance && window.unityInstance.Module &&
+            window.unityInstance.Module.resizeCanvasElement) {
+          window.unityInstance.Module.resizeCanvasElement();
+        }
+      });
+
+      document.querySelector("#unity-loading-bar").style.display = "block";
+
+      var script = document.createElement("script");
+      script.src = loaderUrl;
+      script.onload = () => {
+        createUnityInstance(canvas, config, (progress) => {
+          document.querySelector("#unity-progress-bar-full").style.width = 100 * progress + "%";
+        }).then((unityInstance) => {
+          window.unityInstance = unityInstance;
+          document.querySelector("#unity-loading-bar").style.display = "none";
+        }).catch((message) => {
+          alert(message);
+        });
+      };
+      document.body.appendChild(script);
+    </script>
+  </body>
+</html>

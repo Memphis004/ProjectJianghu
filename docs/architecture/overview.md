@@ -140,7 +140,7 @@ All four run inside `tools/test.ps1` (`-NoPipeline` skips them).
 | **Run** | from the title starting a run until arriving back at the title | the seed, its random streams, the encounter counter, the command log |
 | **Scene** | until the scene is left | that scene's presenters, UI state and subscriptions |
 
-`RunSession` must **not** be recreated every time the player returns to the Hub.
+`RunSession` must **not** be recreated every time the player returns to the Rest house.
 Arriving at `Title` disposes the Run scope — that is a property of the transition,
 not something each screen remembers — and every subscription a scene created is
 disposed with the scene.

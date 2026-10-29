@@ -55,11 +55,20 @@ namespace ProjectJianghu.Game.Editor
             TMP_Text tmpLabel = ProjectSetup.CreateTmpLabel(
                 canvas, "TmpSpikeLabel", new Vector2(0f, 200f), SpikeTmpFontSize, tmpFont);
 
+            // The arena HUD's skill slot, at the HUD's own 22 px and the slot's own 420 x 80 canvas
+            // units. Stage 03 item 5: the longest Thai skill name must fit here at 1280x720, where the
+            // CanvasScaler's virtual canvas is exactly 1920x1080.
+            TMP_Text skillSlot = ProjectSetup.CreateTmpLabel(
+                canvas, "SkillSlotProbe", new Vector2(0f, -260f), ProjectSetup.UiFontSize, tmpFont,
+                new Vector2(420f, 80f));
+            skillSlot.alignment = TextAlignmentOptions.Center;
+
             var tmpViewObject = new GameObject("TmpSpike");
             tmpViewObject.transform.SetParent(canvasObject.transform, false);
             ThaiSpikeTmpView tmpView = tmpViewObject.AddComponent<ThaiSpikeTmpView>();
             ProjectSetup.SetObjectReference(tmpView, "_label", tmpLabel);
             ProjectSetup.SetObjectReference(tmpView, "_font", tmpFont);
+            ProjectSetup.SetObjectReference(tmpView, "_skillSlotLabel", skillSlot);
 
             var toolkitObject = new GameObject("ToolkitSpike");
             UIDocument document = toolkitObject.AddComponent<UIDocument>();

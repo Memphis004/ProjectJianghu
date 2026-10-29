@@ -15,11 +15,16 @@ the pieces fit.
 | Smoke suite | `Presentation/Smoke/SmokeRunner.cs` | 7 probes: `di.resolution`, `config.tables`, `r3.subscribe`, `unitask.cancellation`, `messagepack.roundtrip`, `protobuf.roundtrip`, `localization.thai` |
 | Page bridge | `Presentation/Web/WebGlBridge.cs` + `Assets/Main/Plugins/WebGL/ProjectJianghuWeb.jslib` | publishes reports as `window.__projectJianghu*` globals and dispatches `projectjianghu:smoke` / `:scene` events |
 | Report writer | `Presentation/Web/JsonReportWriter.cs` | tiny JSON writer; escapes **every** non-ASCII code point as `\uXXXX` because the report crosses an ANSI `LPStr` marshalling boundary |
-| Title / Hub / Encounter / Result | `Presentation/{Title,Hub,Encounter,Result}*` + `Hub/`, `Encounter/`, `ResultScene/` | thin MVP per screen: a presenter calls Application, a view only assigns text, a director starts the screen and asks the loader to leave |
+| Title / CharacterCreate / Bracket / Rest / Arena / Result | `Presentation/{Title,CharacterCreate,Rest,Arena,Result}*` + `Steps/`, `Rest/`, `Arena/`, `ResultScene/` | thin MVP per screen: a presenter calls Application, a view only assigns text, a director starts the screen and asks the loader to leave. `CharacterCreate` and `Bracket` share `Steps/` (one placeholder presenter, one scene builder template, two scenes) |
+| HD-2D spike | `Presentation/Isometric/*` | `IsometricLayout` (camera pose, PPU, pixel snap, depth→sorting order as pure functions), `IsoCameraRig`, `BillboardSprite`, `ArenaSortingProbe` — [ADR 0110](../../docs/adr/0110-hd2d-isometric-camera-pixel-snap-and-sorting.md) |
+| Quality tiers | `Presentation/Quality/{QualityTierService,FrameRateProbe}.cs` | three named levels, one URP asset each; the frame window the spike reports |
+| Spike director + report | `Presentation/Arena/{ArenaSpikeDirector,ArenaSpikeReport}.cs` | the stage's measurements (FPS per tier, sorting probe, snap offset, camera) published on `__projectJianghuArenaSpike` |
+| WebGL template | `Assets/WebGLTemplates/Jianghu/` + `Editor/WebGlTemplate.cs` | canvas fills the viewport; ADR 0111 records why the default 960×600 template is not used |
 | Thai spike | `Presentation/Thai/*` | measures the same strings through uGUI+TMP and UI Toolkit, publishes the numbers — the evidence behind [ADR 0008](../../docs/adr/0008-thai-text-ui-stack.md) |
 | Scopes | `Presentation/Flow/{RunLifetimeScope,RunScopeOwner,SceneLoader,TitleSceneDirector}.cs` | the Run scope and the only scene loader |
 | Editor setup | `Assets/Main/Scripts/Editor/ProjectSetup.cs` | URP asset, player settings, font baking, the build list, and the UI/entity helpers the builders call |
-| Scene builders | `Assets/Main/Scripts/Editor/{Boot,Title,Hub,Encounter,Result,ThaiTextSpike}SceneBuilder.cs` | one menu per scene, each written through the Editor API (AGENTS rule 11) |
+| Scene builders | `Assets/Main/Scripts/Editor/{Boot,Title,CharacterCreate,Bracket,Rest,Arena,Result,ThaiTextSpike}SceneBuilder.cs` (+ `StepSceneTemplate` for the two placeholder steps) | one menu per scene, each written through the Editor API (AGENTS rule 11) |
+| Spike art | `Editor/SpikeArtSetup.cs` | generates the four placeholder PNGs and imports them (point filter, PPU 32, bottom-centre pivot) — [ADR 0112](../../docs/adr/0112-decorative-cjk-glyphs-are-sprites.md) |
 | Build | `Assets/Main/Scripts/Editor/WebBuildPipeline.cs` | `BuildWebDevelopment` / `BuildWebRelease`, writes `build-info.json` next to the player |
 
 `ProjectSettings/` and `Packages/manifest.json` are part of the template: the engine
@@ -36,7 +41,8 @@ is guesswork, so the player publishes what it did:
 | `__projectJianghuSmoke` | `{platform, configHash, probeCount, failedCount, passed, probes[]}` | `tests/web/smoke.spec.ts` (every probe named, `failedCount === 0`) |
 | `__projectJianghuScene` | the scene name on screen | `smoke.spec.ts` and `loop.spec.ts` |
 | `__projectJianghuThaiSpike` | `{platform, font, rowCount, totalMissingGlyphs, coversEveryGlyph, stacksMeasureEqually, rows[]}` | the Thai test in `smoke.spec.ts` (`totalMissingGlyphs === 0`) |
-| `__projectJianghuTitle` / `Hub` / `Encounter` / `Result` | the screen's strings plus every control's centre in canvas pixels | `title.spec.ts`, `loop.spec.ts` |
+| `__projectJianghuTitle` / `CharacterCreate` / `Bracket` / `Rest` / `Arena` / `Result` | the screen's strings plus every control's centre in canvas pixels | `title.spec.ts`, `loop.spec.ts` |
+| `__projectJianghuArenaSpike` | `{scene, quality, sample, sorting, camera, pixelSnap, spriteCount, propCount, buttons[]}` | `scripts/probe-fps.mjs` (per-tier FPS); the EditMode/PlayMode shells for the sorting answer |
 
 The **names** have one home on each side: the constants in `WebGlBridge`, and
 `tests/web/globals.mjs` for the specs. The `.jslib` takes the name as an argument
@@ -49,16 +55,16 @@ Two details that cost real debugging time:
   `passed:false` and the parse error. A browser test then fails on a value instead of
   timing out on a missing global.
 - `SceneBoot` accepts `?scene=<name>` for an allow-listed scene
-  (`ThaiTextSpike`, `Hub`, `Encounter`, `Result`). It is the only way a page reaches a
-  screen directly.
+  (`ThaiTextSpike`, `CharacterCreate`, `Bracket`, `Rest`, `Arena`, `Result`). It is the only way a
+  page reaches a screen directly.
 
 ## Scenes are generated, never hand-written
 
-Six scenes exist: `Boot`, `Title`, `ThaiTextSpike`, `Hub`, `Encounter`, `Result`. Each
-is built by its own builder through `EditorSceneManager` and saved; `ProjectSetup`
-keeps only what is shared (URP, player settings, font baking, the UI helpers,
-`ConfigureBuildSettings`). The build list only adds a scene whose file exists, so an
-older checkout still boots.
+Eight scenes exist: `Boot`, `Title`, `ThaiTextSpike`, `CharacterCreate`, `Bracket`, `Rest`,
+`Arena`, `Result`. Each is built by its own builder through `EditorSceneManager` and saved;
+`ProjectSetup` keeps only what is shared (URP assets and the three quality tiers, player
+settings, font baking, the UI helpers, `ConfigureBuildSettings`). The build list only adds a
+scene whose file exists, so an older checkout still boots.
 
 Consequences:
 

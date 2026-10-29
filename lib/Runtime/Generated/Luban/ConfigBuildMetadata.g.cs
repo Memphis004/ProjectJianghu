@@ -11,7 +11,7 @@ namespace ProjectJianghu.Config
     public static class ConfigBuildMetadata
     {
         /// <summary>SHA-256 (upper-case hex) over the generated table bytes, in name order.</summary>
-        public const string ConfigHash = "27912FAC7B0F8970791C3168B273D5DFBB7F90A03302EC78F199AABF88104272";
+        public const string ConfigHash = "674E4E85DA7B6DEE50E163ADCBDA0374088C750B5A5F59F571DC1F9AFEE00EC6";
 
         /// <summary>Luban CLI version that produced the generated readers.</summary>
         public const string LubanVersion = "5.1.0";

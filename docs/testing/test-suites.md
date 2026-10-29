@@ -75,13 +75,14 @@ Cold (first run after a reboot, or after a clean output tree) the data steps and
 `sim: determinism` pay JIT and first-read costs and Fast lands nearer two minutes;
 budget **1–3 minutes** rather than the warm number.
 
-Measured with the Editor open, the same day: `unity: EditMode` **32/32** and
-`unity: PlayMode` **6/6**, with the web half NOT RUN because an Editor holding the
-project lock cannot build (`docs/template/t2-report.md` §5).
+Measured with the Editor open at Stage 03: `unity: EditMode` **42/42** and
+`unity: PlayMode` **7/7**, with the web half NOT RUN because an Editor holding the
+project lock cannot build (`docs/template/t2-report.md` §5; the Stage 03 report
+records the same split).
 
 ## 3. Every test, and the suite it belongs to
 
-### dotnet — `lib/Tests~/ProjectJianghu.Core.sln` (138 tests) → **Fast**
+### dotnet — `lib/Tests~/ProjectJianghu.Core.sln` (156 tests) → **Fast**
 
 The projects compile the *same source* as the `lib/` asmdefs
 ([ADR 0004](../adr/0004-dotnet-layer-enforcement.md)), so these are the rule-engine
@@ -99,7 +100,7 @@ tests.
 | `RunSkeletonTests.cs` | `RunSession` + `SceneFlow`: atomic commands, typed refusals, replay, the run's state hash |
 | `Shared/*.cs` | `EventRing<T>` and `PrevCurBuffer<T>` — bounds, cursors, zero allocation |
 
-### Unity EditMode — `ProjectJianghu.Game.Tests.EditMode` (32 tests) → **Fast**
+### Unity EditMode — `ProjectJianghu.Game.Tests.EditMode` (42 tests) → **Fast**
 
 | Class | What it covers |
 | --- | --- |
@@ -109,19 +110,19 @@ tests.
 | `WebSizeProfilesTests` | the size profiles and the configuration they record |
 | `ShellAssetIntegrityTests` | every scene in the build list and every prefab under `Assets/Main`: no missing script, and no unassigned reference on a shell component |
 
-### Unity PlayMode — `ProjectJianghu.Game.Tests.PlayMode` (6 tests) → **Full**
+### Unity PlayMode — `ProjectJianghu.Game.Tests.PlayMode` (7 tests) → **Full**
 
 | Class | What it covers |
 | --- | --- |
-| `LoopPlayModeTests` | Title → Hub → Encounter → Hub → Result → Title through the real scenes: one run, one scene scope, nothing retained after the title |
+| `LoopPlayModeTests` | Title → CharacterCreate → Bracket → Rest ⇄ Arena → Result → Title through the real scenes: one run, one scene scope, nothing retained after the title, plus **20** Rest ⇄ Arena crossings that keep one run and leave no arena scope behind |
 | `ShellPlayModeTests` | boot and handover, the scene marker, UniTask cancellation in play mode |
 
 ### Playwright — `tests/web` → **Full**
 
 | Spec | Tests | What it covers |
 | --- | --- | --- |
-| `smoke.spec.ts` | 2 | the player boots, passes its own 7-probe self-check and hands over to Title; the Thai spike's glyph coverage in the browser |
-| `title.spec.ts` | 1 | the title's start control in a built player: the two Thai strings and the build line are published, exactly one control is named inside the canvas, it sits at the canvas' centre at two sizes, and clicking it starts a run and reaches `Hub` |
+| `smoke.spec.ts` | 2 | the player boots, passes its own 7-probe self-check and hands over to Title; the Thai spike's glyph coverage **and** the longest skill name's fit in its slot at 1280×720 |
+| `title.spec.ts` | 1 | the title's start control in a built player: the two Thai strings and the build line are published, exactly one control is named inside the canvas, it sits at the canvas' centre at two sizes (1280×720 boot, 1920×1080 after a resize), and clicking it starts a run and reaches `CharacterCreate` |
 | `loop.spec.ts` | 1 | the whole loop in a built player, every step a click at the point the screen published, every assertion the game's own answer |
 
 ### Process-level checks inside the harness → **Fast**

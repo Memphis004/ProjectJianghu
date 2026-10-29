@@ -9,7 +9,7 @@ namespace ProjectJianghu.Game.Presentation.Flow
     /// <summary>
     /// Brings the Title scene up, and is the one place that knows how the game leaves it: the player
     /// presses เริ่มเล่น, the presenter starts a run, and this asks the <see cref="SceneLoader"/> for
-    /// the Hub.
+    /// character creation.
     /// </summary>
     /// <remarks>
     /// <para>
@@ -223,7 +223,7 @@ namespace ProjectJianghu.Game.Presentation.Flow
             _departed = true;
             _lastRefusal = string.Empty;
             StartError = string.Empty;
-            Debug.Log("The title screen is starting a run: the Hub is next.", this);
+            Debug.Log("The title screen is starting a run: character creation is next.", this);
         }
     }
 }

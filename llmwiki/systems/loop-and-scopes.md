@@ -1,19 +1,21 @@
-# The loop: three scopes, five screens, one run
+# The loop: three scopes, seven screens, one run
 
-The template plays end to end:
+The game plays end to end (Stage 03):
 
-**Boot → Title → Hub ⇄ Encounter → Result → Title**
+**Boot → Title → CharacterCreate → Bracket → Rest ⇄ Arena → Result → Title**
 
-Nothing is simulated: the Encounter is a placeholder screen whose "progress" is a
-number of ticks. What the loop does provide is the thing a game would otherwise get
-wrong first — **where a run lives**, and what happens when a scene changes or a run
-ends.
+Nothing is simulated yet: `CharacterCreate` and `Bracket` are placeholder steps, and the
+Arena's "progress" is the run's encounter counter. What the loop does provide is the thing
+a game would otherwise get wrong first — **where a run lives**, and what happens when a
+scene changes or a run ends. The template's own five-screen shape (Hub ⇄ Encounter) is
+what it was built from; [`../../docs/stages/03-report.md`](../../docs/stages/03-report.md)
+records the rename and the additions.
 
 | Piece | File | What it owns |
 | --- | --- | --- |
 | App scope | `Assets/Main/Scripts/Presentation/RootLifetimeScope.cs` | the shell: config, localization, clock, `SceneLoader`, `RunScopeOwner`. Persists across scenes (`SceneBoot.PersistAcrossScenes`) |
 | Run scope | `Assets/Main/Scripts/Presentation/Flow/RunLifetimeScope.cs` (+ `RunScopeOwner`) | exactly one `RunSession` — seed, streams, encounter counter, command log |
-| Scene scope | `HubSceneScope` / `EncounterSceneScope` / `ResultSceneScope` | that scene's presenter, UI state and subscriptions |
+| Scene scope | `RestSceneScope` / `ArenaSceneScope` / `StepSceneScope` / `ResultSceneScope` | that scene's presenter, UI state and subscriptions |
 
 The rule that makes the loop work is **a child scope never re-registers the shell,
 and a scene never creates a run**. `RootLifetimeScope.Configure` returns early when
@@ -34,7 +36,7 @@ of a half-applied move. Two behaviours are load-bearing:
   remembers — which is what makes "the title has no stale run" a one-line assertion.
 
 A director asks for a departure **after** it has committed the domain change, never
-before: the Encounter records its outcome and only then asks to leave; the Result
+before: the Arena records the round's outcome and only then asks to leave; the Result
 screen records the player's intent and leaves once the loader accepted it.
 
 `SceneFlow` (Application) is the *policy* half — which edges exist and whether the run
@@ -42,16 +44,18 @@ is in a state that allows one. `SceneLoader` is the *mechanism* half. Keeping th
 apart is what lets `SceneFlow` be tested with `dotnet test` and `SceneLoader` be the
 only thing that touches `SceneManager`.
 
-## 2. The encounter loop
+## 2. The run loop
 
-1. the Title starts a run (`RunSession.Start`) and asks for the Hub;
-2. the Hub opens an encounter (`BeginEncounter`) and departs for the Encounter;
-3. the Encounter ends (`EndEncounter(outcome)`): a cleared encounter raises the
+1. the Title starts a run (`RunSession.Start`) and asks for `CharacterCreate`;
+2. `CharacterCreate` and `Bracket` are placeholder steps: each shows its three localized
+   strings and asks for the next scene (`Bracket`, then `Rest`);
+3. the Rest house opens a round (`BeginEncounter`) and departs for the Arena;
+4. the Arena ends the round (`EndEncounter(outcome)`): a cleared round raises the
    counter, a lost one finishes the run;
-4. the director chooses the destination from the outcome — `Result` when the run is
-   over, `Hub` otherwise;
-5. `Result` either resets (`RunSession.Reset` → a new run) or returns to the Title,
-   which disposes the run scope.
+5. the director chooses the destination from the outcome — `Result` when the run is
+   over, `Rest` otherwise;
+6. `Result` either starts a new run (`CharacterCreate`) or returns to the Title, which
+   disposes the run scope.
 
 **The departure is asked for repeatedly, and that is deliberate.** A screen can end
 while a transition is still in flight, and nothing else will ask again, so the
@@ -66,9 +70,12 @@ where its controls are:
 | Global | Screen | Contents |
 | --- | --- | --- |
 | `__projectJianghuTitle` | Title | the two localized strings, build line, canvas size, one `start` control with its centre in canvas pixels |
-| `__projectJianghuHub` | Hub | cleared-encounter count, the two ways out, their centres |
-| `__projectJianghuEncounter` | Encounter | the progress line, the way out, its centre |
-| `__projectJianghuResult` | Result | whether the run finished, encounters cleared, the two controls |
+| `__projectJianghuCharacterCreate` | CharacterCreate | the heading, the one line, the `continue` control |
+| `__projectJianghuBracket` | Bracket | the heading, the one line, the `continue` control |
+| `__projectJianghuRest` | Rest | cleared-round count, the two ways out (`depart`, `finish`), their centres |
+| `__projectJianghuArena` | Arena | the round's progress line, `win` and `lose`, their centres |
+| `__projectJianghuArenaSpike` | Arena (spike) | quality tier, measured FPS, the sorting probe, the camera, the three tier buttons |
+| `__projectJianghuResult` | Result | whether the run finished, rounds cleared, the two controls |
 
 `__projectJianghuScene` is published separately by every scene's director. The names
 have one home per side (`WebGlBridge` constants and `tests/web/globals.mjs`), and
@@ -98,8 +105,8 @@ can walk the whole loop without knowing the layout.
 
 | Placeholder | A game's version |
 | --- | --- |
-| `Hub` | a rest area, a shop, a loadout screen |
-| `Encounter` | its real play loop (a battle, a puzzle, a stage) behind `FixedTicker` |
+| Template `Hub` | a rest area, a shop, a loadout screen |
+| Template `Encounter` | its real play loop (a battle, a puzzle, a stage) behind `FixedTicker` |
 | `Result` | its own summary and rewards |
 | `RunSession`'s four commands | its own command set, same atomic/typed shape (AGENTS rule 7) |
 | `EncounterOutcome` | its own outcomes |
@@ -113,7 +120,10 @@ The placeholder loop becomes the tournament loop. Five placeholder slots turn in
 screens: `Hub` splits in two, because "between two matches" and "between two rounds"
 are different waits with different data.
 
-**Boot → Title → CharacterCreate → Bracket → Arena → Rest → Bracket → … → Result → Title**
+**Boot → Title → CharacterCreate → Bracket → Rest ⇄ Arena → Result → Title**
+
+(Stage 03 implements exactly these edges. Stage 10 adds the bracket's real draw and the
+round loop; the placeholder `Bracket` is a step, not yet a screen the Arena returns to.)
 
 | Template placeholder | Jianghu screen | `SceneId` | Lands in | What it inherits |
 | --- | --- | --- | --- | --- |
@@ -125,7 +135,7 @@ are different waits with different data.
 | `Encounter` | **Arena** — the ATB match itself, 1v1 on the iso grid | `Arena` | Stage 03 (fake session), Stage 09 (real sim) | the only screen that steps a session on a fixed ticker; its scope owns `IArenaSession` and must dispose it |
 | `Result` | **Result** — round reached, run stats, skills that levelled | `Result` | already; content in Stage 12 | reset → new run, or return to Title (which disposes the run) |
 
-The placeholder `Encounter`'s "progress is a number of ticks" becomes a real match; nothing
+The Arena placeholder's "progress is a number of rounds" becomes a real match; nothing
 else about the shell changes. Two constraints carry over unchanged:
 
 - **One run, created by the Title, disposed by arriving at it.** `CharacterCreate` and

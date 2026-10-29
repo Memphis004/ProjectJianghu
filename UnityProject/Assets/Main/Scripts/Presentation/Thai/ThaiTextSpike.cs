@@ -29,7 +29,15 @@ namespace ProjectJianghu.Game.Presentation.Thai
             "ui.title",
             "ui.spike.thai",
             "ui.spike.thai.marks",
+            "ui.spike.thai.skill_long",
         };
+
+        /// <summary>
+        /// Index of the longest realistic Thai skill name in <see cref="SpikeKeys"/>. The arena HUD
+        /// has to draw this one inside a skill slot at 1280×720, so it is measured in a slot-sized
+        /// label rather than only as a free line (Stage 03 item 5).
+        /// </summary>
+        public const int LongSkillIndex = 3;
 
         private readonly LocalizationService _text;
 
@@ -42,6 +50,9 @@ namespace ProjectJianghu.Game.Presentation.Thai
         /// Resolves every spike key in <see cref="SpikeKeys"/> order. A missing key
         /// throws (AGENTS rule 5) — the spike failing loudly is the point.
         /// </summary>
+        /// <summary>The longest skill name the HUD must fit, in the current language.</summary>
+        public string LongSkillName => _text.Get(SpikeKeys[LongSkillIndex]);
+
         public string[] Resolve()
         {
             var texts = new string[SpikeKeys.Length];

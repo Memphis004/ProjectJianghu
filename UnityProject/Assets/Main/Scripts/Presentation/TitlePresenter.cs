@@ -68,7 +68,7 @@ namespace ProjectJianghu.Game.Presentation
         }
 
         /// <summary>
-        /// Starts a run and records the move into the Hub.
+        /// Starts a run and records the move into character creation.
         /// </summary>
         /// <returns>False when a request is already outstanding, or the run refused to start;
         /// nothing changes in either case.</returns>
@@ -93,7 +93,7 @@ namespace ProjectJianghu.Game.Presentation
             }
 
             StartError = string.Empty;
-            RequestedScene = SceneId.Hub;
+            RequestedScene = SceneId.CharacterCreate;
             return true;
         }
 

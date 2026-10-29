@@ -54,6 +54,13 @@ namespace ProjectJianghu.Game.Presentation.Thai
             _tmpView?.AppendRows(texts, report);
             _toolkitView?.AppendRows(texts, report);
 
+            // The arena HUD's skill slot is authored at 420 of the 1920 virtual canvas pixels; at
+            // 1280x720 the CanvasScaler's virtual canvas is exactly 1920x1080 (16:9 at 2/3 scale), so
+            // the same number is the slot's real width at that resolution.
+            var canvasRect = transform as RectTransform;
+            float slotWidth = canvasRect is null ? 420f : canvasRect.rect.width * (420f / 1920f);
+            _tmpView?.AppendSkillSlot(spike.LongSkillName, slotWidth, report);
+
             _report = report;
 
             Debug.Log(report.ToLog());

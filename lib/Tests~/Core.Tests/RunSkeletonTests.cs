@@ -170,19 +170,23 @@ namespace ProjectJianghu.Core.Tests
             var flow = new SceneFlow(run);
 
             Assert.Equal(SceneId.Title, flow.CurrentScene);
-            Assert.True(flow.CanGo(SceneId.Hub));
+            Assert.True(flow.CanGo(SceneId.CharacterCreate));
 
             // Title never jumps straight into play, and the summary is not a way in.
-            Assert.False(flow.CanGo(SceneId.Encounter));
+            Assert.False(flow.CanGo(SceneId.Arena));
             Assert.False(flow.CanGo(SceneId.Result));
 
-            Assert.True(flow.TryGo(SceneId.Hub).IsSuccess);
-            Assert.True(flow.CanGo(SceneId.Encounter));
-            Assert.True(flow.TryGo(SceneId.Encounter).IsSuccess);
+            Assert.True(flow.TryGo(SceneId.CharacterCreate).IsSuccess);
+            Assert.True(flow.CanGo(SceneId.Bracket));
+            Assert.True(flow.TryGo(SceneId.Bracket).IsSuccess);
+            Assert.True(flow.TryGo(SceneId.Rest).IsSuccess);
+            Assert.True(flow.CanGo(SceneId.Arena));
+            Assert.True(flow.TryGo(SceneId.Arena).IsSuccess);
+            Assert.True(flow.TryGo(SceneId.Rest).IsSuccess);
             Assert.True(flow.TryGo(SceneId.Result).IsSuccess);
-            Assert.False(flow.CanGo(SceneId.Encounter));
+            Assert.False(flow.CanGo(SceneId.Arena));
 
-            var refused = flow.TryGo(SceneId.Hub);
+            var refused = flow.TryGo(SceneId.Rest);
             Assert.True(refused.IsFailure);
             Assert.Equal(RunErrors.TransitionNotAllowed, refused.Error.Code);
             Assert.Equal(SceneId.Result, flow.CurrentScene);
@@ -194,7 +198,7 @@ namespace ProjectJianghu.Core.Tests
             var run = new RunSession(Seed);
             var flow = new SceneFlow(run);
 
-            Assert.True(flow.TryGo(SceneId.Hub).IsFailure);
+            Assert.True(flow.TryGo(SceneId.CharacterCreate).IsFailure);
             Assert.Equal(SceneId.Title, flow.CurrentScene);
         }
 
@@ -204,10 +208,10 @@ namespace ProjectJianghu.Core.Tests
             RunSession run = Started();
             var flow = new SceneFlow(run);
 
-            flow.SyncTo(SceneId.Encounter);
+            flow.SyncTo(SceneId.Arena);
 
-            Assert.Equal(SceneId.Encounter, flow.CurrentScene);
-            Assert.True(flow.CanGo(SceneId.Hub));
+            Assert.Equal(SceneId.Arena, flow.CurrentScene);
+            Assert.True(flow.CanGo(SceneId.Rest));
         }
     }
 }

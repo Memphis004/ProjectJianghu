@@ -11,10 +11,10 @@ namespace ProjectJianghu.Core.Application.Flow
     /// <c>docs/template/inventory.md</c> (row <c>SceneId</c>).
     /// </para>
     /// <para>
-    /// The template's loop is <c>Boot → Title → Hub ⇄ Encounter → Result → Title</c>. A game
-    /// built from this template renames the middle scenes (a rest area, an arena, a shop) but
-    /// keeps the shape: one place where a run is prepared, one where it is played, one where it
-    /// is summarised.
+    /// The game's loop is
+    /// <c>Boot → Title → CharacterCreate → Bracket → Rest ⇄ Arena → Result → Title</c>. The shape
+    /// is the template's: one place where a run is born, one where it is prepared, one where it
+    /// is played, one where it is summarised.
     /// </para>
     /// </remarks>
     public enum SceneId
@@ -25,13 +25,19 @@ namespace ProjectJianghu.Core.Application.Flow
         /// <summary>Where a run is born (ADR 0022) and where arriving ends one.</summary>
         Title = 1,
 
-        /// <summary>Between encounters: the run's preparation screen.</summary>
-        Hub = 2,
+        /// <summary>Where a run's character is made: background, attributes, starting skill.</summary>
+        CharacterCreate = 2,
+
+        /// <summary>The tournament bracket: who fights whom in this round.</summary>
+        Bracket = 3,
+
+        /// <summary>The rest house between rounds: recover, learn, keep the loadout.</summary>
+        Rest = 4,
 
         /// <summary>One unit of play, stepped by <c>FixedTicker</c>.</summary>
-        Encounter = 3,
+        Arena = 5,
 
-        /// <summary>The run's summary, reachable from Hub and Encounter.</summary>
-        Result = 4,
+        /// <summary>The run's summary, reachable from Rest and Arena.</summary>
+        Result = 6,
     }
 }

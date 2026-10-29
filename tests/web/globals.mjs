@@ -12,20 +12,26 @@
  * is what both a Playwright spec and `node scripts/probe-boot.mjs` can import without a
  * build step.
  *
- *   __projectJianghuSmoke      the boot self-check report (`SceneBoot`)
- *   __projectJianghuScene      the scene on screen (every scene director)
- *   __projectJianghuThaiSpike  the Thai text spike measurement (`ThaiSpikeReporter`)
- *   __projectJianghuTitle      the title screen, and where its start control is
- *   __projectJianghuHub        the Hub screen, and where its two controls are
- *   __projectJianghuEncounter  the Encounter screen, and where its two controls are
- *   __projectJianghuResult     the summary screen, and where its two controls are
+ *   __projectJianghuSmoke           the boot self-check report (`SceneBoot`)
+ *   __projectJianghuScene           the scene on screen (every scene director)
+ *   __projectJianghuThaiSpike       the Thai text spike measurement (`ThaiSpikeReporter`)
+ *   __projectJianghuTitle           the title screen, and where its start control is
+ *   __projectJianghuCharacterCreate the character-creation step (placeholder in Stage 03)
+ *   __projectJianghuBracket         the tournament-bracket step (placeholder in Stage 03)
+ *   __projectJianghuRest            the rest house, and where its two controls are
+ *   __projectJianghuArena           the arena, and where its two controls are
+ *   __projectJianghuArenaSpike      the HD-2D spike: tier, frame rate, sorting probe
+ *   __projectJianghuResult          the summary screen, and where its two controls are
  */
 export const SMOKE = "__projectJianghuSmoke";
 export const SCENE = "__projectJianghuScene";
 export const THAI_SPIKE = "__projectJianghuThaiSpike";
 export const TITLE = "__projectJianghuTitle";
-export const HUB = "__projectJianghuHub";
-export const ENCOUNTER = "__projectJianghuEncounter";
+export const CHARACTER_CREATE = "__projectJianghuCharacterCreate";
+export const BRACKET = "__projectJianghuBracket";
+export const REST = "__projectJianghuRest";
+export const ARENA = "__projectJianghuArena";
+export const ARENA_SPIKE = "__projectJianghuArenaSpike";
 export const RESULT = "__projectJianghuResult";
 
 /** How long a player may take to download, compile and boot. */
@@ -33,4 +39,3 @@ export const PLAYER_BOOT_TIMEOUT_MS = 180_000;
 
 /** How long a scene handover (a fade plus a load) may take. */
 export const HANDOVER_TIMEOUT_MS = 30_000;
-

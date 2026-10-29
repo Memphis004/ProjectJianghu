@@ -64,7 +64,43 @@ namespace ProjectJianghu.Game.Presentation.Thai
         {
             Platform = platform;
             FontName = fontName;
+            ScreenWidth = UnityEngine.Screen.width;
+            ScreenHeight = UnityEngine.Screen.height;
         }
+
+        /// <summary>The canvas size the measurements were taken at, in pixels.</summary>
+        public int ScreenWidth { get; }
+
+        /// <summary>The canvas height the measurements were taken at, in pixels.</summary>
+        public int ScreenHeight { get; }
+
+        /// <summary>The longest skill name measured inside a skill slot, or null.</summary>
+        public string SkillName { get; private set; }
+
+        /// <summary>The width that name wanted, in canvas units.</summary>
+        public float SkillNameWidth { get; private set; }
+
+        /// <summary>The width the slot gives it, in canvas units.</summary>
+        public float SkillSlotWidth { get; private set; }
+
+        /// <summary>True when the longest skill name fits the slot on one line at 22 px.</summary>
+        public bool SkillNameFits { get; private set; }
+
+        /// <summary>
+        /// Records the skill-slot measurement (Stage 03 item 5): the longest Thai skill name, drawn at
+        /// the HUD's 22 px in a slot the HUD really has.
+        /// </summary>
+        public void RecordSkillSlot(string text, float width, float height, float slotWidth)
+        {
+            SkillName = text;
+            SkillNameWidth = width;
+            SkillSlotWidth = slotWidth;
+            SkillSlotHeight = height;
+            SkillNameFits = width <= slotWidth;
+        }
+
+        /// <summary>The height that name wanted, in canvas units.</summary>
+        public float SkillSlotHeight { get; private set; }
 
         public string Platform { get; }
 
@@ -155,6 +191,13 @@ namespace ProjectJianghu.Game.Presentation.Thai
             json.BeginObject()
                 .Write("platform", Platform)
                 .Write("font", FontName)
+                .Write("screenWidth", ScreenWidth)
+                .Write("screenHeight", ScreenHeight)
+                .Write("skillNameFits", SkillNameFits)
+                .Write("skillNameWidth", SkillNameWidth)
+                .Write("skillSlotWidth", SkillSlotWidth)
+                .Write("skillSlotHeight", SkillSlotHeight)
+                .Write("skillName", SkillName ?? string.Empty)
                 .Write("rowCount", _rows.Count)
                 .Write("totalMissingGlyphs", TotalMissingGlyphs)
                 .Write("coversEveryGlyph", CoversEveryGlyph)
@@ -184,7 +227,11 @@ namespace ProjectJianghu.Game.Presentation.Thai
             var sb = new System.Text.StringBuilder();
             sb.Append("ProjectJianghu Thai text spike (").Append(Platform).Append(") font=").Append(FontName)
               .Append(" missingGlyphs=").Append(TotalMissingGlyphs)
-              .Append(" stacksMeasureEqually=").Append(StacksMeasureEqually() ? "yes" : "no");
+              .Append(" stacksMeasureEqually=").Append(StacksMeasureEqually() ? "yes" : "no")
+              .Append(" screen=").Append(ScreenWidth).Append('x').Append(ScreenHeight)
+              .Append(" skillFits=").Append(SkillNameFits ? "yes" : "no")
+              .Append(" (").Append(SkillNameWidth.ToString("0.#", CultureInfo.InvariantCulture))
+              .Append('/').Append(SkillSlotWidth.ToString("0.#", CultureInfo.InvariantCulture)).Append(')');
 
             for (int i = 0; i < _rows.Count; i++)
             {

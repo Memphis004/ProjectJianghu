@@ -59,9 +59,11 @@ namespace ProjectJianghu.Game.Presentation
             _state.TitleLabel.Value = _text.Get(ResultKeys.BackToTitle);
         }
 
-        /// <summary>Asks for a new run: the Hub is loaded and a new run starts there.</summary>
+        /// <summary>
+        /// Asks for a new run: character creation is loaded with no run, and the step starts one.
+        /// </summary>
         /// <returns>False when a request is already outstanding; nothing changes.</returns>
-        public bool RequestRestart() => Request(SceneId.Hub);
+        public bool RequestRestart() => Request(SceneId.CharacterCreate);
 
         /// <summary>Asks to leave for the title, where the run ends for good.</summary>
         /// <returns>False when a request is already outstanding; nothing changes.</returns>

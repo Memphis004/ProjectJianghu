@@ -8,7 +8,8 @@ namespace ProjectJianghu.Core.Application.Run
     /// </summary>
     /// <remarks>
     /// <para>
-    /// <b>Boot → Title → Hub ⇄ Encounter → Result → Title.</b> The transition, not the screen,
+    /// <b>Boot → Title → CharacterCreate → Bracket → Rest ⇄ Arena → Result → Title.</b> The
+    /// transition, not the screen,
     /// decides what a scene may do: arriving at <see cref="SceneId.Title"/> ends the run, so
     /// "dispose the run scope" is a property of the transition instead of something each screen
     /// remembers to do (the bug Stage 10 named). Presentation performs the actual load through
@@ -77,7 +78,8 @@ namespace ProjectJianghu.Core.Application.Run
                 return RunErrors.Refuse(RunErrors.TransitionNotAllowed);
             }
 
-            bool runScene = target == SceneId.Hub || target == SceneId.Encounter || target == SceneId.Result;
+            bool runScene = target == SceneId.CharacterCreate || target == SceneId.Bracket
+                || target == SceneId.Rest || target == SceneId.Arena || target == SceneId.Result;
             if (runScene && !_run.IsStarted)
             {
                 return RunErrors.Refuse(RunErrors.NotStarted);
@@ -98,16 +100,22 @@ namespace ProjectJianghu.Core.Application.Run
                     return to == SceneId.Title;
 
                 case SceneId.Title:
-                    return to == SceneId.Hub;
+                    return to == SceneId.CharacterCreate;
 
-                case SceneId.Hub:
-                    return to == SceneId.Encounter || to == SceneId.Result;
+                case SceneId.CharacterCreate:
+                    return to == SceneId.Bracket;
 
-                case SceneId.Encounter:
-                    return to == SceneId.Hub || to == SceneId.Result;
+                case SceneId.Bracket:
+                    return to == SceneId.Rest;
+
+                case SceneId.Rest:
+                    return to == SceneId.Arena || to == SceneId.Result;
+
+                case SceneId.Arena:
+                    return to == SceneId.Rest || to == SceneId.Result;
 
                 case SceneId.Result:
-                    return to == SceneId.Title;
+                    return to == SceneId.Title || to == SceneId.CharacterCreate;
 
                 default:
                     return false;

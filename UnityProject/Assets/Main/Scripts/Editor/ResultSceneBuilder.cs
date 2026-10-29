@@ -32,7 +32,7 @@ namespace ProjectJianghu.Game.Editor
         /// <summary>The summary screen's own line size: comfortably above the 22 px Thai floor.</summary>
         private const float ResultLineFontSize = 32f;
 
-        [MenuItem("ProjectJianghu/Scenes/5. Create Result scene", priority = 105)]
+        [MenuItem("ProjectJianghu/Scenes/7. Create Result scene", priority = 105)]
         public static void CreateFromMenu()
         {
             ProjectSetup.EnsureFolder(ProjectSetup.ScenesFolder);

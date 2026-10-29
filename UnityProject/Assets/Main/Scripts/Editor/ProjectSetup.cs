@@ -43,7 +43,8 @@ namespace ProjectJianghu.Game.Editor
     /// <b>One builder file per scene (Stage 10t).</b> Each scene's construction lives
     /// in its own <c>*SceneBuilder</c> next to this file — <c>BootSceneBuilder</c>,
     /// <c>TitleSceneBuilder</c>, <c>ThaiTextSpikeSceneBuilder</c>,
-    /// <c>HubSceneBuilder</c>, <c>EncounterSceneBuilder</c>, <c>ResultSceneBuilder</c> —
+    /// <c>CharacterCreateSceneBuilder</c>, <c>BracketSceneBuilder</c>, <c>RestSceneBuilder</c>,
+    /// <c>ArenaSceneBuilder</c>, <c>ResultSceneBuilder</c> —
     /// together with the menu items that build it. A scene can therefore be removed
     /// (or left out of a template branch) by deleting one file, and the helpers here
     /// are the vocabulary those builders share: a scope object, a camera, an event
@@ -86,11 +87,17 @@ namespace ProjectJianghu.Game.Editor
         public const string TitleScenePath = ScenesFolder + "/Title.unity";
         public const string SpikeScenePath = ScenesFolder + "/ThaiTextSpike.unity";
 
-        /// <summary>The loop's preparation screen (between encounters).</summary>
-        public const string HubScenePath = ScenesFolder + "/Hub.unity";
+        /// <summary>Where a run's character is made (placeholder in Stage 03).</summary>
+        public const string CharacterCreateScenePath = ScenesFolder + "/CharacterCreate.unity";
 
-        /// <summary>The loop's unit-of-play screen.</summary>
-        public const string EncounterScenePath = ScenesFolder + "/Encounter.unity";
+        /// <summary>The tournament bracket (placeholder in Stage 03).</summary>
+        public const string BracketScenePath = ScenesFolder + "/Bracket.unity";
+
+        /// <summary>The rest house between rounds.</summary>
+        public const string RestScenePath = ScenesFolder + "/Rest.unity";
+
+        /// <summary>The arena: one unit of play, and the HD-2D spike inside it.</summary>
+        public const string ArenaScenePath = ScenesFolder + "/Arena.unity";
 
         /// <summary>The run-summary scene.</summary>
         public const string ResultScenePath = ScenesFolder + "/Result.unity";
@@ -100,9 +107,15 @@ namespace ProjectJianghu.Game.Editor
         /// the Boot scene is created and when a scene that should be reachable is added, so the two
         /// cannot drift.
         /// </summary>
-        public static readonly string[] UrlSceneAllowList = { "ThaiTextSpike", "Hub", "Encounter", "Result" };
+        public static readonly string[] UrlSceneAllowList =
+        {
+            "ThaiTextSpike", "CharacterCreate", "Bracket", "Rest", "Arena", "Result",
+        };
 
         private const string SourceFontFile = FontsFolder + "/Sarabun-Regular.ttf";
+
+        /// <summary>The one caption every placeholder step's control uses.</summary>
+        public const string GenericContinueKey = "ui.generic.continue";
 
         /// <summary>
         /// The smallest a Thai label may be authored at, in canvas pixels at the 1920×1080 reference
@@ -129,7 +142,9 @@ namespace ProjectJianghu.Game.Editor
             EnsureFolder(UiFolder);
 
             ConfigureRenderPipeline();
+            ConfigureQualityTiers();
             ConfigurePlayerSettings();
+            SpikeArtSetup.EnsureSpikeArt();
 
             ThemeStyleSheet theme = EnsureRuntimeTheme();
             EnsurePanelSettings(theme);
@@ -191,6 +206,127 @@ namespace ProjectJianghu.Game.Editor
         }
 
         // ------------------------------------------------------------------
+        // Quality tiers
+        // ------------------------------------------------------------------
+
+        /// <summary>The three quality levels the game ships, low to high.</summary>
+        public static readonly string[] QualityTierNames = { "Low", "Medium", "High" };
+
+        /// <summary>
+        /// The URP asset each tier renders with. One asset per tier is what makes a tier a real GPU
+        /// setting (render scale, MSAA, shadow distance) rather than a label.
+        /// </summary>
+        public static string QualityTierAssetPath(int index) =>
+            SettingsFolder + "/ProjectJianghuURP_" + QualityTierNames[index] + ".asset";
+
+        private static string QualityTierRendererPath(int index) =>
+            SettingsFolder + "/ProjectJianghuURP_" + QualityTierNames[index] + "_Renderer.asset";
+
+        /// <summary>
+        /// Creates the three tier assets and writes them onto the quality levels (ADR 0110 §tiers).
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// The three tiers differ in exactly three measured things and are otherwise identical, so a
+        /// frame-rate difference between them can be attributed: render scale (the pixel count the
+        /// fragment work is paid on), MSAA (resolve cost and bandwidth) and shadow distance (how far
+        /// the placeholder props are lit by a real shadow map). HDR is on from Medium because the
+        /// spike's palette is authored for it.
+        /// </para>
+        /// <para>
+        /// Level names and per-level pipeline assets live in <c>ProjectSettings/QualitySettings.asset</c>,
+        /// which has no public API for either; they are written through a <see cref="SerializedObject"/>,
+        /// which is what the Inspector writes too. The array is resized to three, so Unity's other three
+        /// default levels are gone rather than silently left selectable.
+        /// </para>
+        /// </remarks>
+        public static void ConfigureQualityTiers()
+        {
+            var tiers = new[]
+            {
+                new QualityTierSettings { RenderScale = 0.7f, Msaa = 1, ShadowDistance = 0f, Hdr = false },
+                new QualityTierSettings { RenderScale = 0.85f, Msaa = 2, ShadowDistance = 20f, Hdr = true },
+                new QualityTierSettings { RenderScale = 1f, Msaa = 4, ShadowDistance = 40f, Hdr = true },
+            };
+
+            var assets = new UniversalRenderPipelineAsset[tiers.Length];
+            for (int i = 0; i < tiers.Length; i++)
+            {
+                assets[i] = EnsurePipelineAsset(
+                    QualityTierAssetPath(i),
+                    QualityTierRendererPath(i),
+                    tiers[i]);
+            }
+
+            UnityEngine.Object[] qualitySettings = AssetDatabase.LoadAllAssetsAtPath(
+                "ProjectSettings/QualitySettings.asset");
+            if (qualitySettings.Length == 0)
+            {
+                throw new InvalidOperationException("QualitySettings.asset has no objects to edit.");
+            }
+
+            var serialized = new SerializedObject(qualitySettings[0]);
+            SerializedProperty levels = serialized.FindProperty("m_QualitySettings");
+            if (levels is null)
+            {
+                throw new InvalidOperationException(
+                    "QualitySettings has no m_QualitySettings; the tiers were not applied.");
+            }
+
+            levels.arraySize = tiers.Length;
+            for (int i = 0; i < tiers.Length; i++)
+            {
+                SerializedProperty level = levels.GetArrayElementAtIndex(i);
+                level.FindPropertyRelative("name").stringValue = QualityTierNames[i];
+                level.FindPropertyRelative("pixelLightCount").intValue = i == 0 ? 1 : 4;
+                level.FindPropertyRelative("customRenderPipeline").objectReferenceValue = assets[i];
+            }
+
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+
+            // Medium is the tier a fresh player starts on: full-resolution UI with the smallest
+            // multiplies the spike measured as safely affordable (ADR 0110).
+            QualitySettings.SetQualityLevel(1, false);
+            AssetDatabase.SaveAssets();
+        }
+
+        private struct QualityTierSettings
+        {
+            public float RenderScale;
+            public int Msaa;
+            public float ShadowDistance;
+            public bool Hdr;
+        }
+
+        private static UniversalRenderPipelineAsset EnsurePipelineAsset(
+            string assetPath, string rendererPath, QualityTierSettings settings)
+        {
+            UniversalRendererData rendererData = AssetDatabase.LoadAssetAtPath<UniversalRendererData>(rendererPath);
+            if (rendererData is null)
+            {
+                rendererData = ScriptableObject.CreateInstance<UniversalRendererData>();
+                AssetDatabase.CreateAsset(rendererData, rendererPath);
+            }
+
+            ResourceReloader.ReloadAllNullIn(rendererData, UniversalRenderPipelineAsset.packagePath);
+            EditorUtility.SetDirty(rendererData);
+
+            UniversalRenderPipelineAsset pipeline = AssetDatabase.LoadAssetAtPath<UniversalRenderPipelineAsset>(assetPath);
+            if (pipeline is null)
+            {
+                pipeline = UniversalRenderPipelineAsset.Create(rendererData);
+                AssetDatabase.CreateAsset(pipeline, assetPath);
+            }
+
+            pipeline.renderScale = settings.RenderScale;
+            pipeline.msaaSampleCount = settings.Msaa;
+            pipeline.shadowDistance = settings.ShadowDistance;
+            pipeline.supportsHDR = settings.Hdr;
+            EditorUtility.SetDirty(pipeline);
+            return pipeline;
+        }
+
+        // ------------------------------------------------------------------
         // Player settings
         // ------------------------------------------------------------------
 
@@ -231,6 +367,10 @@ namespace ProjectJianghu.Game.Editor
             // require COOP/COEP response headers, which a plain static server does
             // not send.
             PlayerSettings.WebGL.threadsSupport = false;
+
+            // The project's own template: the canvas fills the window and follows a resize.
+            // Unity's default desktop template pins it at 960x600 (ADR 0111).
+            PlayerSettings.WebGL.template = "PROJECT:" + WebGlTemplate.ProjectTemplateName;
 
             AssetDatabase.SaveAssets();
         }
@@ -612,12 +752,14 @@ namespace ProjectJianghu.Game.Editor
         // ------------------------------------------------------------------
 
         /// <summary>
-        /// Rewrites the build list from the scenes that exist on disk.
+        /// Rewrites the build list from the scenes that exist on disk, in loop order.
         /// </summary>
         /// <remarks>
-        /// Boot, Title and ThaiTextSpike are always listed; Hub, Encounter and Result join once their
-        /// file exists, so an older checkout keeps a build list of scenes that are really there and
-        /// a departure to a missing scene is refused with a typed error instead of attempted.
+        /// Boot, Title and ThaiTextSpike are always listed; the loop's screens join once their file
+        /// exists, so an older checkout keeps a build list of scenes that are really there and a
+        /// departure to a missing scene is refused with a typed error instead of attempted. The order
+        /// is the loop's (<c>CharacterCreate → Bracket → Rest → Arena → Result</c>) so a build's first
+        /// entry stays Boot and a reader can see the flow in the list.
         /// </remarks>
         public static void ConfigureBuildSettings()
         {
@@ -628,19 +770,13 @@ namespace ProjectJianghu.Game.Editor
                 new EditorBuildSettingsScene(SpikeScenePath, true),
             };
 
-            if (File.Exists(HubScenePath))
+            string[] loop = { CharacterCreateScenePath, BracketScenePath, RestScenePath, ArenaScenePath, ResultScenePath };
+            for (int i = 0; i < loop.Length; i++)
             {
-                scenes.Add(new EditorBuildSettingsScene(HubScenePath, true));
-            }
-
-            if (File.Exists(EncounterScenePath))
-            {
-                scenes.Add(new EditorBuildSettingsScene(EncounterScenePath, true));
-            }
-
-            if (File.Exists(ResultScenePath))
-            {
-                scenes.Add(new EditorBuildSettingsScene(ResultScenePath, true));
+                if (File.Exists(loop[i]))
+                {
+                    scenes.Add(new EditorBuildSettingsScene(loop[i], true));
+                }
             }
 
             EditorBuildSettings.scenes = scenes.ToArray();
@@ -985,7 +1121,7 @@ namespace ProjectJianghu.Game.Editor
             property.serializedObject.ApplyModifiedPropertiesWithoutUndo();
         }
 
-        private static void SetVector3(Object target, string fieldName, Vector3 value)
+        public static void SetVector3(Object target, string fieldName, Vector3 value)
         {
             SerializedProperty property = FindProperty(target, fieldName);
             property.vector3Value = value;
@@ -1024,6 +1160,41 @@ namespace ProjectJianghu.Game.Editor
             }
 
             return property;
+        }
+
+        // ------------------------------------------------------------------
+        // Materials
+        // ------------------------------------------------------------------
+
+        /// <summary>Where the spike's placeholder materials live.</summary>
+        public const string MaterialFolder = "Assets/Main/Art/Materials";
+
+        /// <summary>
+        /// Returns the URP/Lit material at <paramref name="path"/>, creating it with
+        /// <paramref name="colour"/> when it is missing, and re-applies the colour either way so a
+        /// re-run is a repair rather than a duplicate.
+        /// </summary>
+        public static Material EnsureMaterial(string path, Color colour)
+        {
+            EnsureFolder(MaterialFolder);
+
+            Material material = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (material is null)
+            {
+                Shader shader = Shader.Find("Universal Render Pipeline/Lit");
+                if (shader is null)
+                {
+                    throw new InvalidOperationException(
+                        "URP/Lit shader is missing; is the Universal Render Pipeline package installed?");
+                }
+
+                material = new Material(shader);
+                AssetDatabase.CreateAsset(material, path);
+            }
+
+            material.color = colour;
+            EditorUtility.SetDirty(material);
+            return material;
         }
 
         /// <summary>Creates <paramref name="path"/> and any missing folder above it.</summary>

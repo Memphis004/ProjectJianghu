@@ -1,0 +1,72 @@
+/*
+  The canvas is the window.
+
+  Unity's default desktop template positions a 960x600 box in the middle of the page
+  and never tells the player about the viewport. Here the container is fixed to the
+  viewport and the canvas is 100% of it, so:
+    * a 16:9 window (1280x720, 1920x1080) fills completely,
+    * a window of any other aspect fills completely as well — the canvas scaler
+      adapts the UI, and the isometric camera derives its orthographic size from the
+      height (ADR 0110), so nothing is cropped by the page,
+    * resizing changes the element, which is what the WebGL runtime follows.
+
+  See ADR 0111 and llmwiki/gotchas/webgl-template-canvas-960x600.md.
+*/
+html, body {
+  padding: 0;
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: {{{ BACKGROUND_COLOR }}};
+  /* The page is the player: no text selection drag, no context hint. */
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#unity-container {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+#unity-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: {{{ BACKGROUND_COLOR }}};
+  outline: none;
+}
+
+#unity-loading-bar {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: none;
+}
+
+#unity-progress-bar-empty {
+  width: 180px;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+#unity-progress-bar-full {
+  width: 0%;
+  height: 100%;
+  background: #c9a227;
+}
+
+#unity-warning {
+  position: absolute;
+  left: 50%;
+  top: 5%;
+  transform: translate(-50%);
+  max-width: 80%;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  display: none;
+}
