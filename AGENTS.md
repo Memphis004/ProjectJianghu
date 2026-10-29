@@ -4,10 +4,10 @@
 ภาพ: HD-2D pixel sprite บนฉาก 3D, กล้อง orthographic isometric
 Engine: Unity 6.3 (6000.3.x), URP, Web (WebGL2) single-thread
 Stack: VContainer, R3, UniTask, Luban, Protobuf (save/replay/bridge), MessagePack (source-gen snapshot),
-LitMotion, ZString, Input System. ไม่ใช้ ECS (ดู ADR 0002)
+LitMotion, ZString, Input System. ไม่ใช้ ECS (ดู ADR 0101)
 
 กฎถาวร:
-1. เริ่มทุก stage: อ่าน AGENTS.md, knowledge.md, llmwiki/index.md, llmwiki/stage-log.md, docs/GDD.md
+1. เริ่มทุก stage: อ่าน AGENTS.md, knowledge.md, llmwiki/index.md, llmwiki/stage-log.md, docs/gdd/GDD.md
 2. Layer: Shared ← Domain ← Application ← Presentation; Simulation อ้างได้แค่ Shared และ Domain;
 
    Infrastructure implement port ของ Application; Contracts เป็น DTO อิสระ (MessagePack/Protobuf)

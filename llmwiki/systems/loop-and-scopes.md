@@ -106,3 +106,39 @@ can walk the whole loop without knowing the layout.
 
 The shape to keep is: **one run, one loader, one place per scope that creates and
 disposes it.**
+
+## 6. The Jianghu mapping (Stage 00)
+
+The placeholder loop becomes the tournament loop. Five placeholder slots turn into six
+screens: `Hub` splits in two, because "between two matches" and "between two rounds"
+are different waits with different data.
+
+**Boot → Title → CharacterCreate → Bracket → Arena → Rest → Bracket → … → Result → Title**
+
+| Template placeholder | Jianghu screen | `SceneId` | Lands in | What it inherits |
+| --- | --- | --- | --- | --- |
+| `Boot` | unchanged | `Boot` | already | persistent `SceneBoot` |
+| `Title` | unchanged: start / continue | `Title` | already | starts the run (ADR 0022) and asks the loader to leave |
+| — (new) | **CharacterCreate** — pick one of four `Background`s, spend `AttributePoints`, pick a starting skill | `CharacterCreate` | Stage 03 (placeholder), Stage 11 (UI) | the run already exists; this screen writes the run's `CharacterState` |
+| `Hub` (half) | **Bracket** — the 32-seat draw, who plays whom, and the background matches resolving | `Bracket` | Stage 03 (placeholder), Stage 10 (real) | a between-round screen: it waits on `IArenaAutoResolver` progress, so it can stay on screen across frames |
+| `Hub` (half) | **Rest** — HP and neili restored, mastery gained, pick 1 of 3 rewards, edit the loadout, read the character sheet | `Rest` | Stage 03 (placeholder), Stage 10 (rules), Stage 11 (UI) | a between-match screen: no waiting, one departure |
+| `Encounter` | **Arena** — the ATB match itself, 1v1 on the iso grid | `Arena` | Stage 03 (fake session), Stage 09 (real sim) | the only screen that steps a session on a fixed ticker; its scope owns `IArenaSession` and must dispose it |
+| `Result` | **Result** — round reached, run stats, skills that levelled | `Result` | already; content in Stage 12 | reset → new run, or return to Title (which disposes the run) |
+
+The placeholder `Encounter`'s "progress is a number of ticks" becomes a real match; nothing
+else about the shell changes. Two constraints carry over unchanged:
+
+- **One run, created by the Title, disposed by arriving at it.** `CharacterCreate` and
+  `Bracket` do not create a run; `Arena` does not create a session that outlives its
+  scope.
+- **One departure per screen.** `Bracket` and `Rest` each ask once; `Arena` asks after it
+  has committed `ArenaMatchResult` — win → `Rest`, loss or timeout draw → `Result`
+  (GDD §1.3: a draw in the tournament counts as the player's loss).
+
+Each new screen publishes its own `__projectJianghu*` document in the same shape as the
+five above (`WebGlBridge` constant + `tests/web/globals.mjs` row + a bridge test), because
+the browser suite is the only check that sees a real player.
+
+See also: [`../glossary.md`](../glossary.md#8-scenes-sceneid) for the names, and
+[ADR 0100](../../docs/adr/0100-forked-template-and-upstream-sync.md) for why the game's
+documents, not the template's, decide this.

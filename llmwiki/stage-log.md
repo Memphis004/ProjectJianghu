@@ -5,6 +5,18 @@ full report for each step is in [`../docs/template/`](../docs/template/); a game
 from the template keeps the same shape under [`../docs/stages/`](../docs/stages/),
 starting at 01 and using [`../docs/stages/_TEMPLATE.md`](../docs/stages/_TEMPLATE.md).
 
+## The game's stages
+
+From Stage 00 on this file logs **Wuxia: Jianghu Rising**, one row per stage, report under
+[`../docs/stages/`](../docs/stages/). The template's own T0–T5 steps follow in their own
+section and are not renumbered.
+
+| Stage | Landed | What it added | Report |
+| --- | --- | --- | --- |
+| 00 | 2026-10-29 | the game's documents on the fork: GDD moved to `docs/gdd/GDD.md`, plan to `docs/stages/plan.md` (v0.2), `llmwiki/glossary.md` rewritten as the Thai↔English stat vocabulary (34 attributes, 21 derived values, ATB, skills, statuses, tournament), ADR 0100–0102 (fork sync via `upstream/template`, no ECS, four facings drawn twice), the 18-stage table in `knowledge.md`, the placeholder → real scene mapping in `llmwiki/systems/loop-and-scopes.md`; no code touched, check-links 264/264, Fast PASS 9 | [`00-report.md`](../docs/stages/00-report.md) |
+
+## The template's own steps
+
 | Step | Landed | What it added | Report |
 | --- | --- | --- | --- |
 | T0 | 2026-10-18 | classified every file under `lib/`, `UnityProject/Assets/`, `data/`, `proto/`, `tools/`, `tests/web/`, `docs/`, `llmwiki/` as KEEP / GENERALIZE / DROP / MOVE / REGEN, with the cut order and the open user decisions | [`inventory.md`](../docs/template/inventory.md) |

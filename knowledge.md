@@ -18,6 +18,54 @@ This file is the fast on-ramp. Read it first, then follow the links.
 
 ---
 
+## This repository is Wuxia: Jianghu Rising
+
+The tree is `template-v1` copied, renamed and booted ([`docs/stages/j-boot-report.md`](docs/stages/j-boot-report.md)).
+From Stage 00 on, **the game's documents own the shared files**. The template line is
+kept on the `upstream/template` branch with the fork point at tag **`tpl-v1`**, and
+upgrades arrive as `generic:` commits only — see
+[ADR 0100](docs/adr/0100-forked-template-and-upstream-sync.md).
+
+| Where the game lives | Path |
+| --- | --- |
+| The game's rules | [`docs/gdd/GDD.md`](docs/gdd/GDD.md) — GDD v0.1 + the ArenaBattle contract v1 |
+| The work plan | [`docs/stages/plan.md`](docs/stages/plan.md) — 18 stages, v0.2 |
+| Stage reports | [`docs/stages/`](docs/stages/) — `NN-report.md`, from [`_TEMPLATE.md`](docs/stages/_TEMPLATE.md) |
+| The game's ADRs | [`docs/adr/`](docs/adr/) — **0100 and up**; 0001–0099 are the template's |
+| The game's vocabulary | [`llmwiki/glossary.md`](llmwiki/glossary.md) |
+| The game's systems | [`llmwiki/systems/`](llmwiki/systems/) |
+
+### Jianghu stages
+
+Eighteen stages. A row moves to **done** only when its report exists and its gate passed;
+`dotnet`-only stages (02, 05, 06) still owe the Unity build at the next stage that opens
+the Editor.
+
+| Stage | Deliverable | State | Evidence |
+| --- | --- | --- | --- |
+| **00** | Fork + docs baseline: GDD, plan, glossary, ADR 0100–0102, scene mapping | **done** | [`docs/stages/00-report.md`](docs/stages/00-report.md) |
+| 01 | Luban/protoc rebuilt for the game: enums, beans, 13 empty tables, `SaveData`/`TournamentState`/`ArenaReplay` | planned | — |
+| 02 | Arena contract in `Domain.Arena` + `EventRing<T>` in Shared + `FakeArenaSession` + contract suite | planned | — |
+| 03 | Unity shell → Jianghu screens (`CharacterCreate`, `Bracket`, `Rest`, `Arena`); HD-2D iso spike; 3 URP tiers; WebGL canvas | planned | — |
+| 04 | Prototype content: attributes, `stat_formula`, 13 skills, gear, 4 statuses, 4 backgrounds, 31 fighters, map, reward pool | planned | — |
+| 05 | Character / stats / loadout domain: `StatResolver`, `ModifierStack`, `PowerScore`, `ArenaFighterBuilder`, `CharacterCreation` | planned | — |
+| 06 | Grid and targeting domain: reachability, jump, area shapes, facing (pure, zero-alloc) | planned | — |
+| 07 | `ArenaSimulation`: struct-array fighters ([ADR 0101](docs/adr/0101-no-ecs-struct-array-fighters.md)), ATB, resolve, stats | planned | — |
+| 08 | Arena AI: utility scoring, 4 archetypes, telegraph evasion | planned | — |
+| 09 | Arena presentation: HD-2D scene, `ArenaRunner`, sprite pool, tile highlights, HUD | planned | — |
+| 10 | Tournament + run flow: bracket, background matches, rewards, `Rest` | planned | — |
+| 11 | Character sheet, loadout and character-create UI | planned | — |
+| 12 | Vertical slice: the whole loop, 20 `Arena` ⇄ `Rest` crossings | planned | — |
+| 13 | Save, resume, settings (protobuf, IndexedDB/browser storage) | planned | — |
+| 14 | Content, juice and UX: balance, hit-stop, tutorial, sprite pipeline | planned | — |
+| 15 | Test harness + CI: bridge, Playwright arena specs, `tools/ci.ps1` | planned | — |
+| 16 | Web release candidate: profiling, stripping, link.xml, clean build | planned | — |
+| 17+ | Feature work from the baseline (repeatable prompt) | planned | — |
+
+The template's own T0–T5 steps are separate and already closed; their table stays below.
+
+---
+
 ## Status
 
 The template is extracted from a finished prototype (the game repo, tag
