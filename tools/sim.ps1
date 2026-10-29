@@ -17,13 +17,17 @@
           artifacts/balance.csv: win rate per power rank, match length, skill uses, plus the
           per-match wall clock the stage's < 20 ms budget is read from.
 
+      pwsh -File tools/sim.ps1 -Mode stratified -MatchCount 20
+          compares every authored low/high rank fighter pairing with a gap of at least two,
+          across each profile pairing and both starting sides; writes artifacts/balance-stratified.csv.
+
     The output is what tools/test.ps1 compares at process level: the same seed must repeat
     byte-for-byte, a different seed must differ, and the three stream digests must differ from
     each other (AGENTS rule 6 - separate streams; one stream wearing three names would show up
     here as three equal fingerprints).
 
-    The template keeps one mode. A game adds its own (a bot that plays, a load benchmark) to
-    lib/Tests~/Sim next to this one, and a switch here.
+    Arena modes: 'balance' retains the Stage-07 fixed-count sweep; 'stratified' runs every
+    authored fighter/profile pair at rank gaps >= 2 with both starting sides.
 
 .PARAMETER Seed
     Run seed (default 20261013).
@@ -72,9 +76,10 @@ param(
     [Alias('Matches')]
     [int]$MatchCount = 0,
 
+    [ValidateSet('', 'streams', 'balance', 'stratified')]
     [string]$Mode = '',
 
-    [string]$BalanceOut = 'artifacts/balance.csv',
+    [string]$BalanceOut = '',
 
     [string]$Configuration = 'Release',
 
@@ -91,10 +96,25 @@ $script:SlnDir = Split-Path -Parent $PSScriptRoot
 $script:SimProject = Join-Path $script:SlnDir 'lib\Tests~\Sim\ProjectJianghu.Sim.csproj'
 $script:Artifacts = Join-Path $script:SlnDir 'artifacts'
 
-$balanceRun = $MatchCount -gt 0 -or $Mode -eq 'balance'
+$stratifiedRun = $Mode -eq 'stratified'
+$balanceRun = -not $stratifiedRun -and ($MatchCount -gt 0 -or $Mode -eq 'balance')
+$arenaRun = $balanceRun -or $stratifiedRun
+$balanceCsv = if ($BalanceOut -ne '') {
+    $BalanceOut
+} elseif ($stratifiedRun) {
+    'artifacts/balance-stratified.csv'
+} else {
+    'artifacts/balance.csv'
+}
 
 if ($Output -eq '') {
-    $Output = if ($balanceRun) { 'artifacts/sim-balance.txt' } else { 'artifacts/sim-streams.txt' }
+    $Output = if ($stratifiedRun) {
+        'artifacts/sim-stratified.txt'
+    } elseif ($balanceRun) {
+        'artifacts/sim-balance.txt'
+    } else {
+        'artifacts/sim-streams.txt'
+    }
 }
 
 $modeArgument = if ($balanceRun) { 'balance' } else { $Mode }
@@ -141,8 +161,8 @@ if ($modeArgument -ne '') {
     $simArguments += @('--mode', $modeArgument)
 }
 
-if ($balanceRun) {
-    $simArguments += @('--out', $BalanceOut)
+if ($arenaRun) {
+    $simArguments += @('--out', $balanceCsv)
 }
 
 if ($Quiet) {

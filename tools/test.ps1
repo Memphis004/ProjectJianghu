@@ -380,6 +380,38 @@ if ($dotnet -and (Test-Path -LiteralPath $script:Sln)) {
         return @{ Status = 'PASS'; Detail = ((($timing -replace '^balance: ', '') -replace ' budgetMs=20', '') + '; ' + ($summary -replace '^balance: ', '')) }
     } | Out-Null
 
+    Invoke-Step 'sim: stratified sweep' 'Fast' {
+        if (-not (Test-Path -LiteralPath $script:SimDll)) {
+            return @{ Status = 'FAIL'; Detail = 'the Sim assembly was not built' }
+        }
+
+        $csv = Join-Path $script:DotnetDir 'balance-stratified-smoke.csv'
+        $sweep = Invoke-Native $dotnet @('exec', $script:SimDll, '--mode', 'stratified', '--matches', '1', '--out', $csv)
+        Write-Artifact $script:DotnetDir 'balance-stratified-smoke.txt' $sweep.Output
+
+        if (-not $sweep.Ok) {
+            return @{ Status = 'FAIL'; Detail = ("sim exited with {0}" -f $sweep.Code) }
+        }
+        if (-not (Test-Path -LiteralPath $csv)) {
+            return @{ Status = 'FAIL'; Detail = ("no CSV at {0}" -f $csv) }
+        }
+
+        $rows = @(Import-Csv -LiteralPath $csv)
+        $total = @($rows | Where-Object { $_.low_rank -eq 'TOTAL' })
+        $cells = @($rows | Where-Object { $_.low_rank -ne 'TOTAL' })
+        if ($total.Count -ne 1 -or $cells.Count -eq 0) {
+            return @{ Status = 'FAIL'; Detail = 'the stratified CSV needs rank/profile cells and exactly one total row' }
+        }
+        if ([int]$total[0].matches -ne [int]$total[0].low_wins + [int]$total[0].high_wins + [int]$total[0].draws) {
+            return @{ Status = 'FAIL'; Detail = 'the stratified total does not account for each match outcome' }
+        }
+        if (@($cells | Where-Object { [int]$_.high_rank - [int]$_.low_rank -lt 2 }).Count -gt 0) {
+            return @{ Status = 'FAIL'; Detail = 'the stratified matrix contains a rank gap below two' }
+        }
+
+        return @{ Status = 'PASS'; Detail = ("{0} rank/profile cells; {1} side-swapped matches" -f $cells.Count, $total[0].matches) }
+    } | Out-Null
+
 }
 else {
     Add-Step 'dotnet build' 'Fast' 'NOT RUN' 'dotnet is unavailable'
@@ -387,6 +419,7 @@ else {
     Add-Step 'sim: determinism' 'Fast' 'NOT RUN' 'dotnet is unavailable'
     Add-Step 'sim: stream separation' 'Fast' 'NOT RUN' 'dotnet is unavailable'
     Add-Step 'sim: balance sweep' 'Fast' 'NOT RUN' 'dotnet is unavailable'
+    Add-Step 'sim: stratified sweep' 'Fast' 'NOT RUN' 'dotnet is unavailable'
 }
 
 # ---------------------------------------------------------------------------

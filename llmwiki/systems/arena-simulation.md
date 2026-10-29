@@ -87,12 +87,18 @@ same tile (ADR 0115 §5, measured 0 shared-tile ticks).
 ## Measuring it
 
 ```powershell
-pwsh -NoProfile -File tools/sim.ps1 --matches 500 --trace 6   # artifacts/balance.csv + timings
+pwsh -NoProfile -File tools/sim.ps1 --matches 500 --trace 6        # artifacts/balance.csv + timings
+pwsh -NoProfile -File tools/sim.ps1 -Mode stratified -MatchCount 20 # artifacts/balance-stratified.csv
 dotnet test lib/Tests~/Core.Tests/ProjectJianghu.Core.Tests.csproj --filter "FullyQualifiedName~ArenaSimulation"
 ```
 
-`--matches N` implies `--mode balance`. The CSV has one row per power rank (matches, wins, draws,
-knockouts, timeouts, win rate, average duration) and one per skill used (uses, hits), plus a `total` row.
+`--matches N` without a mode implies `--mode balance`. The ordinary balance CSV has one row per
+power rank (matches, wins, draws, knockouts, timeouts, win rate, average duration) and one per skill
+used (uses, hits), plus a `total` row. Stratified mode compares every authored fighter pairing with
+rank gap ≥2 for each low/high AI-profile pair, repeating each match with the fighters swapped across
+starting sides and using the same seed for each pair. `-MatchCount N` sets repeats per pairing (one
+repeat is the default); its CSV is a rank/profile cell matrix plus a `TOTAL` row, with wins attributed
+to the lower or higher rank independent of starting side.
 A rank row counts **appearances** (a match contributes to both fighters' ranks, as `matches`
 always has); the `total` row counts matches.
 `avgMsPerMatch` with `verdict=PASS` is the per-match budget, `knockouts` / `timeouts` say how the
@@ -103,10 +109,10 @@ hits than uses). The reference numbers are in
 ## Known gaps
 
 - This is a first-pass heuristic, not tactical search: it sees current public telegraphs but does not
-  predict future occupancy or opponent intent. The current 500-match rank-gap sample has 36.53%
-  higher-rank wins (118/323, draws counted as non-wins), below the Stage-08 75% target; 343 matches
-  timed out. Pairing and archetype are confounded in the current schedule, so use a stratified matrix
-  before drawing causal balance conclusions. Aggregate behavior differences across all four profiles
-  have not yet been measured.
+  predict future occupancy or opponent intent. The paired matrix over every ≥2-gap fighter pairing,
+  AI-profile pair and starting side measured 39.40% high-rank wins including draws (59.81% among
+  decisive results), below the Stage-08 75% target; 7,717/11,800 matches timed out. Rank-pair outcomes
+  remain uneven; use per-pair and profile cells rather than claiming a monotonic rank effect. Aggregate
+  movement/jump behavior differences across all four profiles have not yet been measured.
 - A `Line`/`Cone` is anchored on the aim tile and grows away from the caster, so it can reach one tile
   past `range_max` — geometry, not a rules rule (ADR 0113).

@@ -38,6 +38,11 @@ namespace ProjectJianghu.Sim
 
         internal static int Run(SimOptions options, LubanGameConfig config)
         {
+            if (options.Mode == SimMode.Stratified)
+            {
+                return RunStratified(options, config);
+            }
+
             int fighterCount = config.Fighters.Count;
             if (fighterCount < 2)
             {
@@ -214,6 +219,207 @@ namespace ProjectJianghu.Sim
             Console.WriteLine("balance: csv=" + output);
 
             return 0;
+        }
+
+        private static int RunStratified(SimOptions options, LubanGameConfig config)
+        {
+            if (config.Fighters.Count < 2 || config.ArenaMaps.Count == 0)
+            {
+                Console.Error.WriteLine("stratified: requires at least two fighters and one arena map");
+                return 2;
+            }
+
+            var builder = new ArenaFighterBuilder(config, new StatResolver(config));
+            var templates = new ArenaFighterSetup[config.Fighters.Count];
+            for (int i = 0; i < config.Fighters.Count; i++)
+            {
+                FighterConfig row = config.Fighters[i];
+                templates[i] = BuildFighter(config, builder, row, i);
+            }
+
+            var profiles = new List<string>();
+            for (int i = 0; i < config.AiProfiles.Count; i++)
+            {
+                profiles.Add(config.AiProfiles[i].Id);
+            }
+            profiles.Sort(StringComparer.Ordinal);
+            var rankValues = new List<int>();
+            for (int i = 0; i < config.Fighters.Count; i++)
+            {
+                int rank = config.Fighters[i].PowerRank;
+                if (!rankValues.Contains(rank)) rankValues.Add(rank);
+            }
+            rankValues.Sort();
+
+            var rankPairs = new List<(int Low, int High)>();
+            for (int lowIndex = 0; lowIndex < rankValues.Count; lowIndex++)
+            {
+                for (int highIndex = lowIndex + 1; highIndex < rankValues.Count; highIndex++)
+                {
+                    int low = rankValues[lowIndex];
+                    int high = rankValues[highIndex];
+                    if (high - low >= 2) rankPairs.Add((low, high));
+                }
+            }
+
+            var resolver = new ArenaAutoResolver(new ArenaSimulationFactory(config));
+            var map = config.ArenaMaps[0];
+            GridCoord startA = new GridCoord(1, 1);
+            GridCoord startB = new GridCoord(map.Width - 2, map.Height - 2);
+            var results = new List<StratifiedCell>();
+            long totalTicks = 0;
+            int totalMatches = 0;
+            ulong trialIndex = 0;
+            var stopwatch = Stopwatch.StartNew();
+
+            for (int rankIndex = 0; rankIndex < rankPairs.Count; rankIndex++)
+            {
+                (int lowRank, int highRank) = rankPairs[rankIndex];
+                for (int lowProfile = 0; lowProfile < profiles.Count; lowProfile++)
+                {
+                    for (int highProfile = 0; highProfile < profiles.Count; highProfile++)
+                    {
+                        string profileA = profiles[lowProfile];
+                        string profileB = profiles[highProfile];
+                        var pairings = new List<(int Low, int High)>();
+                        for (int lowIndex = 0; lowIndex < templates.Length; lowIndex++)
+                        {
+                            FighterConfig low = config.Fighters[lowIndex];
+                            if (low.PowerRank != lowRank) continue;
+                            for (int highIndex = 0; highIndex < templates.Length; highIndex++)
+                            {
+                                FighterConfig high = config.Fighters[highIndex];
+                                if (high.PowerRank != highRank) continue;
+                                if (low.AiProfileId == profileA && high.AiProfileId == profileB)
+                                {
+                                    pairings.Add((lowIndex, highIndex));
+                                }
+                            }
+                        }
+
+                        if (pairings.Count == 0) continue;
+                        var cell = new StratifiedCell(lowRank, highRank, profileA, profileB)
+                        {
+                            Pairings = pairings.Count,
+                        };
+                        for (int pairing = 0; pairing < pairings.Count; pairing++)
+                        {
+                            (int lowIndex, int highIndex) = pairings[pairing];
+                            for (int repeat = 0; repeat < options.Matches; repeat++)
+                            {
+                                ulong seed = unchecked(((ulong)options.Seed * 1000003UL) + trialIndex++);
+                                for (int side = 0; side < 2; side++)
+                                {
+                                    bool lowFirst = side == 0;
+                                    ArenaFighterSetup first = templates[lowFirst ? lowIndex : highIndex];
+                                    ArenaFighterSetup second = templates[lowFirst ? highIndex : lowIndex];
+                                    ArenaMatchSetup setup = Compose(first, second, startA, startB, seed);
+                                    ArenaMatchResult result = resolver.Resolve(setup, config.Constant.MatchTicks);
+                                    totalTicks += result.DurationTicks;
+                                    totalMatches++;
+                                    cell.Add(lowFirst ? result.Outcome : Swap(result.Outcome), result.DurationTicks,
+                                        result.Reason == ArenaEndReason.TimeoutHpRatio
+                                            || result.Reason == ArenaEndReason.TimeoutDraw);
+                                }
+                            }
+                        }
+
+                        results.Add(cell);
+                    }
+                }
+            }
+
+            stopwatch.Stop();
+            double totalMilliseconds = stopwatch.Elapsed.TotalMilliseconds;
+            string output = SimEnvironment.OutputPath(options.BalanceOut);
+            string? directory = Path.GetDirectoryName(output);
+            if (!string.IsNullOrEmpty(directory)) Directory.CreateDirectory(directory);
+            WriteStratifiedCsv(output, results);
+
+            int lowWins = 0, highWins = 0, draws = 0, timeouts = 0;
+            for (int i = 0; i < results.Count; i++)
+            {
+                lowWins += results[i].LowWins;
+                highWins += results[i].HighWins;
+                draws += results[i].Draws;
+                timeouts += results[i].Timeouts;
+            }
+
+            double nonDrawRate = lowWins + highWins == 0 ? 0 : (double)highWins / (lowWins + highWins);
+            double allMatchRate = totalMatches == 0 ? 0 : (double)highWins / totalMatches;
+            Console.WriteLine("stratified: seed=" + options.Seed.ToString(CultureInfo.InvariantCulture)
+                + " rankProfileCells=" + results.Count.ToString(CultureInfo.InvariantCulture)
+                + " matches=" + totalMatches.ToString(CultureInfo.InvariantCulture)
+                + " pairings=" + PairingCount(results).ToString(CultureInfo.InvariantCulture)
+                + " lowWins=" + lowWins.ToString(CultureInfo.InvariantCulture)
+                + " highWins=" + highWins.ToString(CultureInfo.InvariantCulture)
+                + " draws=" + draws.ToString(CultureInfo.InvariantCulture)
+                + " timeouts=" + timeouts.ToString(CultureInfo.InvariantCulture)
+                + " highWinRateIncludingDraws=" + Format(allMatchRate)
+                + " highWinRateExcludingDraws=" + Format(nonDrawRate));
+            Console.WriteLine("stratified: avgMsPerMatch=" + Format(totalMatches == 0 ? 0 : (double)totalMilliseconds / totalMatches)
+                + " avgTicks=" + Format(totalMatches == 0 ? 0 : (double)totalTicks / totalMatches)
+                + " csv=" + output);
+            return 0;
+        }
+
+        private static int PairingCount(List<StratifiedCell> cells)
+        {
+            int count = 0;
+            for (int i = 0; i < cells.Count; i++) count += cells[i].Pairings;
+            return count;
+        }
+
+        private static ArenaOutcome Swap(ArenaOutcome outcome) => outcome switch
+        {
+            ArenaOutcome.Victory => ArenaOutcome.Defeat,
+            ArenaOutcome.Defeat => ArenaOutcome.Victory,
+            _ => outcome,
+        };
+
+        private static void WriteStratifiedCsv(string path, List<StratifiedCell> cells)
+        {
+            var text = new StringBuilder(8192);
+            text.Append("low_rank,high_rank,low_profile,high_profile,pairings,matches,low_wins,high_wins,draws,timeouts,high_win_rate_including_draws,high_win_rate_excluding_draws,avg_duration_ticks\n");
+            long allLow = 0, allHigh = 0, allDraws = 0, allTimeouts = 0, allMatches = 0, allTicks = 0;
+            for (int i = 0; i < cells.Count; i++)
+            {
+                StratifiedCell cell = cells[i];
+                text.Append(Num(cell.LowRank)).Append(',').Append(Num(cell.HighRank)).Append(',')
+                    .Append(cell.LowProfile).Append(',').Append(cell.HighProfile).Append(',')
+                    .Append(Num(cell.Pairings)).Append(',').Append(Num(cell.Matches)).Append(',')
+                    .Append(Num(cell.LowWins)).Append(',').Append(Num(cell.HighWins)).Append(',')
+                    .Append(Num(cell.Draws)).Append(',').Append(Num(cell.Timeouts)).Append(',')
+                    .Append(Frac(cell.Matches == 0 ? 0 : (double)cell.HighWins / cell.Matches)).Append(',')
+                    .Append(Frac(cell.Matches == cell.Draws ? 0 : (double)cell.HighWins / (cell.Matches - cell.Draws))).Append(',')
+                    .Append(Frac(cell.Matches == 0 ? 0 : (double)cell.Ticks / cell.Matches)).Append('\n');
+                allLow += cell.LowWins; allHigh += cell.HighWins; allDraws += cell.Draws;
+                allTimeouts += cell.Timeouts; allMatches += cell.Matches; allTicks += cell.Ticks;
+            }
+
+            text.Append("TOTAL,0,all,all,0,").Append(allMatches).Append(',').Append(allLow).Append(',')
+                .Append(allHigh).Append(',').Append(allDraws).Append(',').Append(allTimeouts).Append(',')
+                .Append(Frac(allMatches == 0 ? 0 : (double)allHigh / allMatches)).Append(',')
+                .Append(Frac(allMatches == allDraws ? 0 : (double)allHigh / (allMatches - allDraws))).Append(',')
+                .Append(Frac(allMatches == 0 ? 0 : (double)allTicks / allMatches)).Append('\n');
+            File.WriteAllText(path, text.ToString(), new UTF8Encoding(false));
+        }
+
+        private sealed class StratifiedCell
+        {
+            internal readonly int LowRank, HighRank;
+            internal readonly string LowProfile, HighProfile;
+            internal int Pairings, Matches, LowWins, HighWins, Draws, Timeouts;
+            internal long Ticks;
+            internal StratifiedCell(int lowRank, int highRank, string lowProfile, string highProfile)
+            { LowRank=lowRank; HighRank=highRank; LowProfile=lowProfile; HighProfile=highProfile; }
+            internal void Add(ArenaOutcome outcome, int ticks, bool timeout)
+            {
+                Matches++; Ticks += ticks; if (timeout) Timeouts++;
+                if (outcome == ArenaOutcome.Victory) LowWins++;
+                else if (outcome == ArenaOutcome.Defeat) HighWins++;
+                else Draws++;
+            }
         }
 
         private static ArenaFighterSetup BuildFighter(

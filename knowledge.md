@@ -84,7 +84,7 @@ The template is extracted from a finished prototype (the game repo, tag
 A game built from this template starts its own stage numbering at 01 and writes
 its reports under `docs/stages/` (skeleton: [`docs/stages/_TEMPLATE.md`](docs/stages/_TEMPLATE.md)).
 
-**Current state:** Stage 08 has added profile-driven Arena utility AI (skill, movement, retreat, flank, meditation and telegraph evasion), four configured archetypes and reaction-delay scaling from decisiveness and power rank. The 500-match Release sweep is under the 20 ms runtime budget (0.90 ms/match), but the rank-gap acceptance is still open: higher-rank win rate is 36.53% for pairings at least two ranks apart, below the 75% Stage-08 target, with 343/500 timeouts. The pure `Domain.Arena` grid rules (Stage 06) and `Domain.Character` rules (Stage 05) remain the foundations. The package has the game's fourteen data tables (`localization`,
+**Current state:** Stage 08 has added profile-driven Arena utility AI (skill, movement, retreat, flank, meditation and telegraph evasion), four configured archetypes and reaction-delay scaling from decisiveness and power rank. The 500-match Release sweep is under the 20 ms runtime budget (0.90 ms/match). A complete paired matrix over 295 distinct fighter pairings (20 repeats × 2 start sides = 11,800 matches) measured a 39.40% higher-rank win rate including draws (59.81% among decisive outcomes), below the 75% Stage-08 target; 7,717 matches timed out. Balance acceptance remains open. The pure `Domain.Arena` grid rules (Stage 06) and `Domain.Character` rules (Stage 05) remain the foundations. The package has the game's fourteen data tables (`localization`,
 `constant`, `attribute`, `stat_formula`, `skill`, `skill_level`, `gear`, `status`,
 `fighter`, `ai_profile`, `arena_map`, `tournament`, `reward_pool`, `background`), the
 `IGameConfig` port with its Infrastructure adapter, the shared
@@ -127,7 +127,7 @@ required check failed, `2` = the tool itself could not run.
 | [`validate-data.ps1`](tools/validate-data.ps1) | runs `lib/Tests~/Data.Validator` over the generated tables (cross-row rules Luban cannot express) | after `gen.ps1`; needs `-DataDir` (see the gotcha) |
 | [`verify-generated.ps1`](tools/verify-generated.ps1) | regenerates into a temp directory and compares byte for byte with what is committed | the reproducibility gate, inside Fast |
 | [`check-fixtures.ps1`](tools/check-fixtures.ps1) | proves every deliberately broken fixture under `lib/Tests~/fixtures/` is rejected **for the reason its `fixture.json` names** | after adding a data rule |
-| [`sim.ps1`](tools/sim.ps1) | builds and runs the headless harness (`lib/Tests~/Sim`): per-stream fingerprints + `determinismDigest`, and `--matches N` for the arena balance sweep (`artifacts/balance.csv`) | determinism, stream-separation and balance checks |
+| [`sim.ps1`](tools/sim.ps1) | builds and runs the headless harness (`lib/Tests~/Sim`): per-stream fingerprints + `determinismDigest`, `--matches N` for the arena balance sweep (`artifacts/balance.csv`), and `-Mode stratified -MatchCount N` for roster-wide rank/profile comparisons (`artifacts/balance-stratified.csv`) | determinism, stream-separation and balance checks |
 | [`build-web.ps1`](tools/build-web.ps1) | batch-mode WebGL build through the project's own pipeline; Development or Release, optionally with a size profile | makes the player the browser tests need |
 | [`serve-web.mjs`](tools/serve-web.mjs) | static server that sets the content types a WebGL player needs | serving `UnityProject/Builds/Web` to Playwright or a person |
 | [`measure-web-size.mjs`](tools/measure-web-size.mjs) | raw / gzip -9 / Brotli q11 size of every file in a build | any payload claim |
@@ -159,6 +159,7 @@ pwsh -NoProfile -File tools/verify-generated.ps1
 pwsh -NoProfile -File tools/check-fixtures.ps1
 pwsh -NoProfile -File tools/sim.ps1 --seed 7 --trace 5
 pwsh -NoProfile -File tools/sim.ps1 --matches 500            # artifacts/balance.csv + per-match ms
+pwsh -NoProfile -File tools/sim.ps1 -Mode stratified -MatchCount 20 # rank/profile paired matrix
 node tools/check-links.mjs
 pwsh -NoProfile -File tools/rename.ps1 -From ProjectJianghu -To MyGame -DryRun
 ```
@@ -266,9 +267,9 @@ Full detail: [`docs/architecture/overview.md`](docs/architecture/overview.md).
   ([ADR 0002](docs/adr/0002-thin-mvp-ui-approach.md)).
 - `Simulation` now holds the arena match loop (`Simulation/Arena`, ADR 0114/0115);
   a different game would replace that folder, not add an engine (ADR 0101).
-- Arena balance remains unclosed after Stage 08: the 500-match run completes in 0.90 ms/match,
-  but only 36.53% of two-rank-gap pairings are won by the higher rank (75% target) and 343/500
-  matches time out; see [`docs/stages/08-report.md`](docs/stages/08-report.md) for the sample caveat.
+- Arena balance remains unclosed after Stage 08: the paired rank/profile matrix measured 39.40%
+  higher-rank wins including draws (75% target) and 7,717/11,800 timeouts; see
+  [`docs/stages/08-report.md`](docs/stages/08-report.md) for rank-pair results and limitations.
 - `Contracts/Save` holds only `CheckpointProbe`; the first real save format is the
   game's decision, and it should start at schema version 1 with a migration story.
 - `SaveHeader` has no reader yet.

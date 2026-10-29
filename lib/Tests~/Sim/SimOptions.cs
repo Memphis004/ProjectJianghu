@@ -17,6 +17,9 @@ namespace ProjectJianghu.Sim
 
         /// <summary>Auto-resolved arena matches and the balance CSV (Stage 07).</summary>
         Balance = 1,
+
+        /// <summary>Roster-wide rank/profile matched arena comparisons.</summary>
+        Stratified = 2,
     }
 
     internal sealed class SimOptions
@@ -31,7 +34,7 @@ namespace ProjectJianghu.Sim
         internal const string Usage =
             "usage: ProjectJianghu.Sim [--seed N] [--ticks N] [--tick-hz X] [--frame-hz X]\n"
             + "                         [--run-interval-ticks N] [--trace N] [--data DIR] [--quiet]\n"
-            + "                         [--mode streams|balance] [--matches N] [--out PATH]\n"
+            + "                         [--mode streams|balance|stratified] [--matches N] [--out PATH]\n"
             + "  --seed N                 run seed (default 20261013)\n"
             + "  --ticks N                ticks to produce (default 300)\n"
             + "  --tick-hz X              fixed tick rate (default 30)\n"
@@ -40,9 +43,9 @@ namespace ProjectJianghu.Sim
             + "  --trace N                print the first N ticks\n"
             + "  --data DIR               directory holding the generated .bytes\n"
             + "  --quiet                  print only the determinism fingerprint\n"
-            + "  --mode NAME              streams (default) or balance\n"
-            + "  --matches N              balance: how many AI matches to resolve (implies --mode balance)\n"
-            + "  --out PATH               balance: CSV path (default artifacts/balance.csv)\n"
+            + "  --mode NAME              streams (default), balance or stratified\n"
+            + "  --matches N              balance: AI matches; stratified: repeats per fighter pairing\n"
+            + "  --out PATH               balance CSV path (stratified defaults to artifacts/balance-stratified.csv)\n"
             + "  --help, -h               this text";
 
         private SimOptions()
@@ -77,6 +80,8 @@ namespace ProjectJianghu.Sim
             var parsed = new SimOptions();
             helpRequested = false;
             options = parsed;
+            bool outputSet = false;
+            bool matchesSet = false;
 
             for (int i = 0; i < args.Length; i++)
             {
@@ -160,6 +165,10 @@ namespace ProjectJianghu.Sim
                         {
                             parsed.Mode = SimMode.Balance;
                         }
+                        else if (string.Equals(modeName, "stratified", StringComparison.OrdinalIgnoreCase))
+                        {
+                            parsed.Mode = SimMode.Stratified;
+                        }
                         else
                         {
                             Console.Error.WriteLine("unknown mode: " + modeName);
@@ -176,7 +185,11 @@ namespace ProjectJianghu.Sim
                         }
 
                         parsed.Matches = (int)matches;
-                        parsed.Mode = SimMode.Balance;
+                        matchesSet = true;
+                        if (parsed.Mode != SimMode.Stratified)
+                        {
+                            parsed.Mode = SimMode.Balance;
+                        }
                         break;
 
                     case "--out":
@@ -186,6 +199,7 @@ namespace ProjectJianghu.Sim
                         }
 
                         parsed.BalanceOut = output;
+                        outputSet = true;
                         break;
 
                     case "--data":
@@ -203,6 +217,12 @@ namespace ProjectJianghu.Sim
                         Console.Error.WriteLine(Usage);
                         return false;
                 }
+            }
+
+            if (parsed.Mode == SimMode.Stratified)
+            {
+                if (!matchesSet) parsed.Matches = 1;
+                if (!outputSet) parsed.BalanceOut = "artifacts/balance-stratified.csv";
             }
 
             return true;
