@@ -1,7 +1,7 @@
 {
   "name": "blank-text",
   "stage": "semantic",
-  "why": "ui.generic.close has no Thai and no English cell, so the row can never be shown",
+  "why": "attr.fist.name has no Thai and no English cell, so the row can never be shown",
   "expectedCodes": [
     "localization.blank_text"
   ]

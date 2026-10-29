@@ -1,3 +1,7 @@
 ##,id,round_min,round_max,weight,gear_id,skill_id,note_key
-,reward.round_1_gear,1,1,60,gear.jade_pendant,,reward.round_1_gear.note
-,reward.round_1_skill,1,2,40,,skill.falling_rain_slash,
+,reward.opening_accessory,1,3,35,gear.jade_pendant,,reward.opening_accessory.note
+,reward.opening_manual,1,3,45,,skill.still_water_manual,reward.opening_manual.note
+,reward.middle_weapon,2,4,20,gear.steel_gauntlets,,reward.middle_weapon.note
+,reward.middle_manual,2,4,35,,skill.crag_breaker_fist,reward.middle_manual.note
+,reward.final_robe,4,5,25,gear.iron_scale_robe,,reward.final_robe.note
+,reward.final_manual,4,5,35,,skill.shifting_shadow,reward.final_manual.note

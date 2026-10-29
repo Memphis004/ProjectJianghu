@@ -1,3 +1,5 @@
 ##,id,attribute_points,attributes,start_skill_ids,start_gear_ids,name_key,desc_key
-,background.sword_academy,20,Fist|3|Toughness|2,skill.falling_rain_slash,gear.iron_sword,background.sword_academy.name,background.sword_academy.desc
-,background.road_boxer,20,Fist|5,,,background.road_boxer.name,
+,background.sword_academy,20,Sword|12|Focus|5|Toughness|3,skill.falling_rain_slash|skill.half_moon_cut|skill.still_water_manual|skill.bamboo_leaf_dash,gear.sword_of_morning_mist|gear.traveler_padded_coat|gear.jade_pendant,background.sword_academy.name,background.sword_academy.desc
+,background.roaming_boxer,20,Fist|12|WaistPower|5|Toughness|5,skill.surging_tide_palm|skill.crag_breaker_fist|skill.yang_breath_manual|skill.bamboo_leaf_dash,gear.iron_fist_wraps|gear.river_guard_vest|gear.copper_wrist_guard,background.roaming_boxer.name,background.roaming_boxer.desc
+,background.saber_heir,20,Saber|12|Sinew|6|Composure|4,skill.rumbling_tiger_saber|skill.mountain_splitter|skill.diamond_frame_manual|skill.still_water_manual,gear.saber_of_rumbling_peaks|gear.iron_scale_robe|gear.moonstone_bead,background.saber_heir.name,background.saber_heir.desc
+,background.shadow_assassin,20,HiddenWeapon|12|Lightness|6|Wit|4,skill.flying_cloud_needle|skill.three_star_darts|skill.still_water_manual|skill.shifting_shadow,gear.flying_cloud_needles|gear.traveler_padded_coat|gear.silk_lucky_knot,background.shadow_assassin.name,background.shadow_assassin.desc

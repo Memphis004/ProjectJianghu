@@ -176,6 +176,12 @@ namespace ProjectJianghu.Core.Domain.Config
         /// <summary>Attribute bonuses granted at specific mastery levels.</summary>
         public IReadOnlyList<SkillLevelBonus> LevelBonus { get; set; } = Array.Empty<SkillLevelBonus>();
 
+        /// <summary>Localized special effect unlocked at mastery level 5.</summary>
+        public string Level5SpecialKey { get; set; } = string.Empty;
+
+        /// <summary>Localized special effect unlocked at mastery level 10.</summary>
+        public string Level10SpecialKey { get; set; } = string.Empty;
+
         /// <summary>Localization key of the skill's name.</summary>
         public string NameKey { get; set; } = string.Empty;
 
@@ -443,6 +449,15 @@ namespace ProjectJianghu.Core.Domain.Config
 
         /// <summary>The K of the <c>Defense / (Defense + K)</c> mitigation formula.</summary>
         public int DamageMitigationK { get; set; }
+
+        /// <summary>Damage multiplier bonus when striking from behind, times 100.</summary>
+        public int BackDamageBonusX100 { get; set; }
+
+        /// <summary>Damage multiplier bonus when striking from the flank, times 100.</summary>
+        public int FlankDamageBonusX100 { get; set; }
+
+        /// <summary>Mastery XP granted for each skill use.</summary>
+        public int MasteryXpPerUse { get; set; }
 
         /// <summary>The highest mastery level a skill can reach.</summary>
         public int MaxMasteryLevel { get; set; }

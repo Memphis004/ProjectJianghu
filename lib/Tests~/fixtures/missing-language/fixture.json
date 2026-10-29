@@ -1,7 +1,7 @@
 {
   "name": "missing-language",
   "stage": "semantic",
-  "why": "ui.generic.close has Thai text and an empty English cell, so the two languages do not line up",
+  "why": "attr.fist.name has Thai text and an empty English cell, so the two languages do not line up",
   "expectedCodes": [
     "localization.missing_language"
   ]

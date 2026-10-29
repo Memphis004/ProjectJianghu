@@ -35,6 +35,9 @@ public partial class TbConstant
      public int JumpCooldownTicks => _data.JumpCooldownTicks;
      public int MeditateNeiliRestore => _data.MeditateNeiliRestore;
      public int DamageMitigationK => _data.DamageMitigationK;
+     public int BackDamageBonusX100 => _data.BackDamageBonusX100;
+     public int FlankDamageBonusX100 => _data.FlankDamageBonusX100;
+     public int MasteryXpPerUse => _data.MasteryXpPerUse;
      public int MaxMasteryLevel => _data.MaxMasteryLevel;
      public int StartingAttributePoints => _data.StartingAttributePoints;
     

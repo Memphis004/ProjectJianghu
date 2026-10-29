@@ -32,6 +32,8 @@ public sealed partial class SkillDef : Luban.BeanBase
         StatusChanceX100 = _buf.ReadInt();
         KnockbackTiles = _buf.ReadInt();
         {int n0 = _buf.ReadSize(); LevelBonus = new System.Collections.Generic.List<SkillLevelBonus>(n0);for(var i0 = 0 ; i0 < n0 ; i0++) { SkillLevelBonus _e0;  _e0 = global::ProjectJianghu.Config.SkillLevelBonus.DeserializeSkillLevelBonus(_buf); LevelBonus.Add(_e0);}}
+        Level5SpecialKey = _buf.ReadString();
+        Level10SpecialKey = _buf.ReadString();
         NameKey = _buf.ReadString();
         NameKey_Ref = null;
         DescKey = _buf.ReadString();
@@ -58,6 +60,8 @@ public sealed partial class SkillDef : Luban.BeanBase
     public readonly int StatusChanceX100;
     public readonly int KnockbackTiles;
     public readonly System.Collections.Generic.List<SkillLevelBonus> LevelBonus;
+    public readonly string Level5SpecialKey;
+    public readonly string Level10SpecialKey;
     public readonly string NameKey;
     public Localization NameKey_Ref;
     public readonly string DescKey;
@@ -90,6 +94,8 @@ public sealed partial class SkillDef : Luban.BeanBase
         + "statusChanceX100:" + StatusChanceX100 + ","
         + "knockbackTiles:" + KnockbackTiles + ","
         + "levelBonus:" + Luban.StringUtil.CollectionToString(LevelBonus) + ","
+        + "level5SpecialKey:" + Level5SpecialKey + ","
+        + "level10SpecialKey:" + Level10SpecialKey + ","
         + "nameKey:" + NameKey + ","
         + "descKey:" + DescKey + ","
         + "}";

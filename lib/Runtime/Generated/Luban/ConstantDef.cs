@@ -24,6 +24,9 @@ public sealed partial class ConstantDef : Luban.BeanBase
         JumpCooldownTicks = _buf.ReadInt();
         MeditateNeiliRestore = _buf.ReadInt();
         DamageMitigationK = _buf.ReadInt();
+        BackDamageBonusX100 = _buf.ReadInt();
+        FlankDamageBonusX100 = _buf.ReadInt();
+        MasteryXpPerUse = _buf.ReadInt();
         MaxMasteryLevel = _buf.ReadInt();
         StartingAttributePoints = _buf.ReadInt();
     }
@@ -41,6 +44,9 @@ public sealed partial class ConstantDef : Luban.BeanBase
     public readonly int JumpCooldownTicks;
     public readonly int MeditateNeiliRestore;
     public readonly int DamageMitigationK;
+    public readonly int BackDamageBonusX100;
+    public readonly int FlankDamageBonusX100;
+    public readonly int MasteryXpPerUse;
     public readonly int MaxMasteryLevel;
     public readonly int StartingAttributePoints;
    
@@ -62,6 +68,9 @@ public sealed partial class ConstantDef : Luban.BeanBase
         + "jumpCooldownTicks:" + JumpCooldownTicks + ","
         + "meditateNeiliRestore:" + MeditateNeiliRestore + ","
         + "damageMitigationK:" + DamageMitigationK + ","
+        + "backDamageBonusX100:" + BackDamageBonusX100 + ","
+        + "flankDamageBonusX100:" + FlankDamageBonusX100 + ","
+        + "masteryXpPerUse:" + MasteryXpPerUse + ","
         + "maxMasteryLevel:" + MaxMasteryLevel + ","
         + "startingAttributePoints:" + StartingAttributePoints + ","
         + "}";

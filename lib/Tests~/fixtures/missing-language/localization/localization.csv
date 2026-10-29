@@ -1,28 +1,38 @@
 ##,key,th,en
 ,ui.title,ยุทธภพผงาด,Wuxia: Jianghu Rising
 ,ui.generic.ok,ตกลง,OK
-,ui.generic.close,ปิด,
+,ui.generic.close,ปิด,Close
 ,ui.generic.continue,ไปต่อ,Continue
 ,ui.generic.error,เกิดข้อผิดพลาด กรุณาลองใหม่,Something went wrong. Please try again.
 ,ui.spike.thai,พ่อหมอปราบผีกระสือ ฤๅษี ปั้นน้ำตาล ญี่ปุ่น,Ghost-Doctor vs Krasue Ruesi sugar-moulding Japan
 ,ui.spike.thai.marks,ปื๊ด ตู้ เบ๊ ญี่ปุ่น น้ำตาล ฤๅษี ฎ ฏ ฐ ฅ ฃ,Thai tone-mark and rare-glyph stress sample
 ,title.start,เริ่มเล่น,Start
 ,title.quit,ออก,Quit
-,hub.title,ที่พัก,Rest
-,hub.instructions,เตรียมตัวแล้วออกเดินทาง,"Prepare, then set out."
-,hub.encounters.format,ผ่านมาแล้ว {0} รอบ,Cleared {0} encounters
-,hub.depart,ออกเดินทาง,Depart
-,hub.finish,จบการเดินทาง,End the run
-,encounter.title,ลานประลอง,Arena
-,encounter.progress.format,รอบที่ {0} จาก {1},Round {0} of {1}
-,encounter.win,ชนะ,Win
-,encounter.lose,แพ้,Lose
+,rest.title,ที่พัก,Rest
+,rest.instructions,เตรียมตัวแล้วออกเดินทาง,"Prepare, then set out."
+,rest.rounds.format,ผ่านมาแล้ว {0} รอบ,Cleared {0} rounds
+,rest.depart,ลงสนาม,Enter the arena
+,rest.finish,จบการเดินทาง,End the run
+,arena.title,ลานประลอง,Arena
+,arena.progress.format,รอบที่ {0} จาก {1},Round {0} of {1}
+,arena.win,ชนะ,Win
+,arena.lose,แพ้,Lose
 ,result.victory,สำเร็จ,Run complete
 ,result.defeat,จบแล้ว,Run over
 ,result.summary.format,ผ่าน {0} รอบ,Cleared {0} encounters
 ,result.seed.format,seed {0},seed {0}
 ,result.restart,เริ่มใหม่,New run
 ,result.title,กลับหน้าแรก,Back to title
+,charactercreate.title,สร้างตัวละคร,Create character
+,charactercreate.line,เลือกภูมิหลัง แจกแต้ม และเลือกวิชาเริ่มต้น (เร็วๆ นี้),"Background, points and a starting skill (coming soon)"
+,bracket.title,ผังทัวร์นาเมนต์,Tournament bracket
+,bracket.line,ผู้เข้าแข่ง 32 คน สายการแข่งจะมาใน Stage 10,32 entrants; the bracket arrives in Stage 10
+,settings.quality.low,ต่ำ,Low
+,settings.quality.medium,กลาง,Medium
+,settings.quality.high,สูง,High
+,settings.quality.status.format,คุณภาพ {0} · {1} FPS (1% ต่ำสุด {2}),Quality {0} · {1} FPS (1% low {2})
+,ui.spike.thai.skill_long,กระบี่สายฝนพรำเพลงดาบสวรรค์สะบั้นมาร,Rainfall Sword of the Heaven-Severing Blade
+,ui.spike.thai.banner,ธงอักษรจีน,Chinese-letter banner
 ,attr.toughness.name,กายแกร่ง,Toughness
 ,attr.toughness.desc,โครงร่างและกำลังภายในที่หล่อเลี้ยงพลังชีวิต,Bulk and the inner strength that feeds hit points
 ,attr.sinew.name,เอ็นกระดูก,Sinew
@@ -47,3 +57,237 @@
 ,background.road_boxer.name,นักมวยเร่ร่อน,Roaming Boxer
 ,fighter.rival_01.name,จอมยุทธ์หน้าใหม่,Rising Challenger
 ,fighter.rival_02.name,นักเลงตะวันตก,Western Bladehand
+,attr.fist.name,,Fist and Palm
+,attr.fist.desc,ค่าคุณลักษณะหมัดฝ่ามือสำหรับต้นแบบ,Fist and Palm attribute value used by the prototype
+,attr.sword.name,กระบี่,Sword
+,attr.sword.desc,ค่าคุณลักษณะกระบี่สำหรับต้นแบบ,Sword attribute value used by the prototype
+,attr.saber.name,ดาบ,Saber
+,attr.saber.desc,ค่าคุณลักษณะดาบสำหรับต้นแบบ,Saber attribute value used by the prototype
+,attr.hidden_weapon.name,อาวุธลับ,Hidden Weapon
+,attr.hidden_weapon.desc,ค่าคุณลักษณะอาวุธลับสำหรับต้นแบบ,Hidden Weapon attribute value used by the prototype
+,attr.finger.name,ดัชนี,Finger
+,attr.finger.desc,ค่าคุณลักษณะดัชนีสำหรับต้นแบบ,Finger attribute value used by the prototype
+,attr.spear.name,ทวน,Spear
+,attr.spear.desc,ค่าคุณลักษณะทวนสำหรับต้นแบบ,Spear attribute value used by the prototype
+,attr.staff.name,กระบอง,Staff
+,attr.staff.desc,ค่าคุณลักษณะกระบองสำหรับต้นแบบ,Staff attribute value used by the prototype
+,attr.neili_pool.name,ปริมาณปราณ,Inner Pool
+,attr.neili_pool.desc,ค่าคุณลักษณะปริมาณปราณสำหรับต้นแบบ,Inner Pool attribute value used by the prototype
+,attr.neili_flow.name,หมุนเวียนปราณ,Inner Flow
+,attr.neili_flow.desc,ค่าคุณลักษณะหมุนเวียนปราณสำหรับต้นแบบ,Inner Flow attribute value used by the prototype
+,attr.neili_power.desc,ค่าคุณลักษณะพลังปราณสำหรับต้นแบบ,Inner Power attribute value used by the prototype
+,attr.lightness.name,กายเบา,Lightness
+,attr.lightness.desc,ค่าคุณลักษณะกายเบาสำหรับต้นแบบ,Lightness attribute value used by the prototype
+,attr.waist_power.name,กำลังเอว,Waist Power
+,attr.waist_power.desc,ค่าคุณลักษณะกำลังเอวสำหรับต้นแบบ,Waist Power attribute value used by the prototype
+,attr.lower_body.name,ช่วงล่าง,Lower Body
+,attr.lower_body.desc,ค่าคุณลักษณะช่วงล่างสำหรับต้นแบบ,Lower Body attribute value used by the prototype
+,attr.sinew.desc,ค่าคุณลักษณะเอ็นกระดูกสำหรับต้นแบบ,Sinew attribute value used by the prototype
+,attr.resolve.name,มุ่งมั่น,Resolve
+,attr.resolve.desc,ค่าคุณลักษณะมุ่งมั่นสำหรับต้นแบบ,Resolve attribute value used by the prototype
+,attr.focus.name,สมาธิ,Focus
+,attr.focus.desc,ค่าคุณลักษณะสมาธิสำหรับต้นแบบ,Focus attribute value used by the prototype
+,attr.composure.name,สุขุม,Composure
+,attr.composure.desc,ค่าคุณลักษณะสุขุมสำหรับต้นแบบ,Composure attribute value used by the prototype
+,attr.decisiveness.name,เด็ดขาด,Decisiveness
+,attr.decisiveness.desc,ค่าคุณลักษณะเด็ดขาดสำหรับต้นแบบ,Decisiveness attribute value used by the prototype
+,attr.wit.name,ปฏิภาณ,Wit
+,attr.wit.desc,ค่าคุณลักษณะปฏิภาณสำหรับต้นแบบ,Wit attribute value used by the prototype
+,attr.du_pulse.name,ชีพจรตู,Du Pulse
+,attr.du_pulse.desc,ค่าคุณลักษณะชีพจรตูสำหรับต้นแบบ,Du Pulse attribute value used by the prototype
+,attr.ren_pulse.name,ชีพจรเริน,Ren Pulse
+,attr.ren_pulse.desc,ค่าคุณลักษณะชีพจรเรินสำหรับต้นแบบ,Ren Pulse attribute value used by the prototype
+,attr.intellect.name,ปัญญา,Intellect
+,attr.intellect.desc,ค่าคุณลักษณะปัญญาสำหรับต้นแบบ,Intellect attribute value used by the prototype
+,attr.lore.name,ความรู้,Lore
+,attr.lore.desc,ค่าคุณลักษณะความรู้สำหรับต้นแบบ,Lore attribute value used by the prototype
+,attr.virtue.name,คุณธรรม,Virtue
+,attr.virtue.desc,ค่าคุณลักษณะคุณธรรมสำหรับต้นแบบ,Virtue attribute value used by the prototype
+,attr.charm.name,เสน่ห์,Charm
+,attr.charm.desc,ค่าคุณลักษณะเสน่ห์สำหรับต้นแบบ,Charm attribute value used by the prototype
+,attr.fortune.name,วาสนา,Fortune
+,attr.fortune.desc,ค่าคุณลักษณะวาสนาสำหรับต้นแบบ,Fortune attribute value used by the prototype
+,attr.killing_intent.name,ใจสังหาร,Killing Intent
+,attr.killing_intent.desc,ค่าคุณลักษณะใจสังหารสำหรับต้นแบบ,Killing Intent attribute value used by the prototype
+,attr.medicine.name,การแพทย์,Medicine
+,attr.medicine.desc,ค่าคุณลักษณะการแพทย์สำหรับต้นแบบ,Medicine attribute value used by the prototype
+,attr.toxicology.name,พิษวิทยา,Toxicology
+,attr.toxicology.desc,ค่าคุณลักษณะพิษวิทยาสำหรับต้นแบบ,Toxicology attribute value used by the prototype
+,attr.cooking.name,ทำอาหาร,Cooking
+,attr.cooking.desc,ค่าคุณลักษณะทำอาหารสำหรับต้นแบบ,Cooking attribute value used by the prototype
+,attr.wine.name,สุรา,Wine
+,attr.wine.desc,ค่าคุณลักษณะสุราสำหรับต้นแบบ,Wine attribute value used by the prototype
+,attr.music.name,ดนตรี,Music
+,attr.music.desc,ค่าคุณลักษณะดนตรีสำหรับต้นแบบ,Music attribute value used by the prototype
+,attr.brush.name,พู่กัน,Brush
+,attr.brush.desc,ค่าคุณลักษณะพู่กันสำหรับต้นแบบ,Brush attribute value used by the prototype
+,stat.neili_regen_per_sec_x100.name,ฟื้นปราณต่อวินาที,Inner Power Regeneration per Second
+,stat.external_power.name,พลังภายนอก,External Power
+,stat.inner_power.name,พลังภายใน,Inner Power
+,stat.defense.name,ป้องกัน,Defense
+,stat.inner_defense.name,ป้องกันภายใน,Inner Defense
+,stat.move_range.name,ระยะเดิน,Move Range
+,stat.jump_range.name,ระยะกระโดด,Jump Range
+,stat.atb_fill_ticks.name,เวลาเติม ATB,ATB Fill Ticks
+,stat.action_speed_x100.name,ความเร็วกระทำ,Action Speed
+,stat.accuracy_x100.name,ความแม่นยำ,Accuracy
+,stat.evasion_x100.name,การหลบ,Evasion
+,stat.crit_chance_x100.name,โอกาสคริติคอล,Critical Chance
+,stat.crit_damage_x100.name,โบนัสความเสียหายคริติคอล,Critical Damage Bonus
+,stat.counter_chance_x100.name,โอกาสสวนกลับ,Counter Chance
+,stat.status_resist_x100.name,ต้านสถานะ,Status Resistance
+,stat.knockback_resist.name,ต้านผลัก,Knockback Resistance
+,stat.jump_cooldown_ticks.name,คูลดาวน์กระโดด,Jump Cooldown
+,status.acupoint_seal.name,สกัดจุด,Acupoint Seal
+,status.acupoint_seal.desc,หยุดการเติม ATB ระหว่างติดสถานะ,Stops ATB gain while active
+,status.internal_injury.name,บาดเจ็บภายใน,Internal Injury
+,status.internal_injury.desc,สร้างความเสียหายเป็นจังหวะและลดการฟื้นปราณ,Deals periodic damage and slows inner power regeneration
+,status.stagger.desc,ทำให้การเติม ATB ช้าลง,Slows ATB gain
+,background.roaming_boxer.name,นักมวยเร่ร่อน,Roaming Boxer
+,background.roaming_boxer.desc,นักสู้พเนจรที่เรียนรู้จากทุกลานประลอง,A wandering fighter who learned from every ring
+,background.saber_heir.name,ทายาทสกุลดาบ,Saber Family Heir
+,background.saber_heir.desc,ผู้สืบทอดสายดาบของตระกูลเก่า,Heir to an old saber family tradition
+,background.shadow_assassin.name,มือสังหาร,Shadow Assassin
+,background.shadow_assassin.desc,ผู้เชี่ยวชาญอาวุธลับและการเคลื่อนไหวเงียบ,An expert in hidden weapons and quiet movement
+,gear.iron_fist_wraps.name,ผ้าพันหมัดเหล็ก,Iron Fist Wraps
+,gear.iron_fist_wraps.desc,ผ้าพันหมัดเหล็กช่วยป้องกันมือและเพิ่มกำลังหมัด,Protective iron wraps that strengthen fist strikes
+,gear.steel_gauntlets.name,ถุงมือเกราะเหล็ก,Steel Gauntlets
+,gear.steel_gauntlets.desc,เครื่องสวมใส่ถุงมือเกราะเหล็กสำหรับนักสู้,"Steel Gauntlets, equipment for a tournament fighter"
+,gear.sword_of_morning_mist.name,กระบี่หมอกอรุณ,Morning Mist Sword
+,gear.sword_of_morning_mist.desc,เครื่องสวมใส่กระบี่หมอกอรุณสำหรับนักสู้,"Morning Mist Sword, equipment for a tournament fighter"
+,gear.saber_of_rumbling_peaks.name,ดาบภูผาคำราม,Rumbling Peaks Saber
+,gear.saber_of_rumbling_peaks.desc,เครื่องสวมใส่ดาบภูผาคำรามสำหรับนักสู้,"Rumbling Peaks Saber, equipment for a tournament fighter"
+,gear.flying_cloud_needles.name,เข็มเมฆาลอย,Flying Cloud Needles
+,gear.flying_cloud_needles.desc,เครื่องสวมใส่เข็มเมฆาลอยสำหรับนักสู้,"Flying Cloud Needles, equipment for a tournament fighter"
+,gear.traveler_padded_coat.name,เสื้อเกราะนักเดินทาง,Traveler Padded Coat
+,gear.traveler_padded_coat.desc,เครื่องสวมใส่เสื้อเกราะนักเดินทางสำหรับนักสู้,"Traveler Padded Coat, equipment for a tournament fighter"
+,gear.river_guard_vest.name,เกราะคุ้มธารา,Riverguard Vest
+,gear.river_guard_vest.desc,เครื่องสวมใส่เกราะคุ้มธาราสำหรับนักสู้,"Riverguard Vest, equipment for a tournament fighter"
+,gear.iron_scale_robe.name,อาภรณ์เกล็กเหล็ก,Iron Scale Robe
+,gear.iron_scale_robe.desc,เครื่องสวมใส่อาภรณ์เกล็กเหล็กสำหรับนักสู้,"Iron Scale Robe, equipment for a tournament fighter"
+,gear.jade_pendant.desc,เครื่องสวมใส่จี้หยกสงบใจสำหรับนักสู้,"Calm Jade Pendant, equipment for a tournament fighter"
+,gear.copper_wrist_guard.name,ปลอกข้อมือทองแดง,Copper Wrist Guard
+,gear.copper_wrist_guard.desc,เครื่องสวมใส่ปลอกข้อมือทองแดงสำหรับนักสู้,"Copper Wrist Guard, equipment for a tournament fighter"
+,gear.silk_lucky_knot.name,ปมไหมนำโชค,Lucky Silk Knot
+,gear.silk_lucky_knot.desc,เครื่องสวมใส่ปมไหมนำโชคสำหรับนักสู้,"Lucky Silk Knot, equipment for a tournament fighter"
+,gear.moonstone_bead.name,ลูกประคำจันทรา,Moonstone Bead
+,gear.moonstone_bead.desc,เครื่องสวมใส่ลูกประคำจันทราสำหรับนักสู้,"Moonstone Bead, equipment for a tournament fighter"
+,skill.falling_rain_slash.level5,ปลดผนึกวิชากระบี่สายฝนพรำขั้น 5,Rainfall Slash: level 5 mastery effect unlocked
+,skill.falling_rain_slash.level10,วิชากระบี่สายฝนพรำถึงขั้นสมบูรณ์,Rainfall Slash: level 10 mastery effect unlocked
+,skill.half_moon_cut.name,ฟันจันทร์ครึ่งเสี้ยว,Half-Moon Cut
+,skill.half_moon_cut.desc,ฟันเป็นแนวเส้นได้ไกลสามช่อง,A sword line attack reaching three tiles
+,skill.half_moon_cut.level5,ปลดผนึกวิชาฟันจันทร์ครึ่งเสี้ยวขั้น 5,Half-Moon Cut: level 5 mastery effect unlocked
+,skill.half_moon_cut.level10,วิชาฟันจันทร์ครึ่งเสี้ยวถึงขั้นสมบูรณ์,Half-Moon Cut: level 10 mastery effect unlocked
+,skill.rumbling_tiger_saber.name,ดาบพยัคฆ์คำราม,Rumbling Tiger Saber
+,skill.rumbling_tiger_saber.desc,ฟันเป็นกรวยและอาจทำให้เป้าหมายชะงัก,A cone slash that may stagger targets
+,skill.rumbling_tiger_saber.level5,ปลดผนึกวิชาดาบพยัคฆ์คำรามขั้น 5,Rumbling Tiger Saber: level 5 mastery effect unlocked
+,skill.rumbling_tiger_saber.level10,วิชาดาบพยัคฆ์คำรามถึงขั้นสมบูรณ์,Rumbling Tiger Saber: level 10 mastery effect unlocked
+,skill.mountain_splitter.name,ดาบผ่าภูผา,Mountain Splitter
+,skill.mountain_splitter.desc,ฟันหนักพร้อมแรงผลักถอย,A heavy cut with knockback
+,skill.mountain_splitter.level5,ปลดผนึกวิชาดาบผ่าภูผาขั้น 5,Mountain Splitter: level 5 mastery effect unlocked
+,skill.mountain_splitter.level10,วิชาดาบผ่าภูผาถึงขั้นสมบูรณ์,Mountain Splitter: level 10 mastery effect unlocked
+,skill.surging_tide_palm.name,ฝ่ามือคลื่นซัด,Surging Tide Palm
+,skill.surging_tide_palm.desc,โจมตีด้วยพลังปราณและทำให้บาดเจ็บภายใน,Strike with inner power and cause internal injury
+,skill.surging_tide_palm.level5,ปลดผนึกวิชาฝ่ามือคลื่นซัดขั้น 5,Surging Tide Palm: level 5 mastery effect unlocked
+,skill.surging_tide_palm.level10,วิชาฝ่ามือคลื่นซัดถึงขั้นสมบูรณ์,Surging Tide Palm: level 10 mastery effect unlocked
+,skill.crag_breaker_fist.name,หมัดทลายผา,Crag-Breaker Fist
+,skill.crag_breaker_fist.desc,หมัดหนักที่อาจสกัดจุด,A heavy fist that may seal acupoints
+,skill.crag_breaker_fist.level5,ปลดผนึกวิชาหมัดทลายผาขั้น 5,Crag-Breaker Fist: level 5 mastery effect unlocked
+,skill.crag_breaker_fist.level10,วิชาหมัดทลายผาถึงขั้นสมบูรณ์,Crag-Breaker Fist: level 10 mastery effect unlocked
+,skill.flying_cloud_needle.name,เข็มเมฆาลอย,Flying Cloud Needle
+,skill.flying_cloud_needle.desc,ขว้างเข็มพิษจากระยะไกล,A ranged needle throw that can poison
+,skill.flying_cloud_needle.level5,ปลดผนึกวิชาเข็มเมฆาลอยขั้น 5,Flying Cloud Needle: level 5 mastery effect unlocked
+,skill.flying_cloud_needle.level10,วิชาเข็มเมฆาลอยถึงขั้นสมบูรณ์,Flying Cloud Needle: level 10 mastery effect unlocked
+,skill.three_star_darts.name,ดาวกระจายสามดวง,Three-Star Darts
+,skill.three_star_darts.desc,โจมตีพื้นที่กากบาทด้วยอาวุธลับ,A cross-shaped hidden-weapon attack
+,skill.three_star_darts.level5,ปลดผนึกวิชาดาวกระจายสามดวงขั้น 5,Three-Star Darts: level 5 mastery effect unlocked
+,skill.three_star_darts.level10,วิชาดาวกระจายสามดวงถึงขั้นสมบูรณ์,Three-Star Darts: level 10 mastery effect unlocked
+,skill.yang_breath_manual.name,คัมภีร์ลมหายใจหยาง,Yang Breath Manual
+,skill.yang_breath_manual.desc,เพิ่มพลังปราณและปริมาณปราณ,Improves inner power and inner pool
+,skill.yang_breath_manual.level5,ปลดผนึกวิชาคัมภีร์ลมหายใจหยางขั้น 5,Yang Breath Manual: level 5 mastery effect unlocked
+,skill.yang_breath_manual.level10,วิชาคัมภีร์ลมหายใจหยางถึงขั้นสมบูรณ์,Yang Breath Manual: level 10 mastery effect unlocked
+,skill.still_water_manual.name,คัมภีร์สายน้ำนิ่ง,Still Water Manual
+,skill.still_water_manual.desc,เร่งการไหลเวียนและฟื้นปราณ,Improves inner flow and regeneration
+,skill.still_water_manual.level5,ปลดผนึกวิชาคัมภีร์สายน้ำนิ่งขั้น 5,Still Water Manual: level 5 mastery effect unlocked
+,skill.still_water_manual.level10,วิชาคัมภีร์สายน้ำนิ่งถึงขั้นสมบูรณ์,Still Water Manual: level 10 mastery effect unlocked
+,skill.diamond_frame_manual.name,คัมภีร์กายาเพชร,Diamond Frame Manual
+,skill.diamond_frame_manual.desc,เสริมเอ็นกระดูกและความสุขุม,Strengthens sinew and composure
+,skill.diamond_frame_manual.level5,ปลดผนึกวิชาคัมภีร์กายาเพชรขั้น 5,Diamond Frame Manual: level 5 mastery effect unlocked
+,skill.diamond_frame_manual.level10,วิชาคัมภีร์กายาเพชรถึงขั้นสมบูรณ์,Diamond Frame Manual: level 10 mastery effect unlocked
+,skill.bamboo_leaf_dash.name,เหินผ่านใบไผ่,Bamboo-Leaf Dash
+,skill.bamboo_leaf_dash.desc,เคลื่อนกายเบาเพื่อเพิ่มระยะกระโดด,A lightness art that extends jumping
+,skill.bamboo_leaf_dash.level5,ปลดผนึกวิชาเหินผ่านใบไผ่ขั้น 5,Bamboo-Leaf Dash: level 5 mastery effect unlocked
+,skill.bamboo_leaf_dash.level10,วิชาเหินผ่านใบไผ่ถึงขั้นสมบูรณ์,Bamboo-Leaf Dash: level 10 mastery effect unlocked
+,skill.shifting_shadow.name,เงาเคลื่อนคล้อย,Shifting Shadow
+,skill.shifting_shadow.desc,เปลี่ยนตำแหน่งดุจเงาเพื่อหลบหลีก,A shifting art for evasion
+,skill.shifting_shadow.level5,ปลดผนึกวิชาเงาเคลื่อนคล้อยขั้น 5,Shifting Shadow: level 5 mastery effect unlocked
+,skill.shifting_shadow.level10,วิชาเงาเคลื่อนคล้อยถึงขั้นสมบูรณ์,Shifting Shadow: level 10 mastery effect unlocked
+,ai.inner_tank.name,ถึกพลังภายใน,Inner-Power Tank
+,ai.evader.name,สายกระโดดหลบ,Evasive Jumper
+,tournament.opening_cup.name,ถ้วยประลองเปิดฤดู,Opening Tournament Cup
+,reward.opening_accessory.note,เครื่องประดับรอบต้นจากกองรางวัล,Early-round accessory from the reward pool
+,reward.opening_manual.note,คัมภีร์รอบต้นจากกองรางวัล,Early-round manual from the reward pool
+,reward.middle_weapon.note,อาวุธรอบกลางจากกองรางวัล,Mid-round weapon from the reward pool
+,reward.middle_manual.note,คัมภีร์รอบกลางจากกองรางวัล,Mid-round manual from the reward pool
+,reward.final_robe.note,ชุดรอบท้ายจากกองรางวัล,Final-round armor from the reward pool
+,reward.final_manual.note,คัมภีร์รอบท้ายจากกองรางวัล,Final-round manual from the reward pool
+,fighter.rival_01.desc,นักสู้ระดับฝีมือที่ 1 ในลานประลอง,A rank 1 tournament fighter
+,fighter.rival_02.desc,นักสู้ระดับฝีมือที่ 1 ในลานประลอง,A rank 1 tournament fighter
+,fighter.rival_03.name,ผู้ประลองลำดับ 03,Tournament Challenger 03
+,fighter.rival_03.desc,นักสู้ระดับฝีมือที่ 1 ในลานประลอง,A rank 1 tournament fighter
+,fighter.rival_04.name,ผู้ประลองลำดับ 04,Tournament Challenger 04
+,fighter.rival_04.desc,นักสู้ระดับฝีมือที่ 1 ในลานประลอง,A rank 1 tournament fighter
+,fighter.rival_05.name,ผู้ประลองลำดับ 05,Tournament Challenger 05
+,fighter.rival_05.desc,นักสู้ระดับฝีมือที่ 1 ในลานประลอง,A rank 1 tournament fighter
+,fighter.rival_06.name,ผู้ประลองลำดับ 06,Tournament Challenger 06
+,fighter.rival_06.desc,นักสู้ระดับฝีมือที่ 2 ในลานประลอง,A rank 2 tournament fighter
+,fighter.rival_07.name,ผู้ประลองลำดับ 07,Tournament Challenger 07
+,fighter.rival_07.desc,นักสู้ระดับฝีมือที่ 2 ในลานประลอง,A rank 2 tournament fighter
+,fighter.rival_08.name,ผู้ประลองลำดับ 08,Tournament Challenger 08
+,fighter.rival_08.desc,นักสู้ระดับฝีมือที่ 2 ในลานประลอง,A rank 2 tournament fighter
+,fighter.rival_09.name,ผู้ประลองลำดับ 09,Tournament Challenger 09
+,fighter.rival_09.desc,นักสู้ระดับฝีมือที่ 2 ในลานประลอง,A rank 2 tournament fighter
+,fighter.rival_10.name,ผู้ประลองลำดับ 10,Tournament Challenger 10
+,fighter.rival_10.desc,นักสู้ระดับฝีมือที่ 3 ในลานประลอง,A rank 3 tournament fighter
+,fighter.rival_11.name,ผู้ประลองลำดับ 11,Tournament Challenger 11
+,fighter.rival_11.desc,นักสู้ระดับฝีมือที่ 3 ในลานประลอง,A rank 3 tournament fighter
+,fighter.rival_12.name,ผู้ประลองลำดับ 12,Tournament Challenger 12
+,fighter.rival_12.desc,นักสู้ระดับฝีมือที่ 3 ในลานประลอง,A rank 3 tournament fighter
+,fighter.rival_13.name,ผู้ประลองลำดับ 13,Tournament Challenger 13
+,fighter.rival_13.desc,นักสู้ระดับฝีมือที่ 3 ในลานประลอง,A rank 3 tournament fighter
+,fighter.rival_14.name,ผู้ประลองลำดับ 14,Tournament Challenger 14
+,fighter.rival_14.desc,นักสู้ระดับฝีมือที่ 3 ในลานประลอง,A rank 3 tournament fighter
+,fighter.rival_15.name,ผู้ประลองลำดับ 15,Tournament Challenger 15
+,fighter.rival_15.desc,นักสู้ระดับฝีมือที่ 4 ในลานประลอง,A rank 4 tournament fighter
+,fighter.rival_16.name,ผู้ประลองลำดับ 16,Tournament Challenger 16
+,fighter.rival_16.desc,นักสู้ระดับฝีมือที่ 4 ในลานประลอง,A rank 4 tournament fighter
+,fighter.rival_17.name,ผู้ประลองลำดับ 17,Tournament Challenger 17
+,fighter.rival_17.desc,นักสู้ระดับฝีมือที่ 4 ในลานประลอง,A rank 4 tournament fighter
+,fighter.rival_18.name,ผู้ประลองลำดับ 18,Tournament Challenger 18
+,fighter.rival_18.desc,นักสู้ระดับฝีมือที่ 4 ในลานประลอง,A rank 4 tournament fighter
+,fighter.rival_19.name,ผู้ประลองลำดับ 19,Tournament Challenger 19
+,fighter.rival_19.desc,นักสู้ระดับฝีมือที่ 5 ในลานประลอง,A rank 5 tournament fighter
+,fighter.rival_20.name,ผู้ประลองลำดับ 20,Tournament Challenger 20
+,fighter.rival_20.desc,นักสู้ระดับฝีมือที่ 5 ในลานประลอง,A rank 5 tournament fighter
+,fighter.rival_21.name,ผู้ประลองลำดับ 21,Tournament Challenger 21
+,fighter.rival_21.desc,นักสู้ระดับฝีมือที่ 5 ในลานประลอง,A rank 5 tournament fighter
+,fighter.rival_22.name,ผู้ประลองลำดับ 22,Tournament Challenger 22
+,fighter.rival_22.desc,นักสู้ระดับฝีมือที่ 5 ในลานประลอง,A rank 5 tournament fighter
+,fighter.rival_23.name,ผู้ประลองลำดับ 23,Tournament Challenger 23
+,fighter.rival_23.desc,นักสู้ระดับฝีมือที่ 5 ในลานประลอง,A rank 5 tournament fighter
+,fighter.rival_24.name,ผู้ประลองลำดับ 24,Tournament Challenger 24
+,fighter.rival_24.desc,นักสู้ระดับฝีมือที่ 6 ในลานประลอง,A rank 6 tournament fighter
+,fighter.rival_25.name,ผู้ประลองลำดับ 25,Tournament Challenger 25
+,fighter.rival_25.desc,นักสู้ระดับฝีมือที่ 6 ในลานประลอง,A rank 6 tournament fighter
+,fighter.rival_26.name,ผู้ประลองลำดับ 26,Tournament Challenger 26
+,fighter.rival_26.desc,นักสู้ระดับฝีมือที่ 6 ในลานประลอง,A rank 6 tournament fighter
+,fighter.rival_27.name,ผู้ประลองลำดับ 27,Tournament Challenger 27
+,fighter.rival_27.desc,นักสู้ระดับฝีมือที่ 6 ในลานประลอง,A rank 6 tournament fighter
+,fighter.rival_28.name,ผู้ประลองลำดับ 28,Tournament Challenger 28
+,fighter.rival_28.desc,นักสู้ระดับฝีมือที่ 7 ในลานประลอง,A rank 7 tournament fighter
+,fighter.rival_29.name,ผู้ประลองลำดับ 29,Tournament Challenger 29
+,fighter.rival_29.desc,นักสู้ระดับฝีมือที่ 7 ในลานประลอง,A rank 7 tournament fighter
+,fighter.rival_30.name,ผู้ประลองลำดับ 30,Tournament Challenger 30
+,fighter.rival_30.desc,นักสู้ระดับฝีมือที่ 7 ในลานประลอง,A rank 7 tournament fighter
+,fighter.rival_31.name,ผู้ประลองลำดับ 31,Tournament Challenger 31
+,fighter.rival_31.desc,นักสู้ระดับฝีมือที่ 7 ในลานประลอง,A rank 7 tournament fighter

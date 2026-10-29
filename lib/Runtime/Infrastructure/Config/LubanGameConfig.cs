@@ -104,6 +104,9 @@ namespace ProjectJianghu.Core.Infrastructure.Config
                 JumpCooldownTicks = constant.JumpCooldownTicks,
                 MeditateNeiliRestore = constant.MeditateNeiliRestore,
                 DamageMitigationK = constant.DamageMitigationK,
+                BackDamageBonusX100 = constant.BackDamageBonusX100,
+                FlankDamageBonusX100 = constant.FlankDamageBonusX100,
+                MasteryXpPerUse = constant.MasteryXpPerUse,
                 MaxMasteryLevel = constant.MaxMasteryLevel,
                 StartingAttributePoints = constant.StartingAttributePoints,
             };
@@ -155,6 +158,8 @@ namespace ProjectJianghu.Core.Infrastructure.Config
                     StatusChanceX100 = row.StatusChanceX100,
                     KnockbackTiles = row.KnockbackTiles,
                     LevelBonus = MapLevelBonuses(row.LevelBonus),
+                    Level5SpecialKey = row.Level5SpecialKey,
+                    Level10SpecialKey = row.Level10SpecialKey,
                     NameKey = row.NameKey,
                     DescKey = row.DescKey,
                 });

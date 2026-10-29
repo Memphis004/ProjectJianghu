@@ -65,8 +65,16 @@ All four also run inside `tools/test.ps1`. Exit codes: `0` ok, `1` a required ch
 | `reward_pool` | `id` | weighted reward offers per round band | 04 |
 | `background` | `id` | the 4 character-creation backgrounds | 04 |
 
-Stage 01 ships **1–2 rows per table** so the pipeline, the port and the rules are exercised;
-Stage 04 replaces the sample rows with the prototype's content.
+Stage 04 ships the prototype baseline: 34 attribute rows (five combat categories; four active
+martial attributes, three display-only martial styles, and 12 display-only life skills), 19
+derived-stat formulas, 13 skills (8 external, 3 inner, 2 movement), a 10-level mastery ladder
+with level-5/10 attribute bonuses and special localization keys, 12 gear rows (5 weapons
+including fist wraps, 3 armour, 4 accessories), four statuses, 4 backgrounds, 31 ranked
+opponents, four AI profiles, one 12×12 map, a 32-seat tournament, weighted rewards, and TH/EN
+localization. Every fighter has one weapon, armour, two accessories, and four skills; external
+skills must match the weapon. `max_hp` is
+`clamp(30000 + 1500×Toughness + 500×Sinew, 80000, 120000)` and evaluates to 100,000 at
+Toughness 40 and Sinew 20.
 
 ## Encoding: a bean list is a flat token stream
 
@@ -74,10 +82,10 @@ Stage 04 replaces the sample rows with the prototype's content.
 and the list separator also separates the bean's own fields:
 
 ```
-stat.max_hp   base 30000   terms: Toughness|600|0|99999999|Sinew|200|0|99999999
+stat.max_hp   base 30000   terms: Toughness|1500|0|99999999|Sinew|500|0|99999999
 ```
 
-That is two `StatTerm`s — `(Toughness, 600, 0, 99999999)` and `(Sinew, 200, 0, 99999999)`.
+That is two `StatTerm`s — `(Toughness, 1500, 0, 99999999)` and `(Sinew, 500, 0, 99999999)`, matching the shipped `stat.max_hp` row.
 
 Rules that follow from it:
 
@@ -111,14 +119,20 @@ Rules that follow from it:
 | --- | --- |
 | `localization.empty` | the localization table has no rows |
 | `localization.blank_key` | a row has no key |
-| `localization.duplicate_key` | two rows share a key (the index collapses them, so only a snapshot sees it) |
 | `localization.blank_text` | both languages are empty, so the row can never be shown |
 | `localization.missing_language` | one language is filled and the other is not |
+| `localization.duplicate_key` | two rows share a key (the index collapses them, so only a snapshot sees it) |
 | `localization.missing_key` | an optional text column (`desc_key`, `note_key`) names a key that does not exist |
 | `data.empty` | one of the 12 keyed data tables has no rows |
 | `data.blank_id` / `data.duplicate_id` | a key column is blank, or repeats |
 | `reference.missing` | an optional or list reference names a row that does not exist |
 | `constant.non_positive` / `constant.negative` / `constant.out_of_range` | a tuned number a division or a comparison would break on (a cost above a full ATB bar is `out_of_range`) |
+| `gear.weapon_type` / `gear.non_weapon_type` | weapons declare a weapon family; armour/accessories declare `None` |
+| `skill.passive_weapon_type` / `skill.level_bonus_range` | inner/movement skills do not require a weapon; milestone bonus levels are 1–10 |
+| `skill.milestone_special_missing` / `skill.milestone_bonus_missing` | skill rows require localized level-5/10 effects and attribute bonuses at both milestones |
+| `fighter.loadout_weapon_required` / `fighter.loadout_weapon_slot` / `fighter.loadout_armor_required` / `fighter.loadout_armor_slot` | every fighter equips one weapon and armour item in the matching slots |
+| `fighter.loadout_accessory_slot` / `fighter.loadout_accessory_count` / `fighter.loadout_skill_count` | exactly two accessories and four skills; accessories occupy their matching slots |
+| `fighter.loadout_weapon_mismatch` | each external skill matches the fighter's equipped weapon family |
 | `stat_formula.clamp_order` | `clamp_max` is below `clamp_min` |
 | `stat_formula.term_attribute_unknown` | a `StatTerm` names an `EAttribute` with no `attribute` row |
 | `skill.range_order` | `range_max` is below `range_min` |
@@ -164,5 +178,9 @@ the expected code and the stage that must catch it (`luban` or `semantic`).
 - **An enum value is stable too.** Numbers are written explicitly and grouped in blocks; a
   new member takes the next free number in its block. `ConfigEnumParityTests` compares the
   Domain mirror by name *and* value.
+- Fighter loadouts reference one weapon, one armour piece, two accessories and four skills;
+  every external skill must match the equipped `EWeaponType`. The gloves/wraps are `Fist` weapons.
+- `constant.back_damage_bonus_x100` and `flank_damage_bonus_x100` are times-100 additive
+  bonuses; mastery XP per skill use and jump cost are also authored in `constant`.
 - **`data/` is not live until `gen.ps1` runs.** The player and the tests read generated
   bytes; `verify-generated` is what proves they match.

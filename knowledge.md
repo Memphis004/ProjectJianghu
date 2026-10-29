@@ -48,7 +48,7 @@ the Editor.
 | 01 | Luban/protoc rebuilt for the game: 10 enums, 3 beans, 13 tables + localization, `SaveData`/`CharacterState`/`TournamentState`/`ArenaReplay` | **done** | [`docs/stages/01-report.md`](docs/stages/01-report.md) |
 | 02 | Arena contract in `Domain.Arena` + shared `ArenaFrameBuffer` + `FakeArenaSession`/factory/auto-resolver + `ArenaReplay` + contract suite | **done** | [`docs/stages/02-report.md`](docs/stages/02-report.md) |
 | 03 | Unity shell → Jianghu screens (`CharacterCreate`, `Bracket`, `Rest`, `Arena`); HD-2D iso spike; 3 URP tiers; WebGL canvas | **done** | [`docs/stages/03-report.md`](docs/stages/03-report.md) |
-| 04 | Prototype content: attributes, `stat_formula`, 13 skills, gear, 4 statuses, 4 backgrounds, 31 fighters, map, reward pool | planned | — |
+| 04 | Prototype content: attributes, `stat_formula`, 13 skills, gear, 4 statuses, 4 backgrounds, 31 fighters, map, reward pool | **done** | [`docs/stages/04-report.md`](docs/stages/04-report.md) |
 | 05 | Character / stats / loadout domain: `StatResolver`, `ModifierStack`, `PowerScore`, `ArenaFighterBuilder`, `CharacterCreation` | planned | — |
 | 06 | Grid and targeting domain: reachability, jump, area shapes, facing (pure, zero-alloc) | planned | — |
 | 07 | `ArenaSimulation`: struct-array fighters ([ADR 0101](docs/adr/0101-no-ecs-struct-array-fighters.md)), ATB, resolve, stats | planned | — |
@@ -96,7 +96,7 @@ queries, events, results) with the shared `ArenaFrameBuffer`, a deterministic
 `FakeArenaSession`/factory/auto-resolver and `ArenaReplay` in Application. Unity ships eight
 scenes (Boot, Title, ThaiTextSpike, CharacterCreate, Bracket, Rest, Arena, Result), the HD-2D
 isometric spike with its sorting probe, three URP quality tiers, a project WebGL template, a
-7-probe smoke suite, the page bridge and the Web build pipeline. `dotnet` carries **156** xUnit cases;
+7-probe smoke suite, the page bridge and the Web build pipeline. `dotnet` carries **164** xUnit cases;
 Unity carries **42** EditMode and **7** PlayMode cases; Playwright has **4** tests in
 three specs (`smoke`, `title`, `loop`).
 

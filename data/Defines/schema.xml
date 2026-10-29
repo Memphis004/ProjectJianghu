@@ -237,6 +237,8 @@
     <var name="status_chance_x100" type="int#(range=[0,10000])"/>
     <var name="knockback_tiles" type="int#(range=[0,8])"/>
     <var name="level_bonus" type="list#sep=|,SkillLevelBonus"/>
+    <var name="level_5_special_key" type="string"/>
+    <var name="level_10_special_key" type="string"/>
     <var name="name_key" type="string#ref=TbLocalization"/>
     <var name="desc_key" type="string"/>
   </bean>
@@ -351,6 +353,9 @@
     <var name="jump_cooldown_ticks" type="int#(range=[0,1800])"/>
     <var name="meditate_neili_restore" type="int#(range=[0,1000000])"/>
     <var name="damage_mitigation_k" type="int#(range=[1,1000000])"/>
+    <var name="back_damage_bonus_x100" type="int#(range=[0,50000])"/>
+    <var name="flank_damage_bonus_x100" type="int#(range=[0,50000])"/>
+    <var name="mastery_xp_per_use" type="int#(range=[0,1000000])"/>
     <var name="max_mastery_level" type="int#(range=[1,10])"/>
     <var name="starting_attribute_points" type="int#(range=[0,1000])"/>
   </bean>

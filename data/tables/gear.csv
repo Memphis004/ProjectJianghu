@@ -1,3 +1,13 @@
 ##,id,slot,weapon_type,power,mods,name_key,desc_key
-,gear.iron_sword,Weapon,Sword,300,Fist|2,gear.iron_sword.name,
-,gear.jade_pendant,Accessory,None,0,Toughness|3,gear.jade_pendant.name,
+,gear.iron_fist_wraps,Weapon,Fist,180,Fist|4|WaistPower|2,gear.iron_fist_wraps.name,gear.iron_fist_wraps.desc
+,gear.steel_gauntlets,Weapon,Fist,260,Fist|7|Toughness|2,gear.steel_gauntlets.name,gear.steel_gauntlets.desc
+,gear.sword_of_morning_mist,Weapon,Sword,230,Sword|6|Focus|2,gear.sword_of_morning_mist.name,gear.sword_of_morning_mist.desc
+,gear.saber_of_rumbling_peaks,Weapon,Saber,280,Saber|7|WaistPower|3,gear.saber_of_rumbling_peaks.name,gear.saber_of_rumbling_peaks.desc
+,gear.flying_cloud_needles,Weapon,HiddenWeapon,200,HiddenWeapon|6|Wit|2,gear.flying_cloud_needles.name,gear.flying_cloud_needles.desc
+,gear.traveler_padded_coat,Armor,None,0,Toughness|12|Sinew|6,gear.traveler_padded_coat.name,gear.traveler_padded_coat.desc
+,gear.river_guard_vest,Armor,None,0,Toughness|18|Sinew|10|LowerBody|3,gear.river_guard_vest.name,gear.river_guard_vest.desc
+,gear.iron_scale_robe,Armor,None,0,Toughness|24|Sinew|14|Resolve|3,gear.iron_scale_robe.name,gear.iron_scale_robe.desc
+,gear.jade_pendant,Accessory,None,0,NeiliPool|5|NeiliFlow|2,gear.jade_pendant.name,gear.jade_pendant.desc
+,gear.copper_wrist_guard,Accessory,None,0,LowerBody|4|Sinew|3,gear.copper_wrist_guard.name,gear.copper_wrist_guard.desc
+,gear.silk_lucky_knot,Accessory,None,0,Wit|3|Fortune|5,gear.silk_lucky_knot.name,gear.silk_lucky_knot.desc
+,gear.moonstone_bead,Accessory,None,0,NeiliPower|4|Composure|3,gear.moonstone_bead.name,gear.moonstone_bead.desc

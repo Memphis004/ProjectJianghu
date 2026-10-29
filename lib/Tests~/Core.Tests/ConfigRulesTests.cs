@@ -99,24 +99,30 @@ namespace ProjectJianghu.Core.Tests
         public void A_blank_key_is_a_finding()
         {
             var config = new TestConfig();
+            config.SkillRows = new List<SkillConfig>();
+            config.FighterRows = new List<FighterConfig>();
+            config.BackgroundRows = new List<BackgroundConfig>();
             config.LocalizationRows = new List<LocalizationEntry>
             {
                 new LocalizationEntry { Key = string.Empty, Th = "ไทย", En = "English" },
             };
 
-            Assert.Equal("localization.blank_key", Assert.Single(ConfigValidator.Validate(config)).Code);
+            Assert.Contains(ConfigValidator.Validate(config), row => row.Code == "localization.blank_key");
         }
 
         [Fact]
         public void A_row_with_no_text_in_either_language_is_a_finding()
         {
             var config = new TestConfig();
+            config.SkillRows = new List<SkillConfig>();
+            config.FighterRows = new List<FighterConfig>();
+            config.BackgroundRows = new List<BackgroundConfig>();
             config.LocalizationRows = new List<LocalizationEntry>
             {
                 new LocalizationEntry { Key = "ui.empty", Th = string.Empty, En = string.Empty },
             };
 
-            Finding finding = Assert.Single(ConfigValidator.Validate(config));
+            Finding finding = Assert.Single(ConfigValidator.Validate(config), row => row.Code == "localization.blank_text");
             Assert.Equal("localization.blank_text", finding.Code);
             Assert.Equal("tblocalization['ui.empty']", finding.Target);
         }
@@ -125,21 +131,27 @@ namespace ProjectJianghu.Core.Tests
         public void A_localization_row_missing_one_language_is_a_finding()
         {
             var config = new TestConfig();
+            config.SkillRows = new List<SkillConfig>();
+            config.FighterRows = new List<FighterConfig>();
+            config.BackgroundRows = new List<BackgroundConfig>();
             config.LocalizationRows = new List<LocalizationEntry>
             {
                 new LocalizationEntry { Key = "ui.half", Th = "ไทย", En = string.Empty },
             };
 
-            Assert.Equal("localization.missing_language", Assert.Single(ConfigValidator.Validate(config)).Code);
+            Assert.Contains(ConfigValidator.Validate(config), row => row.Code == "localization.missing_language");
         }
 
         [Fact]
         public void An_empty_localization_table_is_one_finding_not_none()
         {
             var config = new TestConfig();
+            config.SkillRows = new List<SkillConfig>();
+            config.FighterRows = new List<FighterConfig>();
+            config.BackgroundRows = new List<BackgroundConfig>();
             config.LocalizationRows = new List<LocalizationEntry>();
 
-            Assert.Equal("localization.empty", Assert.Single(ConfigValidator.Validate(config)).Code);
+            Assert.Contains(ConfigValidator.Validate(config), row => row.Code == "localization.empty");
         }
 
         // -- every keyed table -------------------------------------------------
@@ -165,12 +177,11 @@ namespace ProjectJianghu.Core.Tests
             {
                 Id = "gear.one",
                 Slot = EGearSlot.Weapon,
+                WeaponType = EWeaponType.Sword,
                 NameKey = "ui.title",
             });
 
-            Finding finding = Assert.Single(ConfigValidator.Validate(config));
-            Assert.Equal("data.duplicate_id", finding.Code);
-            Assert.Equal("tbgear['gear.one']", finding.Target);
+            Assert.Contains(ConfigValidator.Validate(config), row => row.Code == "data.duplicate_id" && row.Target == "tbgear['gear.one']");
         }
 
         [Fact]
@@ -269,6 +280,41 @@ namespace ProjectJianghu.Core.Tests
             Finding finding = Assert.Single(ConfigValidator.Validate(config));
             Assert.Equal("skill.range_order", finding.Code);
             Assert.Equal("tbskill['skill.one']", finding.Target);
+        }
+
+        // -- gear and fighter loadouts -----------------------------------------
+
+        [Fact]
+        public void A_fighter_cannot_equip_a_weapon_for_a_different_external_skill()
+        {
+            var config = new TestConfig();
+            config.SkillRows[0].WeaponType = EWeaponType.Fist;
+
+            Finding finding = Assert.Single(ConfigValidator.Validate(config));
+            Assert.Equal("fighter.loadout_weapon_mismatch", finding.Code);
+            Assert.Equal("tbfighter['fighter.one'].skill_ids", finding.Target);
+        }
+
+        [Fact]
+        public void A_fighter_weapon_must_come_from_the_weapon_slot()
+        {
+            var config = new TestConfig();
+            config.GearRows.Add(new GearConfig { Id = "gear.armor.bad", Slot = EGearSlot.Armor, NameKey = "ui.title" });
+            config.FighterRows[0].WeaponId = "gear.armor.bad";
+
+            Finding finding = Assert.Single(ConfigValidator.Validate(config));
+            Assert.Equal("fighter.loadout_weapon_slot", finding.Code);
+        }
+
+        [Fact]
+        public void A_fighter_requires_all_four_skill_slots()
+        {
+            var config = new TestConfig();
+            config.FighterRows[0].SkillIds = new List<string>();
+
+            Finding finding = Assert.Single(ConfigValidator.Validate(config));
+            Assert.Equal("fighter.loadout_skill_count", finding.Code);
+            Assert.Equal("tbfighter['fighter.one'].skill_ids", finding.Target);
         }
 
         // -- arena_map ---------------------------------------------------------
@@ -427,6 +473,70 @@ namespace ProjectJianghu.Core.Tests
                     RangeMax = 1,
                     AtbCost = 10000,
                     StatusId = "status.one",
+                    LevelBonus = new List<SkillLevelBonus>
+                    {
+                        new SkillLevelBonus { Level = 5, Attribute = EAttribute.Sword, Value = 1 },
+                        new SkillLevelBonus { Level = 10, Attribute = EAttribute.Sword, Value = 2 },
+                    },
+                    Level5SpecialKey = "ui.title",
+                    Level10SpecialKey = "ui.title",
+                    NameKey = "ui.title",
+                },
+                new SkillConfig
+                {
+                    Id = "skill.two",
+                    Kind = ESkillKind.External,
+                    WeaponType = EWeaponType.Sword,
+                    Target = ESkillTarget.Enemy,
+                    AreaShape = EAreaShape.Single,
+                    RangeMin = 1,
+                    RangeMax = 1,
+                    AtbCost = 10000,
+                    LevelBonus = new List<SkillLevelBonus>
+                    {
+                        new SkillLevelBonus { Level = 5, Attribute = EAttribute.Sword, Value = 1 },
+                        new SkillLevelBonus { Level = 10, Attribute = EAttribute.Sword, Value = 2 },
+                    },
+                    Level5SpecialKey = "ui.title",
+                    Level10SpecialKey = "ui.title",
+                    NameKey = "ui.title",
+                },
+                new SkillConfig
+                {
+                    Id = "skill.three",
+                    Kind = ESkillKind.External,
+                    WeaponType = EWeaponType.Sword,
+                    Target = ESkillTarget.Enemy,
+                    AreaShape = EAreaShape.Single,
+                    RangeMin = 1,
+                    RangeMax = 1,
+                    AtbCost = 10000,
+                    LevelBonus = new List<SkillLevelBonus>
+                    {
+                        new SkillLevelBonus { Level = 5, Attribute = EAttribute.Sword, Value = 1 },
+                        new SkillLevelBonus { Level = 10, Attribute = EAttribute.Sword, Value = 2 },
+                    },
+                    Level5SpecialKey = "ui.title",
+                    Level10SpecialKey = "ui.title",
+                    NameKey = "ui.title",
+                },
+                new SkillConfig
+                {
+                    Id = "skill.four",
+                    Kind = ESkillKind.External,
+                    WeaponType = EWeaponType.Sword,
+                    Target = ESkillTarget.Enemy,
+                    AreaShape = EAreaShape.Single,
+                    RangeMin = 1,
+                    RangeMax = 1,
+                    AtbCost = 10000,
+                    LevelBonus = new List<SkillLevelBonus>
+                    {
+                        new SkillLevelBonus { Level = 5, Attribute = EAttribute.Sword, Value = 1 },
+                        new SkillLevelBonus { Level = 10, Attribute = EAttribute.Sword, Value = 2 },
+                    },
+                    Level5SpecialKey = "ui.title",
+                    Level10SpecialKey = "ui.title",
                     NameKey = "ui.title",
                 },
             };
@@ -439,6 +549,10 @@ namespace ProjectJianghu.Core.Tests
             public List<GearConfig> GearRows { get; set; } = new List<GearConfig>
             {
                 new GearConfig { Id = "gear.one", Slot = EGearSlot.Weapon, WeaponType = EWeaponType.Sword, NameKey = "ui.title" },
+                new GearConfig { Id = "gear.other", Slot = EGearSlot.Weapon, WeaponType = EWeaponType.Fist, NameKey = "ui.title" },
+                new GearConfig { Id = "gear.armor", Slot = EGearSlot.Armor, NameKey = "ui.title" },
+                new GearConfig { Id = "gear.accessory.one", Slot = EGearSlot.Accessory, NameKey = "ui.title" },
+                new GearConfig { Id = "gear.accessory.two", Slot = EGearSlot.Accessory, NameKey = "ui.title" },
             };
 
             public List<StatusConfig> StatusRows { get; set; } = new List<StatusConfig>
@@ -455,7 +569,9 @@ namespace ProjectJianghu.Core.Tests
                     AiProfileId = "ai.one",
                     BackgroundId = "bg.one",
                     WeaponId = "gear.one",
-                    SkillIds = new List<string> { "skill.one" },
+                    ArmorId = "gear.armor",
+                    AccessoryIds = new List<string> { "gear.accessory.one", "gear.accessory.two" },
+                    SkillIds = new List<string> { "skill.one", "skill.two", "skill.three", "skill.four" },
                     NameKey = "ui.title",
                 },
             };

@@ -76,6 +76,7 @@ namespace ProjectJianghu.Data.Validator
             ValidateReferences(config, ids, findings);
             ValidateStatFormulas(config, findings);
             ValidateSkills(config, findings);
+            ValidateGearAndLoadouts(config, findings);
             ValidateArenaMaps(config, findings);
             ValidateRewardPools(config, findings);
 
@@ -93,6 +94,9 @@ namespace ProjectJianghu.Data.Validator
             RequirePositive(constant.MatchTicks, "match_ticks", findings);
             RequirePositive(constant.DamageMitigationK, "damage_mitigation_k", findings);
             RequirePositive(constant.MaxMasteryLevel, "max_mastery_level", findings);
+            RequireNonNegative(constant.BackDamageBonusX100, "back_damage_bonus_x100", findings);
+            RequireNonNegative(constant.FlankDamageBonusX100, "flank_damage_bonus_x100", findings);
+            RequireNonNegative(constant.MasteryXpPerUse, "mastery_xp_per_use", findings);
 
             RequireNonNegative(constant.MoveAtbCost, "move_atb_cost", findings);
             RequireNonNegative(constant.JumpAtbCost, "jump_atb_cost", findings);
@@ -220,6 +224,8 @@ namespace ProjectJianghu.Data.Validator
             foreach (SkillConfig row in config.Skills)
             {
                 RequireKey(config, row.DescKey, "tbskill", row.Id, "desc_key", findings);
+                RequireKey(config, row.Level5SpecialKey, "tbskill", row.Id, "level_5_special_key", findings);
+                RequireKey(config, row.Level10SpecialKey, "tbskill", row.Id, "level_10_special_key", findings);
             }
 
             foreach (GearConfig row in config.Gear)
@@ -386,12 +392,144 @@ namespace ProjectJianghu.Data.Validator
         {
             foreach (SkillConfig row in config.Skills)
             {
+                bool hasLevelFive = false;
+                bool hasLevelTen = false;
+                foreach (SkillLevelBonus bonus in row.LevelBonus)
+                {
+                    if (bonus.Level < 1 || bonus.Level > 10)
+                    {
+                        findings.Add(new Finding("skill.level_bonus_range", "tbskill['" + row.Id + "'].level_bonus",
+                            "bonus level must be between 1 and 10"));
+                    }
+                    if (bonus.Level == 5) hasLevelFive = true;
+                    if (bonus.Level == 10)                    hasLevelTen = true;
+                }
+
+                if (string.IsNullOrEmpty(row.Level5SpecialKey) || string.IsNullOrEmpty(row.Level10SpecialKey))
+                {
+                    findings.Add(new Finding("skill.milestone_special_missing", "tbskill['" + row.Id + "']",
+                        "level 5 and level 10 special localization keys are required"));
+                }
+                if (!hasLevelFive || !hasLevelTen)
+                {
+                    findings.Add(new Finding("skill.milestone_bonus_missing", "tbskill['" + row.Id + "'].level_bonus",
+                        "attribute bonuses must include level 5 and level 10"));
+                }
+
+                if (row.Kind != ESkillKind.External && row.WeaponType != EWeaponType.None)
+                {
+                    findings.Add(new Finding("skill.passive_weapon_type", "tbskill['" + row.Id + "']",
+                        "inner and movement skills must use weapon type None"));
+                }
+
                 if (row.RangeMax < row.RangeMin)
                 {
                     findings.Add(new Finding(
                         "skill.range_order",
                         "tbskill['" + row.Id + "']",
                         "range_max (" + row.RangeMax + ") is below range_min (" + row.RangeMin + ")"));
+                }
+            }
+        }
+
+        // -- gear and fighter loadouts -----------------------------------------
+
+        private static void ValidateGearAndLoadouts(IGameConfig config, List<Finding> findings)
+        {
+            var gearById = new Dictionary<string, GearConfig>(StringComparer.Ordinal);
+            foreach (GearConfig gear in config.Gear)
+            {
+                gearById[gear.Id] = gear;
+                if (gear.Slot == EGearSlot.Weapon && gear.WeaponType == EWeaponType.None)
+                {
+                    findings.Add(new Finding("gear.weapon_type", "tbgear['" + gear.Id + "']",
+                        "a weapon must declare its weapon type"));
+                }
+                else if (gear.Slot != EGearSlot.Weapon && gear.WeaponType != EWeaponType.None)
+                {
+                    findings.Add(new Finding("gear.non_weapon_type", "tbgear['" + gear.Id + "']",
+                        "non-weapon gear must use weapon type None"));
+                }
+            }
+
+            var skillById = new Dictionary<string, SkillConfig>(StringComparer.Ordinal);
+            foreach (SkillConfig skill in config.Skills)
+            {
+                skillById[skill.Id] = skill;
+            }
+
+            foreach (FighterConfig fighter in config.Fighters)
+            {
+                string target = "tbfighter['" + fighter.Id + "']";
+                GearConfig? weapon = null;
+                if (string.IsNullOrEmpty(fighter.WeaponId))
+                {
+                    findings.Add(new Finding("fighter.loadout_weapon_required", target + ".weapon_id",
+                        "a fighter must equip one weapon"));
+                }
+                else if (gearById.TryGetValue(fighter.WeaponId, out GearConfig? foundWeapon))
+                {
+                    weapon = foundWeapon;
+                    if (weapon.Slot != EGearSlot.Weapon)
+                    {
+                        findings.Add(new Finding("fighter.loadout_weapon_slot", target + ".weapon_id",
+                            "weapon_id must reference gear in the Weapon slot"));
+                    }
+                }
+
+                if (string.IsNullOrEmpty(fighter.ArmorId))
+                {
+                    findings.Add(new Finding("fighter.loadout_armor_required", target + ".armor_id",
+                        "a fighter must equip one armour piece"));
+                }
+                else if (gearById.TryGetValue(fighter.ArmorId, out GearConfig? armor)
+                    && armor.Slot != EGearSlot.Armor)
+                {
+                    findings.Add(new Finding("fighter.loadout_armor_slot", target + ".armor_id",
+                        "armor_id must reference gear in the Armor slot"));
+                }
+
+                if (fighter.AccessoryIds.Count != 2)
+                {
+                    findings.Add(new Finding("fighter.loadout_accessory_count", target + ".accessory_ids",
+                        "a fighter must equip exactly two accessories"));
+                }
+
+                if (fighter.SkillIds.Count != 4)
+                {
+                    findings.Add(new Finding("fighter.loadout_skill_count", target + ".skill_ids",
+                        "a fighter must carry exactly four skills"));
+                }
+
+                foreach (string accessoryId in fighter.AccessoryIds)
+                {
+                    if (gearById.TryGetValue(accessoryId, out GearConfig? accessory)
+                        && accessory.Slot != EGearSlot.Accessory)
+                    {
+                        findings.Add(new Finding("fighter.loadout_accessory_slot", target + ".accessory_ids",
+                            "accessory_ids must reference gear in the Accessory slot"));
+                    }
+                }
+
+                foreach (string skillId in fighter.SkillIds)
+                {
+                    if (!skillById.TryGetValue(skillId, out SkillConfig? skill))
+                    {
+                        continue;
+                    }
+
+                    if (skill.Kind == ESkillKind.External && weapon is not null
+                        && weapon.Slot == EGearSlot.Weapon && skill.WeaponType != weapon.WeaponType)
+                    {
+                        findings.Add(new Finding("fighter.loadout_weapon_mismatch", target + ".skill_ids",
+                            "external skill '" + skill.Id + "' requires " + skill.WeaponType
+                            + " but equipped weapon provides " + weapon.WeaponType));
+                    }
+                    else if (skill.Kind != ESkillKind.External && skill.WeaponType != EWeaponType.None)
+                    {
+                        findings.Add(new Finding("skill.passive_weapon_type", "tbskill['" + skill.Id + "']",
+                            "inner and movement skills must use weapon type None"));
+                    }
                 }
             }
         }
